@@ -1,0 +1,12 @@
+# Cada carpeta tiene la cara dueña de LATAM Bank. En el equipo actual todas las ejerce la presidencia
+# (@JuanLara18); la columna de comentario dice qué cara debe revisar.
+*                 @JuanLara18
+/presidencia/     @JuanLara18   # Presidencia y Oficina de Entrega
+/comun/           @JuanLara18   # Comité de Plataforma (Tecnología, Datos, IA)
+/clientes/        @JuanLara18   # VP Clientes
+/ia/              @JuanLara18   # VP Inteligencia Artificial
+/datos/           @JuanLara18   # VP Datos
+/tecnologia/      @JuanLara18   # VP Tecnología
+/gobierno/        @JuanLara18   # VP Gobierno (veto de salida)
+/auditoria/       @JuanLara18   # Auditoría
+/.claude/agents/  @JuanLara18   # Gobierno y Auditoría

@@ -1,0 +1,36 @@
+# Datos y secretos: nunca a git
+data/
+runs/
+*.env
+.env*
+!.env.example
+secretos/
+**/*Diccionario*
+*.pem
+*.key
+credentials*.json
+gobierno/retenido/casos/
+audio/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Herramientas
+node_modules/
+.terraform/
+*.tfstate*
+.firebase/
+dbt_packages/
+target/
+logs/
+.DS_Store

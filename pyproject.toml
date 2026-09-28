@@ -1,0 +1,41 @@
+[project]
+name = "latam-bank"
+version = "0.1.0"
+description = "LATAM Bank: atención AI-first para cargos no reconocidos"
+requires-python = ">=3.12"
+dependencies = [
+    "latam-comun",
+    "latam-clientes",
+    "latam-ia",
+    "latam-datos",
+    "latam-tecnologia",
+    "latam-gobierno",
+]
+
+[tool.uv.workspace]
+members = ["comun", "clientes", "ia", "datos", "tecnologia", "gobierno"]
+
+[tool.uv.sources]
+latam-comun = { workspace = true }
+latam-clientes = { workspace = true }
+latam-ia = { workspace = true }
+latam-datos = { workspace = true }
+latam-tecnologia = { workspace = true }
+latam-gobierno = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.6", "pyright>=1.1.380"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+include = ["comun/src", "clientes/src", "ia/src", "datos/src", "tecnologia/src", "gobierno/src"]
+
+[tool.pytest.ini_options]
+testpaths = ["comun/tests", "tests"]
