@@ -8,6 +8,23 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ---
 
+## D-29 · Canales reales, todo en Google Cloud y gasto menor a US$20 (28 sep 2026)
+
+- **Decisión:** WhatsApp real con el número de prueba de Meta Cloud API (hasta 5 destinatarios
+  registrados) y voz por teléfono real con la cuenta de prueba de Twilio (número de EE. UU., solo números
+  verificados), además de chat y voz en el navegador; el sitio de LATAM Bank en Google Cloud (Firebase
+  Hosting y Cloud Run, sin dominio propio). Pago real con tope de US$20: el crédito de prueba de Google
+  Cloud (US$300) financia modelos, voz y plataforma sin activar la cuenta completa; presupuesto de
+  US$250 de crédito con alertas al 50 y 80%. Sin Claude en Vertex (a confirmar si la cuenta de prueba lo
+  permite): generador y juez con dos familias abiertas en Ollama local. El repositorio
+  `JuanLara18/factored-hackathon-2026` (privado) es la fuente canónica desde hoy, con carpetas por cara,
+  `main` como producción y `develop` como integración.
+- **Modifica:** D-18, D-19, D-22 (teléfono y WhatsApp reales), D-24 (sin Anthropic), D-25 (tope real de
+  US$20) y D-03 (los documentos pasan al repositorio).
+- **Límite conocido:** la protección de ramas no está disponible en repositorios privados del plan
+  gratuito; las reglas de `CONTRIBUTING.md` se cumplen por disciplina y CI.
+- **Estado:** firme (instrucción de la presidencia humana).
+
 ## D-28 · Plataforma de dos perfiles y gateway LiteLLM (27 sep 2026)
 
 - **Decisión:** una sola base de código con dos perfiles: el **local** (DuckDB, dbt, Data Contract CLI,
