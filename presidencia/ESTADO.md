@@ -50,7 +50,6 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
    `ia/prompts/lexicos_prohibidos.yaml`, la prueba exige ambas); mover el enum `Estado` del motor a `comun/`
    para que IA y Clientes no dependan de Tecnología.
 4. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
-5. **Decisión de la Presidencia:** `bloquear_tarjeta` quedó en `acr2`; la definición (A-06) pide `acr1`.
 
 ## Cómo se trabaja
 

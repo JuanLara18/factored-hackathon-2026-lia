@@ -8,6 +8,19 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ---
 
+## D-31 · Bloquear la tarjeta exige acr1, no acr2 (29 sep 2026)
+
+- **Decisión:** `bloquear_tarjeta` pide autenticación de consulta (`acr1`) más la confirmación explícita de la
+  tarjeta enmascarada leída de la base ("sí" o DTMF), como fijan A-06 y A-09 de la matriz de autonomía. Radicar
+  la disputa sigue en `acr2`.
+- **Alternativas:** mantener `acr2`, como quedó en el motor por herencia del spike; se descarta.
+- **Por qué:** el bloqueo es protector y reversible, y no mueve dinero. El riesgo es asimétrico: si alguien con
+  `acr1` lo abusa, el daño es una tarjeta bloqueada que se reactiva; si se exige `acr2` durante un fraude en curso,
+  cada minuto de fricción deja pasar cargos. La confirmación de la tarjeta leída de la base evita bloquear la
+  equivocada, y la definición es coherente en dos filas (A-06 y A-09: "acr1 para bloquear; acr2 para radicar").
+- **Modifica:** `gobierno/politica/v1/autonomia` y la prueba del motor que fijaba `acr2`.
+- **Estado:** firme (la presidencia delegó la elección).
+
 ## D-30 · Todo en Google Cloud, sin perfil local de referencia (28 sep 2026)
 
 - **Decisión:** Google Cloud es el único entorno de ejecución y el origen de toda cifra oficial. La carga
