@@ -12,8 +12,8 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 | Datos | Bronce, plata, oro y platino en BigQuery; manifiesto encadenado; reglas Q-BRZ; dbt con 56 pruebas en verde; siete fichas de oro operacional y 12 dominios canónicos | [datos/README.md](../datos/README.md), [LIMITACIONES](../datos/LIMITACIONES.md) |
 | Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado; `policy/v1` con huella (escalamiento, crédito provisional, riesgo, ACR por acción, traspaso) que el motor lee | `gobierno/src/latam_gobierno/guardas.py` |
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
-| Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
-| IA | Registro de agentes y prompts (IA-7.1, IA-9.1); arnés de evaluación IA-5.1 con 22 escenarios: offline 21 de 22, 0 inseguros en 66 corridas | [ia/README.md](../ia/README.md) |
+| Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); chat web de disputas (`just chat`, http://localhost:8765) con aprobación de un solo uso, aviso de IA y botón de persona; Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
+| IA | Registro de agentes y prompts (IA-7.1, IA-9.1); arnés IA-5.1 con 23 escenarios: offline 23 de 23, 0 inseguros en 69 corridas; léxico prohibido único en `clientes/estilo/estilo.yaml` | [ia/README.md](../ia/README.md) |
 | Clientes | Matriz estado x canal x registro, guía de estilo, 50 plantillas en usted y vos, linter en CI | [clientes/README.md](../clientes/README.md) |
 
 ## BigQuery
@@ -43,12 +43,11 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 
 ## Siguientes historias, en orden
 
-1. **Tecnología:** `abrir_disputa` del agente debe pasar el crédito provisional que decide el motor (falla N0 del
-   arnés); herramienta para leer casos abiertos (escenario A5); web del chat sobre el spike S3.
-2. **IA:** E2 (monto sobre umbral) ya está como `falla_conocida`: `policy/v1` no escala por monto, decide Gobierno; IA-3.1 e IA-7.2.
-3. **Deuda técnica:** (frases prohibidas ya unificadas en `clientes/estilo/estilo.yaml`); mover el enum `Estado` del motor a `comun/`
-   para que IA y Clientes no dependan de Tecnología.
-4. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
+1. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
+2. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
+3. **Tecnología:** probar el chat en navegador y con Gemini; voz (spike S1) y WhatsApp de prueba.
+4. **IA:** IA-3.1 (redacción por locale), IA-7.2 (hojas de vida) y correr el arnés con Gemini cuando haya llave.
+5. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
 
 ## Cómo se trabaja
 

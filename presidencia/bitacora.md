@@ -14,6 +14,9 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 - Fusionadas a `develop` las diez ramas del arranque (gobierno, auditoría, tecnología, spikes S3 y S4,
   Terraform y datos).
 
+- Tarde: policy/v1, Clientes (matriz, estilo, 50 plantillas), arnés de evaluación (23 de 23), D-31
+  (bloquear tarjeta con acr1), escalamiento por monto ESC-04 y chat web de disputas.
+
 **Bloquea**
 - Facturación cerrada: sin Cloud Run ni Vertex AI hasta que la Presidencia decida reabrirla.
 
