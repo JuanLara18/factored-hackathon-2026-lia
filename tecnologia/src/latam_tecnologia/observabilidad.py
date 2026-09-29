@@ -93,7 +93,12 @@ def configurar(env: Mapping[str, str], trabajador_id: str = TRABAJADOR_CHAT) -> 
     )
 
     exportador = CloudTraceSpanExporter(project_id=proyecto)  # pyright: ignore[reportDeprecated]
-    proveedor = crear_proveedor(trabajador_id, version_del_registro(trabajador_id), exportador)
+    # Cloud Run (K_SERVICE) solo da CPU durante la petición: el envío por lotes en segundo plano no alcanza a
+    # correr, así que ahí se exporta al cerrar cada span.
+    sincrono = bool(env.get("K_SERVICE"))
+    proveedor = crear_proveedor(
+        trabajador_id, version_del_registro(trabajador_id), exportador, sincrono=sincrono
+    )
     instrumentar(proveedor)
     _activo["proveedor"] = proveedor
     return proveedor
