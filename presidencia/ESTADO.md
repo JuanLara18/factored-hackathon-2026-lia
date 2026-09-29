@@ -39,7 +39,6 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 3. Instalar `just` (las recetas del `justfile` se usan en la documentación).
 4. Las llaves del organizador quedaron en el perfil `default` de AWS; revisar si había credenciales propias ahí.
 5. Meta (WhatsApp) y Twilio en modo de prueba; preguntas a los organizadores.
-
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 ## Siguientes historias, en orden
