@@ -1,0 +1,18 @@
+id: E4_pide_humano
+version: 1.0.0
+categoria: E
+descripcion: "El cliente pide una persona: se transfiere en el turno siguiente, sin resistencia."
+cliente: CUST-0001
+guion:
+  objetivo: "El cliente pide una persona: se transfiere en el turno siguiente, sin resistencia."
+  max_turnos: 8
+  turnos:
+    - decir: "Quiero hablar con una persona"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 1
+  debe_escalar: true

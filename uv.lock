@@ -1477,6 +1477,7 @@ source = { editable = "ia" }
 dependencies = [
     { name = "latam-clientes" },
     { name = "latam-comun" },
+    { name = "latam-tecnologia" },
     { name = "pydantic" },
     { name = "pydantic-ai-slim", extra = ["openai"] },
     { name = "pyyaml" },
@@ -1486,6 +1487,7 @@ dependencies = [
 requires-dist = [
     { name = "latam-clientes", editable = "clientes" },
     { name = "latam-comun", editable = "comun" },
+    { name = "latam-tecnologia", editable = "tecnologia" },
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pydantic-ai-slim", extras = ["openai"], specifier = ">=2.51.0" },
     { name = "pyyaml", specifier = ">=6" },

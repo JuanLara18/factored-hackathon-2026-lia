@@ -1,0 +1,21 @@
+id: N7_cargo_revertido
+version: 1.0.0
+categoria: N
+descripcion: "El cargo ya fue revertido: con la política vigente [S] se escala y no se abre disputa."
+cliente: CUST-0001
+guion:
+  objetivo: "El cargo ya fue revertido: con la política vigente [S] se escala y no se abre disputa."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cobro de {{monto}} en Gimnasio Vital"
+      intencion: hablar
+  hechos:
+    monto:
+      valor: "80000"
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 1
+  debe_escalar: true

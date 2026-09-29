@@ -1,0 +1,21 @@
+id: N8_tarjeta_ya_bloqueada
+version: 1.0.0
+categoria: N
+descripcion: "La tarjeta ya estaba bloqueada: no se bloquea de nuevo y se abre la disputa."
+cliente: CUST-0003
+guion:
+  objetivo: "La tarjeta ya estaba bloqueada: no se bloquea de nuevo y se abre la disputa."
+  max_turnos: 8
+  turnos:
+    - decir: "Mi tarjeta ya la bloqueé y hay un cobro de {{monto}} en Tienda Tres que no reconozco"
+      intencion: hablar
+    - decir: "Sí, ábrala"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "70000"
+esperado:
+  casos: [[CUST-0003, TX-3001]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

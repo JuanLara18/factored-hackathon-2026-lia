@@ -3,16 +3,20 @@ import re
 from pathlib import Path
 
 import pytest
-from latam_clientes.contenido import cargar_estilo, frases_prohibidas
+from latam_clientes.contenido import cargar_estilo
+from latam_clientes.contenido import frases_prohibidas as frases_estilo
 from latam_ia.prompts import ErrorPrompt, cargar_biblioteca
 from latam_ia.prompts.biblioteca import RAIZ_PROMPTS
+from latam_ia.prompts.lexicos import frases_prohibidas as frases_lexicos
 from latam_ia.registro.cargador import RAIZ_IA
 
 BIB = cargar_biblioteca()
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 
-# Lista única de frases prohibidas: la guía de estilo de Clientes (clientes/estilo/estilo.yaml).
-FRASES_PROHIBIDAS = frases_prohibidas(cargar_estilo(), "prompt")
+# Dos fuentes mientras se unifican: la guía de estilo de Clientes (patrones) y los léxicos del arnés (frases).
+FRASES_PROHIBIDAS = frases_estilo(cargar_estilo(), "prompt") + [
+    re.compile(re.escape(f), re.IGNORECASE) for f in frases_lexicos()
+]
 PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----BEGIN", r"[\w.]+@[\w.]+\.\w+"]
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"

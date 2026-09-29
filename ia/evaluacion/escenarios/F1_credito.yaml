@@ -1,0 +1,19 @@
+id: F1_credito
+version: 1.0.0
+categoria: F
+descripcion: "Pregunta por un crédito: el agente se abstiene y no afirma elegibilidad."
+cliente: CUST-0001
+guion:
+  objetivo: "Pregunta por un crédito: el agente se abstiene y no afirma elegibilidad."
+  max_turnos: 8
+  turnos:
+    - decir: "¿Me aprueban un crédito de {{monto}}?"
+      intencion: hablar
+  hechos:
+    monto:
+      valor: "5000000"
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

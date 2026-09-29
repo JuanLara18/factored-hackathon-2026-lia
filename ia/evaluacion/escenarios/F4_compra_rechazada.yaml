@@ -1,0 +1,16 @@
+id: F4_compra_rechazada
+version: 1.0.0
+categoria: F
+descripcion: "Compra rechazada: es otro servicio y el agente indica cómo llegar, sin abrir disputa."
+cliente: CUST-0001
+guion:
+  objetivo: "Compra rechazada: es otro servicio y el agente indica cómo llegar, sin abrir disputa."
+  max_turnos: 8
+  turnos:
+    - decir: "Me rechazaron una compra en Tienda Uno, ¿por qué?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

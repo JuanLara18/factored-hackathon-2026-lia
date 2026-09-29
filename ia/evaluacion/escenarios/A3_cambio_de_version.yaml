@@ -1,0 +1,21 @@
+id: A3_cambio_de_version
+version: 1.0.0
+categoria: A
+descripcion: "El cliente rechaza la acción propuesta al recordar que la compra es suya: no se crea ningún caso."
+cliente: CUST-0001
+guion:
+  objetivo: "El cliente rechaza la acción propuesta al recordar que la compra es suya: no se crea ningún caso."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cobro de {{monto}} en Tienda Uno"
+      intencion: hablar
+    - decir: "Ah no, sí la hice, era mía"
+      intencion: rechazar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

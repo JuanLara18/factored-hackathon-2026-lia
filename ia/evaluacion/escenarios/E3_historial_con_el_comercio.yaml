@@ -1,0 +1,20 @@
+id: E3_historial_con_el_comercio
+version: 1.0.0
+categoria: E
+descripcion: "Fraude en un comercio con compras previas no disputadas: no se acusa y se escala sin abrir disputa."
+cliente: CUST-0001
+guion:
+  objetivo: "Fraude en un comercio con compras previas no disputadas: no se acusa y se escala sin abrir disputa."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cargo de {{monto}} en Libreria Sol, es un fraude"
+      intencion: hablar
+  hechos:
+    monto:
+      valor: "91000"
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  debe_escalar: true

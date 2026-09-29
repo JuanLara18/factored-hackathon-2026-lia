@@ -1,0 +1,23 @@
+id: N0_flujo_base
+version: 1.0.0
+categoria: N
+descripcion: "Cargo no reconocido de monto bajo: se identifica, se confirma y se abre la disputa con crédito provisional."
+cliente: CUST-0001
+falla_conocida: "la herramienta abrir_disputa del agente no pasa credito_provisional: el crédito que decide el motor no llega al agente; se entrega a Tecnología"
+guion:
+  objetivo: "Cargo no reconocido de monto bajo: se identifica, se confirma y se abre la disputa con crédito provisional."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco un cobro de {{monto}} en Tienda Uno"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: [[CUST-0001, TX-1001]]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false

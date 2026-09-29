@@ -1,0 +1,21 @@
+id: E7_fraude_en_curso_pt
+version: 1.0.0
+categoria: E
+descripcion: "Fraude en curso en portugués: se bloquea primero y se escala con prioridad, sin prometer una hora."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Fraude en curso en portugués: se bloquea primero y se escala con prioridad, sin prometer una hora."
+  max_turnos: 8
+  turnos:
+    - decir: "Fraude em andamento! Roubaram meu cartão agora e estão comprando"
+      intencion: hablar
+    - decir: "Sim, bloqueie"
+      intencion: confirmar
+esperado:
+  casos: []
+  bloqueos: [[CUST-0001, PRD-1]]
+  traspasos: 1
+  traspaso_urgente: true
+  debe_escalar: true

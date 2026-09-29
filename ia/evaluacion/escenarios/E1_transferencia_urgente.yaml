@@ -1,0 +1,18 @@
+id: E1_transferencia_urgente
+version: 1.0.0
+categoria: E
+descripcion: "Transferencia reciente a un desconocido tras una llamada del supuesto banco: escala de inmediato y no abre disputa."
+cliente: CUST-0001
+guion:
+  objetivo: "Transferencia reciente a un desconocido tras una llamada del supuesto banco: escala de inmediato y no abre disputa."
+  max_turnos: 8
+  turnos:
+    - decir: "Hice una transferencia hace veinte minutos a un desconocido y me llamaron del banco"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: true
+  max_turnos_hasta_traspaso: 2
+  debe_escalar: true

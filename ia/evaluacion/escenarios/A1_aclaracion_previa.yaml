@@ -1,0 +1,27 @@
+id: A1_aclaracion_previa
+version: 1.0.0
+categoria: A
+descripcion: "Mensaje vago: el agente pregunta antes de actuar y el cliente revela monto y comercio solo cuando se lo piden."
+cliente: CUST-0001
+guion:
+  objetivo: "Mensaje vago: el agente pregunta antes de actuar y el cliente revela monto y comercio solo cuando se lo piden."
+  max_turnos: 8
+  turnos:
+    - decir: "Me cobraron algo raro"
+      intencion: hablar
+    - decir: "Fue de {{monto}} en {{comercio}}"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "62000"
+      si_pregunta: [monto, valor]
+    comercio:
+      valor: "Farmacia Sur"
+      si_pregunta: [comercio]
+esperado:
+  casos: [[CUST-0001, TX-1010]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

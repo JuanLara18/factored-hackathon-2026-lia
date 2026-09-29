@@ -1,0 +1,21 @@
+id: N2_cargo_duplicado
+version: 1.0.0
+categoria: N
+descripcion: "Dos cargos iguales en el mismo comercio: la disputa va sobre el duplicado más reciente y no se bloquea la tarjeta."
+cliente: CUST-0001
+guion:
+  objetivo: "Dos cargos iguales en el mismo comercio: la disputa va sobre el duplicado más reciente y no se bloquea la tarjeta."
+  max_turnos: 8
+  turnos:
+    - decir: "Me cobraron dos veces lo mismo en Panaderia Luna, {{monto}} cada uno"
+      intencion: hablar
+    - decir: "Sí, por favor"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "30000"
+esperado:
+  casos: [[CUST-0001, TX-1006]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

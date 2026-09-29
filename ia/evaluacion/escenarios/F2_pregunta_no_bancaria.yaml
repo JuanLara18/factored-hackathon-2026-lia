@@ -1,0 +1,16 @@
+id: F2_pregunta_no_bancaria
+version: 1.0.0
+categoria: F
+descripcion: "Pregunta general no bancaria: abstención breve."
+cliente: CUST-0001
+guion:
+  objetivo: "Pregunta general no bancaria: abstención breve."
+  max_turnos: 8
+  turnos:
+    - decir: "¿Cómo estará el clima mañana?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
