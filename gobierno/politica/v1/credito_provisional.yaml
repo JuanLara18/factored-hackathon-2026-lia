@@ -1,0 +1,19 @@
+# Tope del crédito provisional (bandera del caso; el dinero lo mueve el back office, R-GOB-30).
+# Se busca por la moneda del registro; si no hay entrada, aplica `por_defecto`. Cifras en USD a la fecha del evento.
+por_defecto:
+  limite_usd: 200
+  fundamento: R-GOB-27
+  razon: "Supuesto sintético del punto balanceado, pendiente de fijarse con montos de desarrollo (percentil 95)."
+por_moneda:
+  MXN:
+    limite_usd: 200
+    fundamento: MX-06
+    razon: "Abono provisional exigible de México: se registra el derecho; el tope sintético iguala al de defecto."
+  COP:
+    limite_usd: 200
+    fundamento: R-GOB-27
+    razon: "Colombia sin abono provisional normativo: tope sintético igual al de defecto."
+  ARS:
+    limite_usd: 200
+    fundamento: R-GOB-27
+    razon: "Argentina: tope sintético igual al de defecto; el reintegro AR-06 es campo del caso."

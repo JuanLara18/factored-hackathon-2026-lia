@@ -1,0 +1,19 @@
+# Reglas de escalamiento a un humano, en orden de prioridad: gana la primera que coincide.
+# condicion: urgente | estado_en (usa `estados`) | producto_desconocido
+reglas:
+  - id: ESC-01
+    condicion: urgente
+    motivo: urgente
+    fundamento: R-GOB-28
+    razon: "Transferencia inmediata no reconocida o engaño telefónico: solo cuentan los minutos, traspaso inmediato."
+  - id: ESC-02
+    condicion: estado_en
+    estados: [declined, failed, reversed]
+    motivo: transaccion_no_disputable
+    fundamento: A-04
+    razon: "Un cargo rechazado, fallido o revertido no se cobró: se explica con la ficha y, si insiste, va a un humano."
+  - id: ESC-03
+    condicion: producto_desconocido
+    motivo: producto_no_encontrado
+    fundamento: A-21
+    razon: "Sin producto verificable en la base no se afirma ni se radica nada: ninguna acción y a revisión humana."

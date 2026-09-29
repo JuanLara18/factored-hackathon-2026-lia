@@ -8,11 +8,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal
 from enum import StrEnum
 from typing import Final
 
 from latam_comun.dominio import AccionVerificada, Canal, Confirmacion, NivelAcr, SesionAutenticada
+from latam_gobierno.politica import PoliticaV1, cargar
 
 from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
@@ -86,14 +86,6 @@ def transicionar(estado: Estado, evento: Evento) -> Transicion:
 
 
 @dataclass(frozen=True)
-class Politica:
-    """Reglas de decisión del caso; los valores marcados [S] son supuestos a reemplazar por `policy/v1`."""
-
-    estados_no_disputables: frozenset[str] = frozenset({"declined", "failed", "reversed"})  # [S]
-    umbral_credito_provisional_usd: Decimal = Decimal(200)  # [S]
-
-
-@dataclass(frozen=True)
 class Propuesta:
     accion: str  # "abrir_disputa" o "escalar"
     motivo: str
@@ -101,19 +93,17 @@ class Propuesta:
 
 
 def decidir(
-    transaccion: Transaccion, productos: tuple[Producto, ...], urgente: bool, politica: Politica
+    transaccion: Transaccion, productos: tuple[Producto, ...], urgente: bool, politica: PoliticaV1
 ) -> Propuesta:
-    """Disputar o pasar a un humano. Puro: toda ruta se decide aquí y no en el modelo (P4)."""
-    if urgente:
-        return Propuesta("escalar", "urgente")
-    if transaccion.estado is not None and transaccion.estado.lower() in politica.estados_no_disputables:
-        return Propuesta("escalar", "transaccion_no_disputable")
-    if all(p.product_id != transaccion.product_id for p in productos):
-        return Propuesta("escalar", "producto_no_encontrado")
-    provisional = (
-        transaccion.amount_usd is not None
-        and transaccion.amount_usd <= politica.umbral_credito_provisional_usd
+    """Disputar o pasar a un humano según `policy/v1`. Puro: la ruta no la decide el modelo (P4)."""
+    escalar = politica.escalar(
+        urgente=urgente,
+        estado_transaccion=transaccion.estado,
+        producto_conocido=any(p.product_id == transaccion.product_id for p in productos),
     )
+    if escalar is not None:
+        return Propuesta("escalar", escalar.motivo)
+    provisional = politica.credito_provisional_aplica(transaccion.monto.moneda, transaccion.amount_usd)
     return Propuesta("abrir_disputa", "cargo_no_reconocido", provisional)
 
 
@@ -133,12 +123,12 @@ class MotorCaso:
         self,
         almacen: Almacen,
         herramientas: Herramientas,
-        politica: Politica | None = None,
+        politica: PoliticaV1 | None = None,
         reloj: Callable[[], datetime] = _ahora,
     ) -> None:
         self._almacen = almacen
         self._h = herramientas
-        self._politica = politica or Politica()
+        self._politica = politica or cargar()
         self._reloj = reloj
 
     def _cargar(self, conversacion_id: str, sesion: SesionAutenticada) -> Conversacion:

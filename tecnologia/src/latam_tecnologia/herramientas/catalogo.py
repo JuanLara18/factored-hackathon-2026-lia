@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from latam_comun.dominio import AccionVerificada, Confirmacion, HechoVerificado, NivelAcr, SesionAutenticada
+from latam_gobierno.politica import PoliticaV1, cargar
 
 from latam_tecnologia.herramientas.puertos import LecturaOro, Producto, ServiciosBanco, Transaccion
 from latam_tecnologia.motor.retoma import Almacen, ejecutar_una_vez
@@ -32,13 +33,17 @@ class Herramientas:
         banco: ServiciosBanco,
         almacen: Almacen,
         reloj: Callable[[], datetime] = _ahora,
+        politica: PoliticaV1 | None = None,
     ) -> None:
+        self._politica = politica or cargar()
         self._lectura = lectura
         self._banco = banco
         self._almacen = almacen
         self._reloj = reloj
 
-    def _exigir(self, sesion: SesionAutenticada, nivel: NivelAcr) -> datetime:
+    def _exigir(self, sesion: SesionAutenticada, accion: str) -> datetime:
+        """El nivel mínimo de cada acción sale de `policy/v1` (R-GOB-25)."""
+        nivel = NivelAcr(self._politica.acr_requerido(accion))
         ahora = self._reloj()
         if not sesion.permite(nivel, ahora):
             raise AccesoDenegado("sesión vencida o de nivel insuficiente")
@@ -54,26 +59,26 @@ class Herramientas:
     def transacciones_recientes(
         self, sesion: SesionAutenticada, limite: int = 10
     ) -> HechoVerificado[tuple[Transaccion, ...]]:
-        ahora = self._exigir(sesion, NivelAcr.CONSULTA)
+        ahora = self._exigir(sesion, "transacciones_recientes")
         valor = self._lectura.transacciones_recientes(sesion.cliente_id, limite)
         return HechoVerificado(valor=valor, fuente="oro_operacional_transacciones_recientes", hora=ahora)
 
     def transaccion(
         self, sesion: SesionAutenticada, transaction_id: str
     ) -> HechoVerificado[Transaccion | None]:
-        ahora = self._exigir(sesion, NivelAcr.CONSULTA)
+        ahora = self._exigir(sesion, "transaccion")
         valor = self._lectura.transaccion(sesion.cliente_id, transaction_id)
         return HechoVerificado(valor=valor, fuente="oro_operacional_transacciones_recientes", hora=ahora)
 
     def estado_productos(self, sesion: SesionAutenticada) -> HechoVerificado[tuple[Producto, ...]]:
-        ahora = self._exigir(sesion, NivelAcr.CONSULTA)
+        ahora = self._exigir(sesion, "estado_productos")
         valor = self._lectura.productos(sesion.cliente_id)
         return HechoVerificado(valor=valor, fuente="oro_operacional_estado_productos", hora=ahora)
 
     def ficha_transaccion(
         self, sesion: SesionAutenticada, transaction_id: str
     ) -> HechoVerificado[dict[str, Any] | None]:
-        ahora = self._exigir(sesion, NivelAcr.CONSULTA)
+        ahora = self._exigir(sesion, "ficha_transaccion")
         valor = self._lectura.ficha_transaccion(sesion.cliente_id, transaction_id)
         return HechoVerificado(valor=valor, fuente="oro_operacional_ficha_transaccion", hora=ahora)
 
@@ -88,7 +93,7 @@ class Herramientas:
         confirmacion: Confirmacion,
         credito_provisional: bool = False,
     ) -> tuple[AccionVerificada, bool]:
-        ahora = self._exigir(sesion, NivelAcr.ACCION)
+        ahora = self._exigir(sesion, "abrir_disputa")
         self._exigir_conversacion(sesion, conversacion_id)
         transaccion = self._lectura.transaccion(sesion.cliente_id, transaccion_id)
         if transaccion is None:
@@ -121,7 +126,7 @@ class Herramientas:
         producto_id: str,
         confirmacion: Confirmacion,
     ) -> tuple[AccionVerificada, bool]:
-        ahora = self._exigir(sesion, NivelAcr.ACCION)
+        ahora = self._exigir(sesion, "bloquear_tarjeta")
         self._exigir_conversacion(sesion, conversacion_id)
         if all(p.product_id != producto_id for p in self._lectura.productos(sesion.cliente_id)):
             raise AccesoDenegado("el producto no es del cliente de la sesión")
@@ -147,7 +152,7 @@ class Herramientas:
         self, sesion: SesionAutenticada, conversacion_id: str, motivo: str, urgente: bool = False
     ) -> tuple[AccionVerificada, bool]:
         """Pasar a un humano no exige confirmación: nunca perjudica al cliente."""
-        ahora = self._exigir(sesion, NivelAcr.CONSULTA)
+        ahora = self._exigir(sesion, "escalar")
         self._exigir_conversacion(sesion, conversacion_id)
         cliente = sesion.cliente_id
 
