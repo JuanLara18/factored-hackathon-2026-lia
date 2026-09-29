@@ -31,8 +31,9 @@ Para desmontar: poner `proteccion_borrado = false` en el módulo `datos` y ejecu
 
 ## Datos en Google Cloud (D-30)
 
-Terraform crea los ocho datasets de BigQuery y el Cloud Run Job `pipeline-datos` (validaciones y dbt sobre
-BigQuery). `latam_seguridad` solo lo lee la cuenta del pipeline. Las tablas crudas deben existir en `latam_bronce` antes de correr el pipeline (las deja un proceso externo).
+Terraform crea dos datasets de BigQuery: `latam_bank`, con la capa como prefijo en el nombre de cada tabla
+(`bronce_`, `plata_`, `oro_`, `platino_`), y `latam_seguridad`, y el Cloud Run Job `pipeline-datos` (validaciones y dbt sobre
+BigQuery). `latam_seguridad` solo lo lee la cuenta del pipeline. Las tablas crudas deben existir en `latam_bank` con prefijo `bronce_` antes de correr el pipeline (las deja un proceso externo).
 
 Los servicios usan Vertex AI (Gemini y Model Garden como servicio) con el rol `roles/aiplatform.user`; la
 API `aiplatform` se habilita en el módulo `proyecto`. Si un modelo de Model Garden pide aceptar términos,

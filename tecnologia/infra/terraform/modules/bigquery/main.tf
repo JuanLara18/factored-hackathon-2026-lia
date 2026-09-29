@@ -1,12 +1,8 @@
+# Las capas van como prefijo en el nombre de cada tabla de latam_bank (bronce_, plata_,
+# plata_restringida_, oro_analitico_, oro_aprendizaje_, oro_operacional_, platino_).
 locals {
   datasets = toset([
-    "latam_bronce",
-    "latam_plata",
-    "latam_plata_restringida",
-    "latam_oro_analitico",
-    "latam_oro_aprendizaje",
-    "latam_oro_operacional",
-    "latam_platino",
+    "latam_bank",
     "latam_seguridad",
   ])
 }
