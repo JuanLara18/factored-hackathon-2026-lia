@@ -26,6 +26,12 @@ class AlmacenMemoria:
         actual = self._conversaciones[conversacion_id]
         self._conversaciones[conversacion_id] = actual.model_copy(update={"canal_actual": canal})
 
+    def actualizar(self, conversacion_id: str, estado: str, datos: dict[str, str]) -> None:
+        actual = self._conversaciones[conversacion_id]
+        self._conversaciones[conversacion_id] = actual.model_copy(
+            update={"estado": estado, "datos": dict(datos)}
+        )
+
     def reservar_efecto(self, llave: str, conversacion_id: str, numero: int, tipo: str) -> bool:
         if llave in self._efectos:
             return False
@@ -50,7 +56,8 @@ class AlmacenMemoria:
 
 ESQUEMA = """
 create table if not exists conversaciones (
-    id text primary key, cliente_ref text not null, estado text not null, canal_actual text not null);
+    id text primary key, cliente_ref text not null, estado text not null, canal_actual text not null,
+    datos jsonb not null default '{}');
 create table if not exists efectos (
     llave_idempotencia text primary key, conversacion_id text not null references conversaciones(id),
     numero_transicion int not null, tipo text not null, estado text not null, resultado jsonb);
@@ -67,22 +74,37 @@ class AlmacenPostgres:
 
     def crear_conversacion(self, conversacion: Conversacion) -> None:
         self._con.execute(
-            "insert into conversaciones values (%s, %s, %s, %s) on conflict do nothing",
-            (conversacion.id, conversacion.cliente_ref, conversacion.estado, conversacion.canal_actual.value),
+            "insert into conversaciones (id, cliente_ref, estado, canal_actual, datos)"
+            " values (%s, %s, %s, %s, %s) on conflict do nothing",
+            (
+                conversacion.id,
+                conversacion.cliente_ref,
+                conversacion.estado,
+                conversacion.canal_actual.value,
+                Jsonb(conversacion.datos),
+            ),
         )
 
     def cargar(self, conversacion_id: str) -> Conversacion | None:
         fila = self._con.execute(
-            "select id, cliente_ref, estado, canal_actual from conversaciones where id = %s",
+            "select id, cliente_ref, estado, canal_actual, datos from conversaciones where id = %s",
             (conversacion_id,),
         ).fetchone()
         if fila is None:
             return None
-        return Conversacion(id=fila[0], cliente_ref=fila[1], estado=fila[2], canal_actual=Canal(fila[3]))
+        return Conversacion(
+            id=fila[0], cliente_ref=fila[1], estado=fila[2], canal_actual=Canal(fila[3]), datos=fila[4]
+        )
 
     def cambiar_canal(self, conversacion_id: str, canal: Canal) -> None:
         self._con.execute(
             "update conversaciones set canal_actual = %s where id = %s", (canal.value, conversacion_id)
+        )
+
+    def actualizar(self, conversacion_id: str, estado: str, datos: dict[str, str]) -> None:
+        self._con.execute(
+            "update conversaciones set estado = %s, datos = %s where id = %s",
+            (estado, Jsonb(datos), conversacion_id),
         )
 
     def reservar_efecto(self, llave: str, conversacion_id: str, numero: int, tipo: str) -> bool:
