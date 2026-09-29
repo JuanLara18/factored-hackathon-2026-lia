@@ -6,6 +6,7 @@ Se usa el punto de compatibilidad con OpenAI de Vertex con un token que se refre
 
 from __future__ import annotations
 
+import asyncio
 import time
 from collections.abc import Generator, Mapping
 from dataclasses import dataclass
@@ -32,6 +33,8 @@ UBICACION_DEFECTO = "global"
 # se usa 2.5 hasta pasar al proveedor nativo `google`, que sí devuelve las firmas.
 MODELO_DEFECTO = "gemini-2.5-flash-lite"
 REINTENTOS = 1
+ESPERA_REINTENTO = 1.5  # segundos antes de reintentar
+TEMPERATURA_REINTENTO = 0.8  # a temperatura 0 la misma llamada malformada saldría igual
 FINISH_MALFORMADO = "malformed_function_call"
 ALCANCE = "https://www.googleapis.com/auth/cloud-platform"
 
@@ -139,6 +142,10 @@ class ModeloGeap(OpenAIChatModel):
                     raise
                 intento += 1
                 MEDIDOR.reintentos += 1
+                model_settings = cast(
+                    ModelSettings, {**(model_settings or {}), "temperature": TEMPERATURA_REINTENTO}
+                )
+                await asyncio.sleep(ESPERA_REINTENTO)
                 continue
             MEDIDOR.segundos += time.monotonic() - t0
             MEDIDOR.entrada += respuesta.usage.input_tokens

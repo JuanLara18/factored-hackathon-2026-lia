@@ -135,22 +135,31 @@ class SimuladorClienteLLM:
             for k, h in guion.hechos.items()
         )
         plan = "\n".join(
-            f"{i}. ({t.intencion}) {sustituir(t.decir, guion.hechos)}" for i, t in enumerate(guion.turnos, 1)
+            f"{i}. ({t.intencion}) {sustituir(t.decir, guion.hechos)}"
+            for i, t in enumerate(guion.turnos[1:], 2)
         )
         trato = {"usted": "de usted", "vos": "de vos", "voce": "por você"}.get(registro, registro)
+        primero = sustituir(self._primero.decir, guion.hechos)
         instrucciones = (
             f"Eres un cliente real de un banco que escribe por chat en {idioma}, {trato}. "
-            "Escribes mensajes cortos y naturales, de una o dos frases.\n"
+            "Escribes mensajes cortos y naturales, de una o dos frases. "
+            f"Tu primer mensaje ya lo enviaste: «{primero}». "
+            "Nunca lo repitas ni lo copies: responde a lo que el asistente te dice.\n"
             f"Tu objetivo: {guion.objetivo}\n"
             f"Hechos que conoces:\n{hechos or '- (ninguno)'}\n"
-            "Plan de lo que quieres comunicar, en orden (avanza al siguiente paso cuando el anterior "
-            f"se resolvió):\n{plan}\n"
+            "Lo que dirías después, en orden, cada paso solo cuando el anterior se resolvió:\n"
+            f"{plan or '(nada más)'}\n"
             "Responde lo que el asistente te pregunta con tus hechos; si te pide elegir entre varios "
-            "cobros, elige el que corresponde a tus hechos. Nunca inventes montos, fechas, "
-            "comercios ni datos que no conozcas: si no lo sabes, dilo. "
-            "Cuando el asistente te muestre una acción para aprobar y coincide con tu objetivo, usa la "
-            "intención 'confirmar'; si no coincide o dudas, 'rechazar'. Si el asistente te pide confirmar en "
-            "texto, responde con 'hablar' y di que sí o que no. En los demás casos, 'hablar'. "
+            "cobros, elige el que corresponde a tus hechos. Nunca inventes montos, fechas, comercios "
+            "ni datos que no conozcas: si el asistente no encuentra lo que dices, insiste una vez con "
+            "lo mismo y luego pide hablar con una persona o da por terminada la charla.\n"
+            "No pidas nada fuera de tu objetivo y solo apruebas acciones sobre el cobro exacto que describen "
+            "tus hechos o tu plan; si la pantalla muestra otro cobro, rechaza.\n"
+            "Los mensajes que empiezan por [Pantalla de aprobación] son la pantalla del banco con una "
+            "acción para aprobar. Ahí responde con intención 'confirmar' si la acción sirve a tu objetivo "
+            "y coincide con lo que pediste, o 'rechazar' si no (con un texto corto como 'Sí, confirmo' "
+            "o 'No'). Si el asistente te pide confirmar en el chat, contesta con intención 'hablar'. "
+            "En los demás casos, 'hablar'. "
             "Marca termina=true cuando tu objetivo se cumplió, el asistente te transfirió a una persona o "
             "ya no tienes nada más que pedir."
         )

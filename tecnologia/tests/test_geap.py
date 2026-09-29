@@ -1,5 +1,6 @@
 import httpx
 import pytest
+from latam_tecnologia.canales import geap
 from latam_tecnologia.canales.geap import ModeloGeap
 from openai import AsyncOpenAI
 from pydantic_ai import Agent
@@ -18,6 +19,11 @@ def _cuerpo(finish: str, texto: str = "hola") -> dict[str, object]:
         ],
         "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
     }
+
+
+@pytest.fixture(autouse=True)
+def _sin_espera(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(geap, "ESPERA_REINTENTO", 0)
 
 
 def _agente(respuestas: list[httpx.Response]) -> tuple[Agent[None, str], list[int]]:
@@ -42,6 +48,24 @@ def test_reintenta_una_vez_la_llamada_malformada() -> None:
     )
     assert agente.run_sync("hola").output == "hola"
     assert len(llamadas) == 2
+
+
+def test_el_reintento_sube_la_temperatura() -> None:
+    temperaturas: list[float | None] = []
+
+    def manejar(request: httpx.Request) -> httpx.Response:
+        import json
+
+        temperaturas.append(json.loads(request.content).get("temperature"))
+        if len(temperaturas) == 1:
+            return httpx.Response(200, json=_cuerpo("malformed_function_call", ""))
+        return httpx.Response(200, json=_cuerpo("stop"))
+
+    cliente = httpx.AsyncClient(transport=httpx.MockTransport(manejar))
+    sdk = AsyncOpenAI(base_url="https://ejemplo.test/v1", api_key="x", http_client=cliente, max_retries=0)
+    agente = Agent(ModeloGeap("google/x", provider=OpenAIProvider(openai_client=sdk)))
+    agente.run_sync("hola", model_settings={"temperature": 0.0})
+    assert temperaturas == [0.0, geap.TEMPERATURA_REINTENTO]
 
 
 def test_reintenta_una_vez_un_5xx() -> None:

@@ -355,3 +355,30 @@ def test_simulador_cliente_llm_abre_con_el_guion_y_luego_conversa() -> None:
     segundo = sim.siguiente(ContextoSimulador("¿Cuál de los tres cobros?", False, 1))
     assert segundo is not None and segundo.texto == "El de 88000"
     assert "TX-" not in vistos[0]  # nunca ve identificadores ni resultados de herramientas
+
+
+def test_exporta_trazas_a_casos_de_evaluacion() -> None:
+    from latam_ia.evaluacion.servicio_evaluacion import casos_desde_trazas, puntaje_local
+
+    trazas = [
+        {
+            "escenario": "X",
+            "categoria": "N",
+            "esperado_herramientas": ["bloquear_tarjeta", "abrir_disputa"],
+            "corridas": [
+                {
+                    "estado": "falla",
+                    "turnos": [{"rol": "cliente", "texto": "hola"}, {"rol": "agente", "texto": "buenas"}],
+                    "herramientas": [
+                        {"nombre": "listar_transacciones"},
+                        {"nombre": "bloquear_tarjeta"},
+                    ],
+                }
+            ],
+        }
+    ]
+    (fila,) = casos_desde_trazas(trazas)
+    assert [t["tool_name"] for t in fila["predicted_trajectory"]] == ["bloquear_tarjeta"]
+    assert fila["response"] == "buenas"
+    assert puntaje_local(fila["predicted_trajectory"], fila["reference_trajectory"]) == (0.0, 0.0)
+    assert puntaje_local(fila["reference_trajectory"], fila["reference_trajectory"]) == (1.0, 1.0)
