@@ -8,6 +8,7 @@ El botón de persona no pasa por el modelo: llama a `escalar` y responde en el a
 from __future__ import annotations
 
 import json
+import os
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ from typing import Any
 
 from ag_ui.core import RunFinishedInterruptOutcome
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from latam_comun.dominio import Canal
@@ -115,6 +117,20 @@ def _final(product_id: str) -> str:
     return re.sub(r"\D", "", product_id).rjust(4, "0")[-4:]
 
 
+ORIGENES_SITIO = (
+    "https://latam-bank-hackaton-2026.web.app",
+    "https://latam-bank-hackaton-2026.firebaseapp.com",
+    "http://localhost:5000",
+    "http://localhost:8765",
+)
+
+
+def origenes_cors(entorno: dict[str, str] | None) -> list[str]:
+    """Orígenes del sitio que pueden llamar a la API; `LATAM_CORS_ORIGINS` (con comas) los reemplaza."""
+    valor = (entorno if entorno is not None else dict(os.environ)).get("LATAM_CORS_ORIGINS", "")
+    return [o.strip() for o in valor.split(",") if o.strip()] or list(ORIGENES_SITIO)
+
+
 def crear_app(
     *,
     demo: Demo | None = None,
@@ -123,6 +139,12 @@ def crear_app(
     web_dir: Path | None = WEB_DIR,
 ) -> FastAPI:
     app = FastAPI()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origenes_cors(entorno),
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
     demo = demo or crear_demo(entorno)
     if modelo is None:
         modelo, nombre_modelo = crear_modelo(entorno)
