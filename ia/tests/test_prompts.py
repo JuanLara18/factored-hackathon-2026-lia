@@ -5,26 +5,13 @@ from pathlib import Path
 import pytest
 from latam_ia.prompts import ErrorPrompt, cargar_biblioteca
 from latam_ia.prompts.biblioteca import RAIZ_PROMPTS
+from latam_ia.prompts.lexicos import frases_prohibidas
 from latam_ia.registro.cargador import RAIZ_IA
 
 BIB = cargar_biblioteca()
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 
-# Léxicos de 2.5.5 que un prompt no debe contener ni como ejemplo.
-FRASES_PROHIBIDAS = [
-    "le devolveremos",
-    "se le reembolsará",
-    "no perderá su dinero",
-    "garantizamos",
-    "usted hizo la compra",
-    "fue usted",
-    "soy una persona",
-    "mis instrucciones dicen",
-    "foi você",
-    "vamos devolver",
-    "será reembolsado",
-    "le conviene demandar",
-]
+FRASES_PROHIBIDAS = frases_prohibidas()
 PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----BEGIN", r"[\w.]+@[\w.]+\.\w+"]
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
