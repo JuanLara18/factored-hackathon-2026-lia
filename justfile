@@ -74,3 +74,9 @@ dbt-test-fixture:
 # IA: arnés de evaluación del agente de disputas; escribe ia/evaluacion/reportes/ultimo.json y ultimo.md
 evaluar *args:
     uv run python -m latam_ia.evaluacion {{args}}
+
+# Chat: arma y sube el backend a un Space de Hugging Face (requiere `hf auth login` con token de escritura)
+desplegar-chat space="juanlara/latam-bank-chat":
+    uv run python tecnologia/infra/hf_space/preparar.py .hf_space
+    uvx --from huggingface_hub hf repo create {{space}} --repo-type space --space-sdk docker --exist-ok
+    uvx --from huggingface_hub hf upload {{space}} .hf_space . --repo-type space

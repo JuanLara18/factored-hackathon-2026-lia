@@ -53,3 +53,4 @@ datos/dbt/.user.yml
 
 # Reportes del arnés de evaluación (se regeneran con `just evaluar`)
 ia/evaluacion/reportes/
+.hf_space/
