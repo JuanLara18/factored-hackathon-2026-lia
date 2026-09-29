@@ -28,5 +28,5 @@ validar:
 
 # Carga supuesta (D-30), una sola vez: espejo local del bucket a latam_bank.bronce_<archivo>
 cargar-bronce bucket:
-    aws s3 sync s3://{{bucket}}/data/ data/espejo/ --profile latam-organizador
+    aws s3 sync s3://{{bucket}}/data/ data/espejo/
     uv run python -m latam_datos.carga_externa
