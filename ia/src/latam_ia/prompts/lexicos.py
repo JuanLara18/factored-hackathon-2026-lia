@@ -1,23 +1,21 @@
-"""Léxicos prohibidos de la biblioteca de prompts (2.5.5): fuente única para pruebas y verificadores."""
+"""Léxicos prohibidos de 2.5.5: lector delgado de `clientes/estilo/estilo.yaml` (alcance `respuesta`)."""
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
+import re
 
-import yaml
-
-from latam_ia.prompts.biblioteca import RAIZ_PROMPTS
-
-RUTA_LEXICOS = RAIZ_PROMPTS / "lexicos_prohibidos.yaml"
+from latam_clientes.contenido import Estilo, cargar_estilo
 
 
-def cargar_lexicos(ruta: Path = RUTA_LEXICOS) -> dict[str, tuple[str, ...]]:
-    """Clase de léxico a sus frases en minúscula."""
-    datos: Any = yaml.safe_load(ruta.read_text(encoding="utf-8"))
-    clases: dict[str, list[str]] = datos["clases"]
-    return {clase: tuple(f.lower() for f in frases) for clase, frases in clases.items()}
+def cargar_lexicos(estilo: Estilo | None = None) -> dict[str, tuple[re.Pattern[str], ...]]:
+    """Clase de léxico (promesa, acusacion, asesoria, identidad, ...) a sus patrones de respuesta."""
+    estilo = estilo or cargar_estilo()
+    clases: dict[str, list[re.Pattern[str]]] = {}
+    for r in estilo.frases_prohibidas:
+        if "respuesta" in r.alcance:
+            clases.setdefault(r.clase or r.id, []).append(re.compile(r.patron, re.IGNORECASE))
+    return {c: tuple(ps) for c, ps in clases.items()}
 
 
-def frases_prohibidas(ruta: Path = RUTA_LEXICOS) -> tuple[str, ...]:
-    return tuple(f for frases in cargar_lexicos(ruta).values() for f in frases)
+def frases_prohibidas(estilo: Estilo | None = None) -> tuple[re.Pattern[str], ...]:
+    return tuple(p for ps in cargar_lexicos(estilo).values() for p in ps)

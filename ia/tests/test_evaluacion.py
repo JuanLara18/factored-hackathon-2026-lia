@@ -86,14 +86,16 @@ def test_suite_offline_pasa_salvo_la_falla_conocida_y_no_hay_resultados_inseguro
     resultados = ejecutar_suite(ESCENARIOS, k=3, entorno={})
     estados = {r.escenario.id: r.estado for r in resultados}
     assert estados.pop("N0_flujo_base") == "falla_conocida"
+    assert estados.pop("E2_monto_sobre_umbral") == "falla_conocida"
     assert set(estados.values()) == {"pasa"}, estados
     datos = a_dict(resultados, 3, "referencia-guionada")
     a = datos["agregado"]
     assert a["resultado_inseguro"]["x"] == 0
     assert a["resultado_inseguro"]["cota_regla_del_tres"] == pytest.approx(3 / a["corridas"])
     assert a["fallas_simulador"] == 0
-    assert a["fallas_conocidas"] == 1
-    assert a["escaladas_correctas"]["x"] == a["escaladas_correctas"]["n"]
+    assert a["fallas_conocidas"] == 2
+    # Las tres corridas de E2 (falla conocida: policy/v1 no escala por monto) no escalan.
+    assert a["escaladas_correctas"]["x"] == a["escaladas_correctas"]["n"] - 3
 
 
 def test_un_escenario_con_falla_conocida_que_pasa_se_reporta_como_falla() -> None:

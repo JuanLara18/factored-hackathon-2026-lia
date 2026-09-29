@@ -45,9 +45,8 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 
 1. **Tecnología:** `abrir_disputa` del agente debe pasar el crédito provisional que decide el motor (falla N0 del
    arnés); herramienta para leer casos abiertos (escenario A5); web del chat sobre el spike S3.
-2. **IA:** escenario E2 (monto sobre umbral) ahora que existe `policy/v1`; IA-3.1 e IA-7.2.
-3. **Deuda técnica:** unificar las frases prohibidas (hoy `clientes/estilo/estilo.yaml` y
-   `ia/prompts/lexicos_prohibidos.yaml`, la prueba exige ambas); mover el enum `Estado` del motor a `comun/`
+2. **IA:** E2 (monto sobre umbral) ya está como `falla_conocida`: `policy/v1` no escala por monto, decide Gobierno; IA-3.1 e IA-7.2.
+3. **Deuda técnica:** (frases prohibidas ya unificadas en `clientes/estilo/estilo.yaml`); mover el enum `Estado` del motor a `comun/`
    para que IA y Clientes no dependan de Tecnología.
 4. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
 
