@@ -4,6 +4,16 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 
 ---
 
+## 28 de septiembre de 2026
+
+**Cerrado**
+- Repositorio privado con carpetas por cara, ramas `main` y `develop`, CI en verde y contratos del dominio.
+- D-29: WhatsApp y teléfono reales en modo de prueba, todo en Google Cloud, pago real menor a US$20.
+- Traspaso entre sesiones en `presidencia/ESTADO.md`.
+
+**Bloquea**
+- Pasos del usuario: prueba de Google Cloud y `gcloud auth`, Meta, Twilio, preguntas a organizadores.
+
 ## 27 de septiembre de 2026 (cierre)
 
 **Cerrado**

@@ -4,6 +4,8 @@ Solución para la **Factored AI & Data Hackathon 2026**: un banco inventado, LAT
 **chat, WhatsApp y voz** (navegador y teléfono) en **español y portugués** la recepción de disputas por
 cargos no reconocidos, con un núcleo determinista que decide y modelos que entienden y redactan.
 
+**¿Sesión nueva?** Empieza por [`presidencia/ESTADO.md`](presidencia/ESTADO.md): dónde estamos y qué sigue.
+
 ## El repositorio es el organigrama
 
 Cada carpeta de primer nivel es una cara de LATAM Bank y su dueña está en `.github/CODEOWNERS`.
