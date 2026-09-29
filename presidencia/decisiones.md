@@ -12,15 +12,17 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 - **Decisión:** Google Cloud es el único entorno de ejecución y el origen de toda cifra oficial. La carga
   del dataset queda fuera del alcance: se supone un proceso externo que baja el bucket del organizador
-  y deja cada archivo como tabla cruda en el dataset `latam_bronce` de BigQuery, con el nombre del
-  archivo y todas las columnas como texto. Nuestro trabajo empieza en esas tablas: plata, oro y platino
+  y deja cada archivo como tabla cruda `bronce_<archivo>` de BigQuery, con todas las columnas como
+  texto. Todas las capas viven en un solo dataset, `latam_bank`, con la capa como prefijo del nombre de la
+  tabla (`bronce_`, `plata_`, `oro_`, `platino_`); aparte solo `latam_seguridad` para la llave de
+  tokenización. Proyecto `latam-bank-hackaton-2026`. Nuestro trabajo empieza en esas tablas: plata, oro y platino
   en BigQuery con dbt sobre BigQuery, el pipeline como Cloud Run Job y los modelos (generador, juez y
   agentes) en Vertex AI, con Gemini y modelos abiertos de Model Garden como servicio en lugar de Ollama
   local. Lo local queda solo para pruebas con *fixtures* sintéticos y para el desarrollo.
 - **Alternativas:** mantener los dos perfiles con el local como referencia (D-28, DP-DAT-01); se descarta
   por duplicar trabajo y por la instrucción de la presidencia.
 - **Por qué:** una sola plataforma que se pueda demostrar y auditar; el crédito de prueba cubre el costo.
-  La reproducibilidad (PD6) se conserva con huellas y manifiesto encadenado en `latam_platino`.
+  La reproducibilidad (PD6) se conserva con huellas y manifiesto encadenado en las tablas `platino_`.
 - **Modifica:** D-28 (se retira el perfil local de referencia y la paridad R-DAT-03), D-29 (Ollama local
   pasa a Vertex AI), R-DAT-01 de la definición de Datos y las historias de ingesta DAT-1.1 a DAT-1.6, que se
   reducen a validar las tablas crudas con las reglas Q-BRZ que sigan aplicando.
