@@ -17,6 +17,8 @@ from pathlib import Path, PurePosixPath
 EXTENSIONES_PROHIBIDAS = frozenset(
     {".csv", ".parquet", ".duckdb", ".pem", ".key", ".wav", ".mp3", ".m4a", ".ogg", ".flac"}
 )
+# Seeds de dbt hechos por el equipo (dominios canónicos, directorio inventado): sin datos del organizador.
+CSV_PERMITIDOS = ("datos/dominios/",)
 CARPETAS_PROHIBIDAS = frozenset({"data", "runs", "secretos", "audio", "materializados"})
 PATRONES_CONTENIDO: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("llave-de-acceso-aws", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
@@ -43,7 +45,8 @@ def revisar_ruta(ruta: str) -> list[Hallazgo]:
     p = PurePosixPath(ruta.replace("\\", "/"))
     nombre = p.name.lower()
     hallazgos: list[Hallazgo] = []
-    if p.suffix.lower() in EXTENSIONES_PROHIBIDAS:
+    csv_permitido = p.suffix.lower() == ".csv" and str(p).startswith(CSV_PERMITIDOS) and len(p.parts) == 3
+    if p.suffix.lower() in EXTENSIONES_PROHIBIDAS and not csv_permitido:
         hallazgos.append(Hallazgo(ruta, f"extension {p.suffix.lower()} prohibida (datos o llaves)"))
     if CARPETAS_PROHIBIDAS & {parte.lower() for parte in p.parts[:-1]}:
         hallazgos.append(Hallazgo(ruta, "carpeta de datos, corridas, audio o secretos"))

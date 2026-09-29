@@ -61,3 +61,9 @@ def _versionadas(raiz: Path) -> list[str]:
     from latam_gobierno.guardas import _rutas_versionadas  # pyright: ignore[reportPrivateUsage]
 
     return [r for r in _rutas_versionadas(raiz) if not r.endswith(("guardas.py", "test_guardas_repo.py"))]
+
+
+def test_seeds_del_equipo_permitidos_solo_en_dominios() -> None:
+    assert revisar_ruta("datos/dominios/dominios_canonicos.csv") == []
+    assert revisar_ruta("datos/dominios/sub/otro.csv") != []
+    assert revisar_ruta("datos/fixtures/clientes.csv") != []
