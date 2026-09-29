@@ -209,8 +209,11 @@ def test_nivel_y_vigencia() -> None:
     with pytest.raises(AccesoDenegado):
         m.h.transacciones_recientes(_sesion().model_copy(update={"expira": AHORA - timedelta(seconds=1)}))
     m.motor.abrir("k1", _sesion(), Canal.CHAT)
+    consulta = _sesion(nivel=NivelAcr.CONSULTA)
+    accion, _ = m.h.bloquear_tarjeta(consulta, "k1", "p1", _conf("bloquear_tarjeta"))  # D-31: acr1 basta
+    assert accion.exito
     with pytest.raises(AccesoDenegado):
-        m.h.bloquear_tarjeta(_sesion(nivel=NivelAcr.CONSULTA), "k1", "p1", _conf("bloquear_tarjeta"))
+        m.h.abrir_disputa(consulta, "k1", "t1", "fraude", _conf())  # radicar sigue en acr2
 
 
 def test_agente_testmodel_lee_solo_lo_del_cliente() -> None:
