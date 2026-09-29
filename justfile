@@ -14,6 +14,10 @@ check:
 test:
     uv run pytest -q
 
+# Chat web local (TEC-3): http://localhost:8765/ ; con GEMINI_API_KEY usa Gemini, sin ella un guion determinista
+chat puerto="8765":
+    uv run uvicorn latam_tecnologia.canales.chat_web:crear_app_desde_entorno --factory --port {{puerto}}
+
 # Servicios locales por perfil de Compose (TEC-10.1): nucleo, voz, llm-local, observabilidad
 up:
     docker compose --profile nucleo --profile observabilidad up -d
