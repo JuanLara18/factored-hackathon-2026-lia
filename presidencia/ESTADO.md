@@ -10,7 +10,7 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 |---|---|---|
 | Plataforma | Todo en Google Cloud (D-30). Proyecto `latam-bank-hackaton-2026` en **sandbox de BigQuery**, sin facturación: la cuenta de facturación está cerrada | [decisiones.md](decisiones.md) |
 | Datos | Bronce, plata, oro y platino en BigQuery; manifiesto encadenado; reglas Q-BRZ; dbt con 56 pruebas en verde; siete fichas de oro operacional y 12 dominios canónicos | [datos/README.md](../datos/README.md), [LIMITACIONES](../datos/LIMITACIONES.md) |
-| Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado | `gobierno/src/latam_gobierno/guardas.py` |
+| Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado; `policy/v1` con huella (escalamiento, crédito provisional, riesgo, ACR por acción, traspaso) que el motor lee | `gobierno/src/latam_gobierno/guardas.py` |
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
 | Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
 | IA | IA-7.1 (registro de agentes y config del gateway) e IA-9.1 (biblioteca de prompts) sobre Gemini gratuito; fábrica de modelos con `TestModel` sin llave | [ia/README.md](../ia/README.md) |
@@ -43,12 +43,10 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 
 ## Siguientes historias, en orden
 
-1. **Gobierno:** `policy/v1` que reemplace los supuestos del motor (escalar en `declined`, `failed`, `reversed`,
-   motivo urgente o sin producto; crédito provisional hasta US$200) y el umbral de riesgo (zona gris desde 25, alto sobre 30).
-2. **IA-3.1 e IA-7.2:** redacción y renderizador por locale; hojas de vida generadas.
-3. **IA-5.1:** arnés de evaluación con verificadores deterministas sobre el agente de disputas.
-4. **Clientes:** CLI-1.1 a CLI-1.3 (matriz de estados, guía de estilo, plantillas críticas).
-5. **Tecnología:** web del chat sobre el spike S3 conectada al agente de disputas.
+1. **IA-3.1 e IA-7.2:** redacción y renderizador por locale; hojas de vida generadas.
+2. **IA-5.1:** arnés de evaluación con verificadores deterministas sobre el agente de disputas.
+3. **Clientes:** CLI-1.1 a CLI-1.3 (matriz de estados, guía de estilo, plantillas críticas).
+4. **Tecnología:** web del chat sobre el spike S3 conectada al agente de disputas.
 
 ## Cómo se trabaja
 

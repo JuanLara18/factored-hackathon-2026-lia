@@ -8,6 +8,7 @@ dependencies = [
     "httpx>=0.28.1",
     "google-cloud-bigquery>=3.45.2",
     "latam-comun",
+    "latam-gobierno",
     "psycopg[binary]>=3.3.6",
     "pydantic-ai-slim[ag-ui]>=2.51.0",
     "uvicorn>=0.54.0",

@@ -1,0 +1,7 @@
+# Bandas de fraud_score (R-GOB-26). dbt duplica los dos cortes en datos/dbt/dbt_project.yml;
+# una prueba exige que coincidan.
+punto_operacion: balanceado
+alto_sobre: 30
+zona_gris_desde: 25
+fundamento: R-GOB-26
+razon: "Sobre 30 el puntaje separa fraude (precisión 1,0 en la muestra); desde 25 o nulo pide revisión humana. Solo suma protección."

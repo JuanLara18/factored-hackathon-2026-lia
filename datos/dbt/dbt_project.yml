@@ -15,6 +15,7 @@ vars:
   as_of: "2026-06-18 00:00:00"
   ventana_dias: 180
   # Bandas de riesgo (R-DAT-39): sobre 30 es alto (30,0 es el máximo en legítimas); desde zona_gris_desde, revisión humana
+  # Duplican gobierno/politica/v1/riesgo.yaml (fuente); gobierno/tests/test_politica.py exige que coincidan
   riesgo_alto_sobre: 30
   riesgo_zona_gris_desde: 25
   directorio_version: "1.0.0"

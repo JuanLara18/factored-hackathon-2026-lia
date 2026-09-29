@@ -1,0 +1,9 @@
+# Nivel de autenticación mínimo por acción (R-GOB-25). Con `acr2` también vale una sesión superior.
+acciones:
+  transacciones_recientes: {acr: acr1, fundamento: R-GOB-25, razon: "Las fichas y estados se consultan con sesión de confianza del canal."}
+  transaccion: {acr: acr1, fundamento: A-02, razon: "Ubicar el cargo y mostrar la ficha enmascarada pide consulta."}
+  estado_productos: {acr: acr1, fundamento: A-03, razon: "Estados de productos: consulta."}
+  ficha_transaccion: {acr: acr1, fundamento: A-02, razon: "La ficha de la transacción es de consulta."}
+  bloquear_tarjeta: {acr: acr2, fundamento: A-06, razon: "Más estricto que A-06 (acr1) hasta que Gobierno decida bajarlo: el motor ya exigía acr2 y una prueba lo fija."}
+  abrir_disputa: {acr: acr2, fundamento: A-07, razon: "Radicar crea efectos legales y es la puerta del fraude de primera parte."}
+  escalar: {acr: acr1, fundamento: A-13, razon: "Pasar a un humano nunca perjudica; la definición lo permite sin sesión, el motor exige al menos consulta."}

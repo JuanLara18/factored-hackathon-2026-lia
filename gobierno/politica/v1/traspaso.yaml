@@ -1,0 +1,9 @@
+# Disparadores de traspaso a un humano. `en_motor: false` marca los que aún no ejecuta el motor.
+disparadores:
+  - {id: TRA-01, evento: transferencia_inmediata_no_reconocida, prioridad: maxima, en_motor: true, fundamento: R-GOB-28, razon: "Traspaso inmediato con paquete completo y sin formularios."}
+  - {id: TRA-02, evento: transaccion_no_disputable, prioridad: normal, en_motor: true, fundamento: A-04, razon: "Cargo rechazado, fallido o revertido que el cliente insiste en disputar."}
+  - {id: TRA-03, evento: producto_no_encontrado, prioridad: normal, en_motor: true, fundamento: A-21, razon: "Sin producto verificable no hay acción."}
+  - {id: TRA-04, evento: cliente_pide_humano, prioridad: normal, en_motor: false, fundamento: A-13, razon: "Se atiende en el turno siguiente y sin resistencia (R-GOB-35)."}
+  - {id: TRA-05, evento: zona_gris_de_riesgo, prioridad: normal, en_motor: false, fundamento: R-GOB-26, razon: "No cambia la ruta: marca revisión humana del riesgo."}
+  - {id: TRA-06, evento: aclaraciones_fallidas, prioridad: normal, en_motor: false, umbral: 2, fundamento: R-GOB-27, razon: "Dos aclaraciones fallidas en el punto balanceado llevan a un humano."}
+  - {id: TRA-07, evento: reclamo_fuera_de_plazo, prioridad: normal, en_motor: false, fundamento: A-12, razon: "Un reclamo posiblemente fuera de plazo siempre pasa a revisión humana (R-GOB-23)."}

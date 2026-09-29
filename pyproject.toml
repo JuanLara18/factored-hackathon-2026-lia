@@ -46,5 +46,5 @@ typeCheckingMode = "strict"
 include = ["comun/src", "clientes/src", "ia/src", "datos/src", "tecnologia/src", "gobierno/src"]
 
 [tool.pytest.ini_options]
-testpaths = ["comun/tests", "tecnologia/tests", "datos/tests", "ia/tests", "tests"]
+testpaths = ["comun/tests", "tecnologia/tests", "gobierno/tests", "datos/tests", "ia/tests", "tests"]
 markers = ["integracion: humo contra BigQuery real (requiere --integracion y LATAM_GCP_PROJECT)"]
