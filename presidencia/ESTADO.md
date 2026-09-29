@@ -71,13 +71,12 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 
 ## En curso (ramas sin fusionar)
 
-Dos subagentes quedaron trabajando al cerrar la sesión. Si la rama ya está en `origin`, revisarla, correr
+Un subagente quedó trabajando al cerrar la sesión (la ficha visual en modo runtime y `desplegar.py --recurso` ya están en `develop`, sin desplegar). Si la rama ya está en `origin`, revisarla, correr
 `just check` y fusionarla a `develop`; si no, retomarla desde su worktree.
 
 | Rama | Worktree | Qué hace |
 |---|---|---|
 | `feature/ia-ia-5-3-calidad-geap` | `../fh-calidad` | simulador de cliente con Gemini, reintento ante `malformed_function_call`, prompt 1.1.0 (trabajador 0.2.0), evaluación real de los 23 escenarios en GEAP (tope 400 llamadas) y GenAI Evaluation Service |
-| `feature/tecnologia-tec-5-ficha-runtime` | `../fh-ficha` | ficha visual y eventos de herramientas en modo Agent Runtime; el despliegue actualiza el recurso con `--recurso` en vez de crear uno nuevo |
 
 Tras fusionarlas: redesplegar el agente (`desplegar.py --recurso <actual>`) y el chat (`just desplegar-chat-run`,
 con `LATAM_AGENT_RUNTIME_RECURSO`), y probar una disputa en el sitio.
@@ -94,7 +93,7 @@ con `LATAM_AGENT_RUNTIME_RECURSO`), y probar una disputa en el sitio.
 
 ## Cómo se trabaja
 
-Worktrees vivos: `../fh-datos` (guarda la copia local del bucket en `data/`, fuera de git) y los dos de la tabla
+Worktrees vivos: `../fh-datos` (guarda la copia local del bucket en `data/`, fuera de git) y el de la tabla
 "En curso". La carpeta `../fh-tec` quedó huérfana (git ya no la registra; se puede borrar a mano).
 
 Ramas `feature/<cara>-<historia>-<tema>` desde `develop`, una por subagente en su propio worktree (`../fh-<tema>`);
