@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat de disputas, LATAM Bank</title>
+<meta name="description" content="Chat de demostración para resolver un cargo que no reconoce, con un asistente de inteligencia artificial.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="salto" href="#principal">Ir al contenido</a>
+<header class="cabecera">
+  <div class="contenedor">
+    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="index.html">Inicio</a>
+      <a href="reclamos.html">Reclamos</a>
+      <a href="transparencia.html">Transparencia</a>
+      <a href="privacidad.html">Privacidad</a>
+      <a href="chat.html" aria-current="page">Chat</a>
+    </nav>
+  </div>
+</header>
+<main id="principal">
+  <div class="contenedor pagina">
+    <p class="sobretitulo">Chat web</p>
+    <h1>Hable con el asistente</h1>
+    <p class="entrada">Demostración con clientes ficticios. Elija uno y cuéntele al asistente qué cargo no reconoce.</p>
+    <div id="sin-api" class="sin-api oculto" role="status">
+      <h2>El chat en vivo no está conectado</h2>
+      <p>Esta demostración necesita un servidor. En este momento no se puede llegar a él desde esta página.</p>
+      <p>La demostración en vivo corre de forma local: en el repositorio, ejecute <code>just chat</code> y abra <code>http://localhost:8765</code>. También puede indicar otra dirección en <code>config.js</code>.</p>
+      <p class="nota">Mientras tanto, puede leer <a href="reclamos.html">cómo funciona un reclamo</a>.</p>
+    </div>
+    <div id="caja" class="chat-caja">
+      <div class="chat-cabecera">
+        <p id="aviso-ia" class="ia" role="note">Asistente de IA</p>
+        <button id="persona" type="button">Hablar con una persona</button>
+      </div>
+      <div class="chat-cuerpo">
+        <section id="inicio" aria-labelledby="inicio-titulo">
+          <h2 id="inicio-titulo">Demostración</h2>
+          <p id="origen" class="nota"></p>
+          <div class="campo">
+            <label for="cliente" id="lbl-cliente">Cliente de demostración</label>
+            <select id="cliente"></select>
+          </div>
+          <button id="iniciar" type="button" class="primario">Iniciar conversación</button>
+        </section>
+        <section id="conversacion" class="oculto" aria-label="Conversación">
+          <div id="chat" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+          <p id="estado" class="nota" role="status"></p>
+          <form id="formulario" autocomplete="off">
+            <label for="mensaje" id="lbl-mensaje" class="visualmente-oculto">Escriba su mensaje</label>
+            <input id="mensaje" type="text" maxlength="500" required>
+            <button id="enviar" type="submit" class="primario">Enviar</button>
+          </form>
+        </section>
+      </div>
+    </div>
+    <dialog id="aprobacion" aria-labelledby="ap-texto" aria-describedby="ap-vence">
+      <p id="ap-texto"></p>
+      <p id="ap-vence" class="nota"></p>
+      <div class="acciones">
+        <button id="ap-si" type="button" class="primario"></button>
+        <button id="ap-no" type="button"></button>
+        <button id="ap-renovar" type="button" class="oculto"></button>
+      </div>
+    </dialog>
+    <p id="anuncio" class="visualmente-oculto" role="status" aria-live="assertive"></p>
+  </div>
+</main>
+<footer class="pie">
+  <div class="contenedor">
+    <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026</p>
+    <nav aria-label="Información">
+      <a href="reclamos.html">Reclamos</a>
+      <a href="transparencia.html">Transparencia</a>
+      <a href="privacidad.html">Privacidad</a>
+    </nav>
+  </div>
+</footer>
+<script src="config.js"></script>
+<script src="assets/chat.js" defer></script>
+</body>
+</html>

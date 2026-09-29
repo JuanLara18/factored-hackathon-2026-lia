@@ -292,3 +292,12 @@ def test_pagina_estatica_accesible_y_sin_scripts_en_linea(entorno: Entorno) -> N
     js = (WEB / "chat.js").read_text(encoding="utf-8")
     assert "innerHTML" not in js and "eval(" not in js  # solo textContent
     assert cliente.get("/api/estado").json()["clientes"] == ["Cliente 1", "Cliente 2", "Cliente 3"]
+
+
+def test_cors_permite_el_sitio_y_no_otros_origenes(entorno: Entorno) -> None:
+    cliente = entorno[0]
+    sitio = "https://latam-bank-hackaton-2026.web.app"
+    r = cliente.get("/api/estado", headers={"Origin": sitio})
+    assert r.headers.get("access-control-allow-origin") == sitio
+    r = cliente.get("/api/estado", headers={"Origin": "https://otro.example"})
+    assert "access-control-allow-origin" not in r.headers
