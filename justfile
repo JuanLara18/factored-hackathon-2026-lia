@@ -20,3 +20,14 @@ up:
 
 down:
     docker compose down
+
+# Datos: espejo del bucket (necesita LATAM_BUCKET y el perfil AWS latam-organizador fuera del repo)
+espejo:
+    uv run python -m latam_datos espejo
+
+# Datos: bronce (Parquet por lote, bronce._lotes) y reglas Q-BRZ con reporte en platino
+bronce:
+    uv run python -m latam_datos bronce
+
+# Datos: espejo y bronce en una corrida
+data: espejo bronce
