@@ -1,0 +1,11 @@
+# Copiar a terraform.tfvars (ignorado por git). Valores de ejemplo, no reales.
+project_id      = "mi-proyecto-hackathon"
+project_number  = "123456789012"
+billing_account = "XXXXXX-XXXXXX-XXXXXX"
+correos_alerta  = ["equipo@example.com"]
+bucket_oro      = "mi-proyecto-hackathon-oro"
+
+# region              = "us-central1"
+# presupuesto_monto   = 250     # US$ de credito de prueba (D-29)
+# crear_cloud_sql     = false   # activar en TEC-11.2
+# cloud_sql_encendida = true    # false = demo-off
