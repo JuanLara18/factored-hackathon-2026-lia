@@ -32,7 +32,7 @@ CONTRATO: tuple[TablaCruda, ...] = (
     TablaCruda(
         "transactions",
         "transaction_id",
-        ("transaction_id", "product_id", "customer_id", "process_date"),
+        ("transaction_id", "product_id", "customer_id", "process_date", "amount_usd", "is_fraud"),
         "process_date",
         True,
     ),
@@ -52,4 +52,27 @@ CONTRATO: tuple[TablaCruda, ...] = (
     TablaCruda("branches", None, ()),
     TablaCruda("marketing_campaigns", None, ()),
     TablaCruda("campaign_sends", None, ("process_date",), "process_date", True),
+)
+
+
+@dataclass(frozen=True)
+class Relacion:
+    """Llave foránea esperada entre tablas crudas: `tabla.columna` debe existir en `padre.columna_padre`."""
+
+    tabla: str
+    columna: str
+    padre: str
+    columna_padre: str
+
+
+RELACIONES: tuple[Relacion, ...] = (
+    Relacion("transactions", "customer_id", "customers", "customer_id"),
+    Relacion("transactions", "product_id", "products", "product_id"),
+    Relacion("products", "customer_id", "customers", "customer_id"),
+    Relacion("complaints", "customer_id", "customers", "customer_id"),
+    Relacion("complaints", "affected_product_id", "products", "product_id"),
+    Relacion("complaints", "origin_interaction_id", "call_center_interactions", "interaction_id"),
+    Relacion("call_center_interactions", "customer_id", "customers", "customer_id"),
+    Relacion("call_transcripts", "interaction_id", "call_center_interactions", "interaction_id"),
+    Relacion("satisfaction_surveys", "interaction_id", "call_center_interactions", "interaction_id"),
 )
