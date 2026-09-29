@@ -25,3 +25,8 @@ down:
 # Necesita LATAM_GCP_PROJECT y, opcional, LATAM_GCP_LOCATION; la identidad la da gcloud o el servicio
 validar:
     uv run python -m latam_datos validar
+
+# Carga supuesta (D-30), una sola vez: espejo local del bucket a latam_bronce
+cargar-bronce bucket:
+    aws s3 sync s3://{{bucket}}/data/ data/espejo/ --profile latam-organizador
+    uv run python -m latam_datos.carga_externa
