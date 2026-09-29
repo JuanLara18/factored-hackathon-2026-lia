@@ -11,21 +11,39 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 from datetime import UTC, datetime
 
+from latam_datos.contrato import REPORTE
 from latam_datos.motor import Motor
 from latam_datos.motor_bigquery import MotorBigQuery
-from latam_datos.reglas import Hallazgo, evaluar, reportar
+from latam_datos.reglas import VERSION_REGLAS, Hallazgo, evaluar, reportar
 
 
-def corrida_id_de(ahora: datetime) -> str:
-    return ahora.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
+def commit_actual() -> str:
+    """`git rev-parse HEAD`; en el Job (sin git) viene de LATAM_COMMIT."""
+    if valor := os.environ.get("LATAM_COMMIT"):
+        return valor
+    try:
+        salida = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return "desconocido"
+    return salida.stdout.strip() or "desconocido"
 
 
-def validar(motor: Motor, ahora: datetime) -> list[Hallazgo]:
+def corrida_id_de(ahora: datetime, commit: str = "desconocido") -> str:
+    """Amarra la corrida al código que la produjo: marca de tiempo, commit corto y versión de las reglas."""
+    marca = ahora.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
+    return f"{marca}-{commit[:7]}-v{VERSION_REGLAS}"
+
+
+def validar(
+    motor: Motor, ahora: datetime, commit: str | None = None, tabla_reporte: str = REPORTE
+) -> list[Hallazgo]:
+    commit = commit if commit is not None else commit_actual()
     hallazgos = evaluar(motor)
-    reportar(motor, corrida_id_de(ahora), hallazgos, ahora)
+    reportar(motor, corrida_id_de(ahora, commit), hallazgos, ahora, commit, tabla_reporte)
     return hallazgos
 
 

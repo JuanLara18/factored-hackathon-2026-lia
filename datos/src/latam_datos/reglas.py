@@ -16,13 +16,20 @@ from latam_datos.contrato import (
     FIN_PARTICIONES,
     INICIO_PARTICIONES,
     PREFIJO_BRONCE,
+    RELACIONES,
     REPORTE,
+    Relacion,
     TablaCruda,
 )
 from latam_datos.motor import Logico, Motor
 
+VERSION_REGLAS = "2.0.0"
 UMBRAL_VACIOS = 0.005
-MUESTRA_MINIMA_PERCENTILES = 20
+MUESTRA_MINIMA_DIAS = 20  # días por día de la semana para estimar mediana y MAD
+K_MAD = 3.5  # puntaje z modificado (Iglewicz y Hoaglin): |n - mediana| / (1,4826 * MAD)
+DESVIO_RELATIVO = 0.30  # con z alto, además exige desviarse más de 30% de la mediana
+DESVIO_GRAVE = 0.60  # caída relativa que se marca aunque la dispersión histórica sea grande (apagón)
+PEORES_DIAS = 5
 
 Resultado = Literal["ok", "aviso", "bloqueado"]
 
@@ -35,6 +42,24 @@ REGLAS: dict[str, tuple[str, str]] = {
     "Q-BRZ-11": ("completitud", "aviso"),
     "Q-BRZ-12": ("unicidad", "aviso"),
     "Q-BRZ-13": ("completitud", "aviso"),
+    "Q-BRZ-14": ("unicidad", "aviso"),
+    "Q-BRZ-15": ("integridad", "aviso"),
+}
+
+# regla -> umbral vigente, tal como queda escrito en el reporte
+UMBRALES: dict[str, str] = {
+    "Q-BRZ-01": "0 días sin filas en la ventana",
+    "Q-BRZ-03": "columna requerida ausente bloquea",
+    "Q-BRZ-05": "0 filas",
+    "Q-BRZ-06": (
+        f"mediana por día de la semana; z modificado > {K_MAD} y desvío > {DESVIO_RELATIVO:.0%}, "
+        f"o caída > {DESVIO_GRAVE:.0%}"
+    ),
+    "Q-BRZ-11": "0 filas",
+    "Q-BRZ-12": "0 llaves repetidas",
+    "Q-BRZ-13": f"vacías > {UMBRAL_VACIOS:.1%} de las filas",
+    "Q-BRZ-14": "0 filas idénticas",
+    "Q-BRZ-15": "0 huérfanos",
 }
 
 
@@ -72,17 +97,47 @@ def sql_dias_faltantes(motor: Motor, t: TablaCruda) -> str:
 
 
 def sql_conteos_atipicos(motor: Motor, t: TablaCruda) -> str:
-    """Q-BRZ-06: días cuyo conteo cae fuera de los percentiles 1 y 99 de su día de la semana."""
+    """Q-BRZ-06: días cuyo conteo se aleja de la mediana de su día de la semana.
+
+    Robusto a colas: mediana y MAD (los percentiles 1 y 99 marcan ~2% de los días por construcción).
+    Devuelve (dia, n, mediana, mad, desvio_relativo) de los días marcados, del peor al menos malo.
+    """
     assert t.fecha
     f = motor.fecha_segura(motor.ident(t.fecha))
-    return (
-        f"SELECT dia, n, p1, p99 FROM ("
-        f"SELECT dia, n, {motor.percentil('n', 0.01, 'dow')} AS p1, "
-        f"{motor.percentil('n', 0.99, 'dow')} AS p99, "
-        f"COUNT(*) OVER (PARTITION BY dow) AS m FROM ("
+    conteo = (
         f"SELECT {f} AS dia, {motor.dia_semana(f)} AS dow, COUNT(*) AS n FROM {_t(motor, t.nombre)} "
-        f"WHERE {f} IS NOT NULL GROUP BY dia, dow)) "
-        f"WHERE m >= {MUESTRA_MINIMA_PERCENTILES} AND (n < p1 OR n > p99) ORDER BY dia"
+        f"WHERE {f} IS NOT NULL GROUP BY dia, dow"
+    )
+    con_mediana = (
+        f"SELECT dia, dow, n, {motor.percentil('n', 0.5, 'dow')} AS med, "
+        f"COUNT(*) OVER (PARTITION BY dow) AS m FROM ({conteo})"
+    )
+    con_desvio = f"SELECT dia, dow, n, med, m, ABS(n - med) AS dev FROM ({con_mediana})"
+    con_mad = f"SELECT dia, n, med, m, dev, {motor.percentil('dev', 0.5, 'dow')} AS mad FROM ({con_desvio})"
+    return (
+        f"SELECT dia, n, med, mad, dev / med AS rel FROM ({con_mad}) "
+        f"WHERE m >= {MUESTRA_MINIMA_DIAS} AND med > 0 AND ("
+        f"(dev / med > {DESVIO_RELATIVO} AND (mad = 0 OR dev / (1.4826 * mad) > {K_MAD})) "
+        f"OR (med - n) / med > {DESVIO_GRAVE}) ORDER BY rel DESC, dia"
+    )
+
+
+def sql_duplicados_de_fila(motor: Motor, t: TablaCruda, columnas: list[str]) -> str:
+    """Q-BRZ-14: (grupos de filas idénticas, filas sobrantes) considerando todas las columnas."""
+    cols = ", ".join(motor.ident(c) for c in columnas)
+    return (
+        "SELECT COUNT(*), COALESCE(SUM(n - 1), 0) FROM "
+        f"(SELECT COUNT(*) AS n FROM {_t(motor, t.nombre)} GROUP BY {cols} HAVING COUNT(*) > 1)"
+    )
+
+
+def sql_huerfanos(motor: Motor, r: Relacion) -> str:
+    """Q-BRZ-15: (valores no vacíos del hijo, de ellos sin padre)."""
+    h, p = motor.ident(r.columna), motor.ident(r.columna_padre)
+    return (
+        "SELECT COUNT(*), COALESCE(SUM(CASE WHEN p.k IS NULL THEN 1 ELSE 0 END), 0) "
+        f"FROM (SELECT {h} AS v FROM {_t(motor, r.tabla)} WHERE NOT {_vacio(motor, r.columna)}) AS h "
+        f"LEFT JOIN (SELECT DISTINCT {p} AS k FROM {_t(motor, r.padre)}) AS p ON p.k = h.v"
     )
 
 
@@ -124,7 +179,11 @@ def sql_vacios_requeridas(motor: Motor, t: TablaCruda) -> str:
 # ---------------------------------------------------------------- evaluación
 
 
-def evaluar(motor: Motor, contrato: tuple[TablaCruda, ...] = CONTRATO) -> list[Hallazgo]:
+def evaluar(
+    motor: Motor,
+    contrato: tuple[TablaCruda, ...] = CONTRATO,
+    relaciones: tuple[Relacion, ...] = RELACIONES,
+) -> list[Hallazgo]:
     """Corre las reglas sobre cada tabla del contrato y devuelve los hallazgos."""
     hallazgos: list[Hallazgo] = []
     columnas: dict[str, dict[str, str]] = {}
@@ -198,9 +257,34 @@ def evaluar(motor: Motor, contrato: tuple[TablaCruda, ...] = CONTRATO) -> list[H
                 resto = f" y {len(dias) - 10} más" if len(dias) > 10 else ""
                 detalle = f"faltan {len(dias)} días: {muestra}{resto}"
                 hallazgos.append(Hallazgo("Q-BRZ-01", "aviso", detalle, t.nombre, len(dias)))
-            for dia, n, p1, p99 in motor.consultar(sql_conteos_atipicos(motor, t)):
-                detalle = f"{dia}: {int(n)} filas fuera de [{float(p1):.1f}, {float(p99):.1f}]"
-                hallazgos.append(Hallazgo("Q-BRZ-06", "aviso", detalle, t.nombre, int(n)))
+            atipicos = motor.consultar(sql_conteos_atipicos(motor, t))
+            if atipicos:
+                peores = "; ".join(
+                    f"{dia} {int(n)} filas vs mediana {float(med):.0f} ({float(rel):.0%} de desvío)"
+                    for dia, n, med, _mad, rel in atipicos[:PEORES_DIAS]
+                )
+                detalle = f"{len(atipicos)} días atípicos; peores {min(PEORES_DIAS, len(atipicos))}: {peores}"
+                hallazgos.append(Hallazgo("Q-BRZ-06", "aviso", detalle, t.nombre, len(atipicos)))
+
+        if not t.llave:
+            grupos, sobrantes = motor.consultar(sql_duplicados_de_fila(motor, t, list(presentes)))[0]
+            if int(grupos):
+                detalle = (
+                    f"{int(grupos)} filas repetidas, {int(sobrantes)} filas sobrantes "
+                    f"({int(sobrantes) / total:.2%})"
+                )
+                hallazgos.append(Hallazgo("Q-BRZ-14", "aviso", detalle, t.nombre, int(sobrantes)))
+
+    for r in relaciones:
+        if r.columna not in columnas.get(r.tabla, {}) or r.columna_padre not in columnas.get(r.padre, {}):
+            continue
+        no_vacios, huerfanos = motor.consultar(sql_huerfanos(motor, r))[0]
+        if int(huerfanos):
+            detalle = (
+                f"{r.tabla}.{r.columna} sin {r.padre}.{r.columna_padre}: {int(huerfanos)} de "
+                f"{int(no_vacios)} ({int(huerfanos) / int(no_vacios):.2%})"
+            )
+            hallazgos.append(Hallazgo("Q-BRZ-15", "aviso", detalle, r.tabla, int(huerfanos)))
     return hallazgos
 
 
@@ -217,13 +301,25 @@ _COLUMNAS_REPORTE: tuple[tuple[str, Logico], ...] = (
     ("filas_afectadas", "entero"),
     ("detalle", "texto"),
     ("evaluado_en", "fecha_hora"),
+    ("commit", "texto"),
+    ("version_reglas", "texto"),
+    ("umbral", "texto"),
 )
 
 
-def reportar(motor: Motor, corrida_id: str, hallazgos: list[Hallazgo], ahora: datetime) -> int:
+def reportar(
+    motor: Motor,
+    corrida_id: str,
+    hallazgos: list[Hallazgo],
+    ahora: datetime,
+    commit: str = "desconocido",
+    tabla_reporte: str = REPORTE,
+) -> int:
     """Una fila por hallazgo y, para toda regla sin hallazgos, una fila `ok`."""
     cols = ", ".join(f"{c} {motor.tipo(t)}" for c, t in _COLUMNAS_REPORTE)
-    motor.ejecutar(f"CREATE TABLE IF NOT EXISTS {motor.t(REPORTE)} ({cols})")
+    motor.ejecutar(f"CREATE TABLE IF NOT EXISTS {motor.t(tabla_reporte)} ({cols})")
+    for c, t in _COLUMNAS_REPORTE[-3:]:  # reportes creados antes de agregar trazabilidad
+        motor.ejecutar(f"ALTER TABLE {motor.t(tabla_reporte)} ADD COLUMN IF NOT EXISTS {c} {motor.tipo(t)}")
     con_hallazgo = {h.regla_id for h in hallazgos}
     todos = [
         *hallazgos,
@@ -244,11 +340,14 @@ def reportar(motor: Motor, corrida_id: str, hallazgos: list[Hallazgo], ahora: da
                 h.filas_afectadas,
                 h.detalle,
                 ahora,
+                commit,
+                VERSION_REGLAS,
+                UMBRALES[h.regla_id],
             )
         )
         + ")"
         for h in todos
     ]
     for i in range(0, len(filas), 500):
-        motor.ejecutar(f"INSERT INTO {motor.t(REPORTE)} VALUES " + ", ".join(filas[i : i + 500]))
+        motor.ejecutar(f"INSERT INTO {motor.t(tabla_reporte)} VALUES " + ", ".join(filas[i : i + 500]))
     return len(todos)
