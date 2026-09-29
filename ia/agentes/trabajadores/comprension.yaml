@@ -1,0 +1,22 @@
+id: comprension
+version: 0.1.0
+estado: en_desarrollo
+tipo: lenguaje_aprendido
+rol: sistema
+proposito: >
+  Interpretar el turno del cliente en la recepción de disputas: motivo declarado y urgencia, con texto deslexicalizado.
+usos_prohibidos:
+  - decidir la ruta o una acción; el motor lo decide con policy/v1
+supervisor: {cara: VP IA, gerencia: Comprensión y redacción}
+duenio_tecnico: {cara: VP IA}
+riesgo: moderado
+herramientas: []
+prompt: comprension/clasificar_motivo@1.0.0
+modelo:
+  proveedor: gemini_api
+  familia: google
+  id: gemini-2.5-flash-lite
+  temperatura: 0.0
+  max_salida: 200
+presupuestos: {max_entrada: 1500, max_salida: 200, llamadas_por_conversacion: 3, usd_diario: 0}
+entornos: [local, ci, dev]

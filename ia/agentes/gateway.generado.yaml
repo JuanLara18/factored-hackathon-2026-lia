@@ -1,0 +1,75 @@
+# Generado desde ia/agentes/trabajadores con `python -m latam_ia.registro`; no editar a mano.
+model_list:
+- model_name: comprension
+  litellm_params:
+    model: gemini/gemini-2.5-flash-lite
+    api_key: os.environ/GEMINI_API_KEY
+    temperature: 0.0
+    max_tokens: 200
+- model_name: redaccion
+  litellm_params:
+    model: gemini/gemini-2.5-flash-lite
+    api_key: os.environ/GEMINI_API_KEY
+    temperature: 0.0
+    max_tokens: 300
+claves_virtuales:
+- key_alias: lb-comprension-local
+  models:
+  - comprension
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1700
+  metadata:
+    latam.trabajador.id: comprension
+    latam.trabajador.version: 0.1.0
+    entorno: local
+- key_alias: lb-comprension-ci
+  models:
+  - comprension
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1700
+  metadata:
+    latam.trabajador.id: comprension
+    latam.trabajador.version: 0.1.0
+    entorno: ci
+- key_alias: lb-comprension-dev
+  models:
+  - comprension
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1700
+  metadata:
+    latam.trabajador.id: comprension
+    latam.trabajador.version: 0.1.0
+    entorno: dev
+- key_alias: lb-redaccion-local
+  models:
+  - redaccion
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1800
+  metadata:
+    latam.trabajador.id: redaccion
+    latam.trabajador.version: 0.1.0
+    entorno: local
+- key_alias: lb-redaccion-ci
+  models:
+  - redaccion
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1800
+  metadata:
+    latam.trabajador.id: redaccion
+    latam.trabajador.version: 0.1.0
+    entorno: ci
+- key_alias: lb-redaccion-dev
+  models:
+  - redaccion
+  max_budget: 0.0
+  budget_duration: 1d
+  max_tokens_per_request: 1800
+  metadata:
+    latam.trabajador.id: redaccion
+    latam.trabajador.version: 0.1.0
+    entorno: dev
