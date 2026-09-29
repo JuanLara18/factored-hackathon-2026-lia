@@ -1378,6 +1378,7 @@ version = "0.1.0"
 source = { editable = "tecnologia" }
 dependencies = [
     { name = "fastapi" },
+    { name = "google-cloud-bigquery" },
     { name = "httpx" },
     { name = "latam-comun" },
     { name = "psycopg", extra = ["binary"] },
@@ -1388,6 +1389,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.141.1" },
+    { name = "google-cloud-bigquery", specifier = ">=3.45.2" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "latam-comun", editable = "comun" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6" },

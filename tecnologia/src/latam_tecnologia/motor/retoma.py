@@ -18,7 +18,7 @@ from latam_comun.dominio import (
     NivelAcr,
     SesionAutenticada,
 )
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class _Inmutable(BaseModel):
@@ -38,6 +38,7 @@ class Conversacion(_Inmutable):
     cliente_ref: str
     canal_actual: Canal
     estado: str
+    datos: dict[str, str] = Field(default_factory=dict[str, str])
 
 
 class ResumenRetoma(_Inmutable):
@@ -56,6 +57,8 @@ class Almacen(Protocol):
     def cargar(self, conversacion_id: str) -> Conversacion | None: ...
 
     def cambiar_canal(self, conversacion_id: str, canal: Canal) -> None: ...
+
+    def actualizar(self, conversacion_id: str, estado: str, datos: dict[str, str]) -> None: ...
 
     def reservar_efecto(self, llave: str, conversacion_id: str, numero: int, tipo: str) -> bool:
         """Verdadero solo para quien crea la reserva; la unicidad de la llave la garantiza el almacén."""
@@ -81,11 +84,14 @@ def ejecutar_una_vez(
     numero_transicion: int,
     tipo: str,
     recurso: str,
-    confirmacion: Confirmacion,
+    confirmacion: Confirmacion | None,
     ejecutor: Callable[[str], AccionVerificada],
 ) -> tuple[AccionVerificada, bool]:
-    """Ejecuta el efecto como máximo una vez por llave; devuelve la acción y si esta llamada la ejecutó."""
-    if confirmacion.accion != tipo:
+    """Ejecuta el efecto como máximo una vez por llave; devuelve la acción y si esta llamada la ejecutó.
+
+    `confirmacion` puede ser `None` solo para efectos sin consentimiento (escalar a un humano).
+    """
+    if confirmacion is not None and confirmacion.accion != tipo:
         raise ValueError("la confirmación no corresponde a la acción")
     llave = llave_efecto(conversacion_id, numero_transicion, tipo, recurso)
     if almacen.reservar_efecto(llave, conversacion_id, numero_transicion, tipo):

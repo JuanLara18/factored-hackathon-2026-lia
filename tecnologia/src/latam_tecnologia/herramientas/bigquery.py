@@ -1,0 +1,117 @@
+"""Adaptador de solo lectura sobre BigQuery: consultas parametrizadas, siempre filtradas por cliente."""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Mapping
+from decimal import Decimal
+from typing import Any
+
+from google.api_core.exceptions import NotFound
+from google.cloud import bigquery
+from latam_comun.dominio import Dinero
+
+from latam_tecnologia.herramientas.puertos import Producto, Transaccion
+
+_IDENTIFICADOR = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,62}$")
+_COLUMNAS_TX = (
+    "transaction_id, product_id, event_ts, amount, currency, amount_usd, transaction_type,"
+    " transaction_status, merchant_name, merchant_category, transaction_country, es_extranjera"
+)
+_LIMITE_MAXIMO = 50
+
+
+def _decimal(valor: Any) -> Decimal:
+    return Decimal(str(valor))
+
+
+class LecturaBigQuery:
+    """Proyecto y dataset son configuración validada; todo dato variable viaja como parámetro."""
+
+    def __init__(
+        self,
+        proyecto: str,
+        dataset: str = "latam_bank",
+        *,
+        cliente: bigquery.Client | None = None,
+        ubicacion: str = "US",
+    ) -> None:
+        if not _IDENTIFICADOR.match(proyecto) or not _IDENTIFICADOR.match(dataset):
+            raise ValueError("proyecto o dataset inválido")
+        self._prefijo = f"`{proyecto}.{dataset}`"
+        self._ubicacion = ubicacion
+        self._cliente = cliente or bigquery.Client(project=proyecto, location=ubicacion)
+
+    def _consultar(self, sql: str, **parametros: str | int) -> list[Mapping[str, Any]]:
+        parametros_bq = [
+            bigquery.ScalarQueryParameter(nombre, "INT64" if isinstance(v, int) else "STRING", v)
+            for nombre, v in parametros.items()
+        ]
+        config = bigquery.QueryJobConfig(query_parameters=parametros_bq)
+        trabajo = self._cliente.query(sql, job_config=config, location=self._ubicacion)
+        return [dict(fila.items()) for fila in trabajo.result()]  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType, reportUnknownVariableType]
+
+    @staticmethod
+    def _a_transaccion(f: Mapping[str, Any]) -> Transaccion:
+        return Transaccion(
+            transaction_id=f["transaction_id"],
+            product_id=f["product_id"],
+            event_ts=f["event_ts"],
+            monto=Dinero(monto=abs(_decimal(f["amount"])), moneda=f["currency"]),
+            amount_usd=None if f["amount_usd"] is None else _decimal(f["amount_usd"]),
+            tipo=f["transaction_type"],
+            estado=f["transaction_status"],
+            comercio=f["merchant_name"],
+            categoria=f["merchant_category"],
+            pais=f["transaction_country"],
+            es_extranjera=bool(f["es_extranjera"]),
+        )
+
+    def transacciones_recientes(self, cliente_id: str, limite: int) -> tuple[Transaccion, ...]:
+        filas = self._consultar(
+            f"select {_COLUMNAS_TX} from {self._prefijo}.oro_operacional_transacciones_recientes"
+            " where customer_id = @cliente order by event_ts desc limit @limite",
+            cliente=cliente_id,
+            limite=max(1, min(limite, _LIMITE_MAXIMO)),
+        )
+        return tuple(self._a_transaccion(f) for f in filas)
+
+    def transaccion(self, cliente_id: str, transaction_id: str) -> Transaccion | None:
+        filas = self._consultar(
+            f"select {_COLUMNAS_TX} from {self._prefijo}.oro_operacional_transacciones_recientes"
+            " where customer_id = @cliente and transaction_id = @transaccion limit 1",
+            cliente=cliente_id,
+            transaccion=transaction_id,
+        )
+        return self._a_transaccion(filas[0]) if filas else None
+
+    def productos(self, cliente_id: str) -> tuple[Producto, ...]:
+        filas = self._consultar(
+            "select product_id, product_type, product_status, currency"
+            f" from {self._prefijo}.oro_operacional_estado_productos where customer_id = @cliente",
+            cliente=cliente_id,
+        )
+        return tuple(
+            Producto(
+                product_id=f["product_id"],
+                tipo=f["product_type"],
+                estado=f["product_status"],
+                moneda=f["currency"],
+            )
+            for f in filas
+        )
+
+    def ficha_transaccion(self, cliente_id: str, transaction_id: str) -> dict[str, Any] | None:
+        """Contrato pendiente de Datos: si la tabla no existe todavía, no hay ficha."""
+        if self.transaccion(cliente_id, transaction_id) is None:
+            return None
+        try:
+            filas = self._consultar(
+                f"select * except (customer_id) from {self._prefijo}.oro_operacional_ficha_transaccion"
+                " where customer_id = @cliente and transaction_id = @transaccion limit 1",
+                cliente=cliente_id,
+                transaccion=transaction_id,
+            )
+        except NotFound:
+            return None
+        return dict(filas[0]) if filas else None
