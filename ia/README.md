@@ -10,7 +10,7 @@
 | `src/latam_ia/redaccion/` | redacción desde hechos verificados |
 | `src/latam_ia/voz/` | reconocimiento, síntesis y detección de turno |
 | `src/latam_ia/registro/`, `prompts/`, `modelos.py` | cargador y validación del registro, biblioteca de prompts, fábrica de modelos |
-| `evaluacion/` | escenarios YAML (`escenarios/`), mundo sintético común y reportes (`reportes/`, fuera de git) |
+| `evaluacion/` | escenarios YAML (`escenarios/`), mundo sintético común y reportes (`reportes/`, fuera de git salvo `geap_<fecha>.md`) |
 | `src/latam_ia/evaluacion/` | arnés IA-5.1: simulador de texto, verificadores deterministas, métricas y reporte |
 
 ## Registro, prompts y modelos
@@ -31,10 +31,19 @@ Pendiente: IA-3.1 (redacción y renderizador por locale) y la política de conte
 
 ## Arnés de evaluación (IA-5.1)
 
-`just evaluar` (o `uv run python -m latam_ia.evaluacion [--k 3] [--filtro N0]`) corre 22 escenarios de las categorías N, A, E y F contra `crear_agente_disputas` con las dobles en memoria de Tecnología y escribe `ia/evaluacion/reportes/ultimo.json` y `ultimo.md` (sale con 1 si algo falla).
+`just evaluar` (o `uv run python -m latam_ia.evaluacion [--k 3] [--filtro N0]`) corre 23 escenarios de las categorías N, A, E y F contra `crear_agente_disputas` con las dobles en memoria de Tecnología y escribe `ia/evaluacion/reportes/ultimo.json` y `ultimo.md` (sale con 1 si algo falla).
 
 - **Agente.** Sin `GEMINI_API_KEY`, una política de referencia guionada (línea base B-reglas) sobre `FunctionModel`: mide el arnés y las herramientas, no un modelo. Con llave, Gemini conduce al agente.
 - **Simulador.** Guionado por defecto; con llave lo conduce un modelo que solo ve marcadores `{{hecho}}` (D-15). `verificar_fidelidad` marca `falla_simulador` (reintento una vez, conteo en el reporte).
 - **Verificadores** (`verificadores.py`): ninguna acción con efecto sin confirmación explícita, ningún dato de otro cliente, ninguna PII en respuestas, estado final del banco, idempotencia, escalamiento según política y frases prohibidas de `clientes/estilo/estilo.yaml` (alcance `respuesta`). Los cinco primeros son de seguridad: si fallan, la corrida cuenta como insegura.
 - **Métricas.** pass^k combinatorio, Wilson al 95% y regla del tres.
 - **Escenario con `falla_conocida`.** Falla a propósito y se reporta aparte; si pasa, cuenta como falla para obligar a retirar la marca. Hoy: N0_flujo_base (la herramienta `abrir_disputa` del agente no pasa `credito_provisional`) y E2_monto_sobre_umbral (`policy/v1` no escala por monto).
+
+### Evaluación con GEAP (D-32, fase 3)
+
+Comando: `LATAM_MODELO_PROVEEDOR=geap LATAM_GCP_PROJECT=<proyecto> uv run python -m latam_ia.evaluacion --k 1 --etiqueta run --trazas ia/evaluacion/reportes/trazas.json [--ids A2_tres_candidatas,...] [--intercalar] [--max-llamadas N]`.
+
+- **Cliente simulado por LLM.** Con GEAP, `SimuladorClienteLLM` usa el mismo modelo: ve solo el objetivo, los hechos y el plan del guion (el primer mensaje es el del guion, literal) y lo que el asistente le escribe; nunca resultados de herramientas. Decide si aprueba la acción de la pantalla. Sin GEAP siguen el guionado y el de marcadores (pruebas sin red). Con este cliente no se juzga la fidelidad al guion sino el resultado: estado final, herramientas, escalamiento y seguridad. Un comercio que el cliente nombró no cuenta como fuga si el agente lo repite.
+- **Robustez.** `ModeloGeap` (`latam_tecnologia.canales.geap`) reintenta una vez ante `malformed_function_call` (el SDK lo rechaza al validar el `finish_reason`), 5xx, 429 y cortes de conexión, con espera de 1,5 s y temperatura 0,8 (a 0 la misma llamada sale igual). Un `MEDIDOR` cuenta llamadas, tokens y latencia; el reporte trae costo estimado con tarifa de lista de Flash-Lite. Tras el reintento la llamada malformada persiste en algunas conversaciones: es la primera causa de fallas.
+- **Prompt.** `disputas/agente@1.1.0` (el 1.0.0 se conserva); el trabajador `disputas` sube a 0.2.0.
+- **GenAI Evaluation Service.** `uv run --with tqdm --with scikit-learn python -m latam_ia.evaluacion.servicio_evaluacion --trazas ... --dataset ... --crudo ... --reporte ia/evaluacion/reportes/geap_<fecha>.md --fecha <fecha> --nota "<resumen>"`. Exporta cada corrida (conversación, respuestas, trayectoria de herramientas con efecto prevista y observada) y evalúa con `vertexai.preview.evaluation`: `trajectory_exact_match`, `trajectory_in_order_match` y una métrica de rúbrica de tono y claridad en español (`PointwiseMetric`, juez por defecto del servicio, `us-central1`). El cliente nuevo `vertexai.Client().evals` (SDK 1.148) aún no trae métricas de trayectoria. El servicio rechaza trayectorias vacías: esas corridas se puntúan local con la misma definición y se marcan con `*`. `--reusar` rehace el reporte desde el crudo sin llamar al servicio. El dataset y el crudo quedan fuera de git; el resumen sin datos personales se compromete.
