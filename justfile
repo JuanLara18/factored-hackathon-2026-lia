@@ -30,3 +30,11 @@ validar:
 cargar-bronce bucket:
     aws s3 sync s3://{{bucket}}/data/ data/espejo/
     uv run python -m latam_datos.carga_externa
+
+# Datos: crea la llave de seudonimización (una vez), construye plata, oro y platino en BigQuery y corre los tests
+dbt-build:
+    cd datos/dbt; uv run dbt run-operation crear_llave; uv run dbt build
+
+# Datos: solo los casos del fixture de actualización (unit tests de dbt, sin tocar tablas reales)
+dbt-test-fixture:
+    cd datos/dbt; uv run dbt test --select "test_type:unit"

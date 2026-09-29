@@ -1,0 +1,101 @@
+# Fixture de actualización (etiquetado): datos INVENTADOS por el equipo, llaves con prefijo FX-, sin filas del organizador.
+# Corre con `just dbt-test-fixture` (dbt unit tests sobre las entradas simuladas; no toca tablas reales).
+version: 2
+
+unit_tests:
+  - name: fx_duplicado_exacto_y_reentrega
+    description: "FX-01 duplicado exacto queda en una fila; FX-02 reentrega con fecha posterior gana con el valor corregido"
+    model: plata_transactions
+    given:
+      - input: source('bronce', 'bronce_transactions')
+        rows:
+          - {transaction_id: FX-T1, transaction_date: "2026-01-10 10:00:00", process_date: "2026-01-10", product_id: FX-P1, customer_id: FX-C1, amount: "100.00", currency: USD, transaction_country: Mexico}
+          - {transaction_id: FX-T1, transaction_date: "2026-01-10 10:00:00", process_date: "2026-01-10", product_id: FX-P1, customer_id: FX-C1, amount: "100.00", currency: USD, transaction_country: Mexico}
+          - {transaction_id: FX-T2, transaction_date: "2026-01-11 10:00:00", process_date: "2026-01-11", product_id: FX-P1, customer_id: FX-C1, amount: "50.00", currency: USD, transaction_country: Mexico}
+          - {transaction_id: FX-T2, transaction_date: "2026-01-11 12:00:00", process_date: "2026-01-12", product_id: FX-P1, customer_id: FX-C1, amount: "55.00", currency: USD, transaction_country: Mexico}
+      - input: ref('plata_products')
+        rows:
+          - {product_id: FX-P1, customer_id: FX-C1, _moneda_anomala: false}
+      - input: ref('plata_daily_exchange_rates')
+        rows: []
+    expect:
+      rows:
+        - {transaction_id: FX-T1, amount: 100.00, amount_usd: 100.00, amount_usd_origen: igual_monto}
+        - {transaction_id: FX-T2, amount: 55.00, amount_usd: 55.00, amount_usd_origen: igual_monto}
+
+  - name: fx_llegada_tardia_y_fallo_de_conversion
+    description: "FX-03 evento con process_date del día siguiente conserva su event_date; FX-04 monto ilegible pasa a NULL; FX-05 moneda PESOS pasa a NULL"
+    model: plata_transactions
+    given:
+      - input: source('bronce', 'bronce_transactions')
+        rows:
+          - {transaction_id: FX-T3, transaction_date: "2026-02-01 02:00:00", process_date: "2026-02-02", product_id: FX-P1, customer_id: FX-C1, amount: "10.00", currency: USD}
+          - {transaction_id: FX-T4, transaction_date: "2026-02-03 09:00:00", process_date: "2026-02-03", product_id: FX-P1, customer_id: FX-C1, amount: "12,5abc", currency: USD}
+          - {transaction_id: FX-T5, transaction_date: "2026-02-03 09:00:00", process_date: "2026-02-03", product_id: FX-P1, customer_id: FX-C1, amount: "9.00", currency: PESOS}
+      - input: ref('plata_products')
+        rows:
+          - {product_id: FX-P1, customer_id: FX-C1, _moneda_anomala: false}
+      - input: ref('plata_daily_exchange_rates')
+        rows: []
+    expect:
+      rows:
+        - {transaction_id: FX-T3, event_date: "2026-02-01", process_date: "2026-02-02", amount: 10.00, currency: USD}
+        - {transaction_id: FX-T4, event_date: "2026-02-03", process_date: "2026-02-03", amount: null, currency: USD}
+        - {transaction_id: FX-T5, event_date: "2026-02-03", process_date: "2026-02-03", amount: 9.00, currency: null}
+
+  - name: fx_huerfano_y_dueno_ajeno
+    description: "FX-06 producto inexistente deja _fk_ok falso; FX-07 producto de otro cliente deja _owner_ok falso"
+    model: plata_transactions
+    given:
+      - input: source('bronce', 'bronce_transactions')
+        rows:
+          - {transaction_id: FX-T6, transaction_date: "2026-03-01 09:00:00", product_id: FX-P404, customer_id: FX-C1, amount: "5.00", currency: USD}
+          - {transaction_id: FX-T7, transaction_date: "2026-03-01 09:00:00", product_id: FX-P2, customer_id: FX-C1, amount: "5.00", currency: USD}
+      - input: ref('plata_products')
+        rows:
+          - {product_id: FX-P2, customer_id: FX-C2, _moneda_anomala: false}
+      - input: ref('plata_daily_exchange_rates')
+        rows: []
+    expect:
+      rows:
+        - {transaction_id: FX-T6, _fk_ok: false, _owner_ok: false}
+        - {transaction_id: FX-T7, _fk_ok: true, _owner_ok: false}
+
+  - name: fx_amount_usd_recalculado_y_pais
+    description: "FX-08 amount_usd vacío se recalcula con la tasa del día y se marca; FX-09 México y Mexico dan MX"
+    model: plata_transactions
+    given:
+      - input: source('bronce', 'bronce_transactions')
+        rows:
+          - {transaction_id: FX-T8, transaction_date: "2026-04-01 09:00:00", product_id: FX-P1, customer_id: FX-C1, amount: "400000.00", currency: COP, transaction_country: "México"}
+          - {transaction_id: FX-T9, transaction_date: "2026-04-01 09:00:00", product_id: FX-P1, customer_id: FX-C1, amount: "10.00", currency: COP, amount_usd: "3.10", transaction_country: Mexico}
+      - input: ref('plata_products')
+        rows:
+          - {product_id: FX-P1, customer_id: FX-C1, _moneda_anomala: false}
+      - input: ref('plata_daily_exchange_rates')
+        rows:
+          - {date: "2026-04-01", source_currency: COP, target_currency: USD, exchange_rate: 0.00025}
+    expect:
+      rows:
+        - {transaction_id: FX-T8, amount_usd: 100.00, amount_usd_origen: recalculado_tasa, transaction_country: MX}
+        - {transaction_id: FX-T9, amount_usd: 3.10, amount_usd_origen: fuente, transaction_country: MX}
+
+  - name: fx_cliente_seudonimo_y_reentrega
+    description: "FX-10 el cliente reentregado con last_updated mayor gana; documento, correo y teléfono salen como token y sin dato en claro"
+    model: plata_customers
+    given:
+      - input: source('bronce', 'bronce_customers')
+        rows:
+          - {customer_id: FX-C1, document_number: "fx-123", email: "FX@Ejemplo.test", mobile_phone: "+57 300 000 0000", country: Colombia, customer_status: Active, document_type: "", landline_phone: "", city: "", state: "", detected_accent: "", segment: "", credit_score: "", estimated_monthly_income: "", occupation: "", registration_date: "", registration_branch_id: "", accepts_marketing: "", last_updated: "2026-01-01 00:00:00"}
+          - {customer_id: FX-C1, document_number: "fx-123", email: "fx@ejemplo.test", mobile_phone: "573000000000", country: Colombia, customer_status: Inactive, document_type: "", landline_phone: "", city: "", state: "", detected_accent: "", segment: "", credit_score: "", estimated_monthly_income: "", occupation: "", registration_date: "", registration_branch_id: "", accepts_marketing: "", last_updated: "2026-05-01 00:00:00"}
+      - input: source('seguridad', 'llave')
+        format: sql
+        rows: "select cast('llave-de-prueba' as bytes) as secret"
+    expect:
+      rows:
+        - customer_id: FX-C1
+          country: CO
+          customer_status: Inactive
+          document_number_token: 4b91a730816be70592ad029756e8e92971930446c7c8504ecfa844466b055f66
+          email_token: 6e4c1386ad58a2dab580694131aa4bf951a0410765bfc31e0a2ee1ed85274fad
+          mobile_phone_token: ba19047d20e465d8a15090d2adbc0f403b74580b499ac41e769a02e1a4e49170
