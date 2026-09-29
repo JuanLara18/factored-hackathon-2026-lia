@@ -13,8 +13,8 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 | Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado; `policy/v1` con huella (escalamiento, crédito provisional, riesgo, ACR por acción, traspaso) que el motor lee | `gobierno/src/latam_gobierno/guardas.py` |
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
 | Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
-| IA | IA-7.1 (registro de agentes y config del gateway) e IA-9.1 (biblioteca de prompts) sobre Gemini gratuito; fábrica de modelos con `TestModel` sin llave | [ia/README.md](../ia/README.md) |
-| Clientes | CLI-1.1 a CLI-1.3 y CLI-1.6: matriz de 10 estados x 3 canales x usted y vos, guía de estilo, plantillas críticas y linter en pytest; la lista de frases prohibidas la comparte la IA | [clientes/README.md](../clientes/README.md) |
+| IA | Registro de agentes y prompts (IA-7.1, IA-9.1); arnés de evaluación IA-5.1 con 22 escenarios: offline 21 de 22, 0 inseguros en 66 corridas | [ia/README.md](../ia/README.md) |
+| Clientes | Matriz estado x canal x registro, guía de estilo, 50 plantillas en usted y vos, linter en CI | [clientes/README.md](../clientes/README.md) |
 
 ## BigQuery
 
@@ -43,10 +43,14 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 
 ## Siguientes historias, en orden
 
-1. **IA-3.1 e IA-7.2:** redacción y renderizador por locale; hojas de vida generadas.
-2. **IA-5.1:** arnés de evaluación con verificadores deterministas sobre el agente de disputas (en curso).
-3. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
-4. **Tecnología:** web del chat sobre el spike S3 conectada al agente de disputas.
+1. **Tecnología:** `abrir_disputa` del agente debe pasar el crédito provisional que decide el motor (falla N0 del
+   arnés); herramienta para leer casos abiertos (escenario A5); web del chat sobre el spike S3.
+2. **IA:** escenario E2 (monto sobre umbral) ahora que existe `policy/v1`; IA-3.1 e IA-7.2.
+3. **Deuda técnica:** unificar las frases prohibidas (hoy `clientes/estilo/estilo.yaml` y
+   `ia/prompts/lexicos_prohibidos.yaml`, la prueba exige ambas); mover el enum `Estado` del motor a `comun/`
+   para que IA y Clientes no dependan de Tecnología.
+4. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
+5. **Decisión de la Presidencia:** `bloquear_tarjeta` quedó en `acr2`; la definición (A-06) pide `acr1`.
 
 ## Cómo se trabaja
 
