@@ -81,7 +81,8 @@ desplegar-chat space="juanlara/latam-bank-chat":
     uvx --from huggingface_hub hf repo create {{space}} --repo-type space --space-sdk docker --exist-ok
     uvx --from huggingface_hub hf upload {{space}} .hf_space . --repo-type space
 
-# Chat: despliega el backend en Cloud Run (escala a cero, una instancia; presupuesto con alertas en COP 20.000)
+# Chat: despliega el backend en Cloud Run (escala a cero, una instancia; presupuesto con alertas en COP 20.000).
+# LATAM_TRABAJADOR_VERSION debe coincidir con ia/agentes/trabajadores/disputas.yaml.
 desplegar-chat-run:
     uv run python tecnologia/infra/hf_space/preparar.py .hf_space
-    gcloud run deploy latam-chat --source .hf_space --project latam-bank-hackaton-2026 --region us-central1 --port 7860 --min-instances 0 --max-instances 1 --cpu 1 --memory 512Mi --concurrency 40 --timeout 300 --allow-unauthenticated --set-env-vars LATAM_GCP_PROJECT=latam-bank-hackaton-2026,LATAM_GCP_LOCATION=US --labels proyecto=latam-bank --quiet
+    gcloud run deploy latam-chat --source .hf_space --project latam-bank-hackaton-2026 --region us-central1 --port 7860 --min-instances 0 --max-instances 1 --cpu 1 --memory 512Mi --concurrency 40 --timeout 300 --allow-unauthenticated --set-env-vars LATAM_GCP_PROJECT=latam-bank-hackaton-2026,LATAM_GCP_LOCATION=US,LATAM_GEAP_LOCATION=global,LATAM_TRABAJADOR_VERSION=0.1.0 --labels proyecto=latam-bank --quiet

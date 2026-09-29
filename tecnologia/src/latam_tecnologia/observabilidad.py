@@ -8,6 +8,7 @@ registro. Solo viajan nombres, duraciones, conteo de tokens y esos dos atributos
 
 from __future__ import annotations
 
+import os
 from collections.abc import Mapping
 from typing import Any
 
@@ -45,7 +46,13 @@ class MarcaTrabajador(SpanProcessor):
 
 
 def version_del_registro(trabajador_id: str) -> str:
-    """Versión del trabajador en `ia/agentes/trabajadores`; sin el paquete de IA, un valor neutro."""
+    """Versión del trabajador en `ia/agentes/trabajadores`.
+
+    La imagen de Cloud Run no instala el paquete de IA: ahí la versión llega por `LATAM_TRABAJADOR_VERSION`,
+    que el despliegue toma del registro.
+    """
+    if valor := os.environ.get("LATAM_TRABAJADOR_VERSION"):
+        return valor
     try:
         from latam_ia.registro.cargador import cargar_registro
 

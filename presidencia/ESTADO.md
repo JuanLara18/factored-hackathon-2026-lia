@@ -51,7 +51,7 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 5. Meta (WhatsApp) y Twilio en modo de prueba; preguntas a los organizadores.
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
-7. Dar al servicio de Cloud Run los permisos de GEAP y redeplegar: a la cuenta de servicio de ejecución (por defecto la de Compute del proyecto 47808508188) `roles/aiplatform.user` y `roles/cloudtrace.agent`; después redeplegar para que el chat hable con Gemini en GEAP y envíe trazas (D-32). `LATAM_MODELO=guionado` lo devuelve al guion sin redeplegar código.
+7. Redeplegar el chat en Cloud Run (`just desplegar-chat-run`) para que hable con Gemini en GEAP y envíe trazas (D-32). Los permisos `roles/aiplatform.user` y `roles/cloudtrace.agent` ya están dados a la cuenta de Compute; `LATAM_MODELO=guionado` lo devuelve al guion.
 
 ## Siguientes historias, en orden
 
