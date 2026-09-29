@@ -72,32 +72,36 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 
-## En curso (ramas sin fusionar)
+## Pendiente de desplegar
 
-Un subagente quedó trabajando al cerrar la sesión (la ficha visual en modo runtime y `desplegar.py --recurso` ya están en `develop`, sin desplegar). Si la rama ya está en `origin`, revisarla, correr
-`just check` y fusionarla a `develop`; si no, retomarla desde su worktree.
+Todo está fusionado en `develop`; producción sigue con el agente anterior hasta redesplegar:
 
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/ia-ia-5-3-calidad-geap` | `../fh-calidad` | simulador de cliente con Gemini, reintento ante `malformed_function_call`, prompt 1.1.0 (trabajador 0.2.0), evaluación real de los 23 escenarios en GEAP (tope 400 llamadas) y GenAI Evaluation Service |
+1. Agente: `uv run --with "google-cloud-aiplatform[agent_engines]" --with cloudpickle python
+   tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
+   projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272` (prompt 1.1.0, trabajador 0.2.0,
+   ficha visual y eventos de herramientas).
+2. Chat: `just desplegar-chat-run` con `LATAM_TRABAJADOR_VERSION=0.2.0` y el mismo `LATAM_AGENT_RUNTIME_RECURSO`.
+3. Probar una disputa en el sitio y revisar las trazas.
 
-Tras fusionarlas: redesplegar el agente (`desplegar.py --recurso <actual>`) y el chat (`just desplegar-chat-run`,
-con `LATAM_AGENT_RUNTIME_RECURSO`), y probar una disputa en el sitio.
+**Evaluación en GEAP (29 sep, `ia/evaluacion/reportes/geap_2026-09-29.md`):** 12 de 21 escenarios (57%), 0 inseguros,
+0 violaciones de registro y de enmascarado; trayectoria exacta 52% y en orden 62% en el GenAI Evaluation Service;
+tono 2,95 de 5. Causa principal de fallas: llamadas malformadas de Gemini 2.5 por el endpoint compatible con OpenAI
+(6 de 21 tras el reintento); las demás son de ruta (no escala, no bloquea). Costo total de la evaluación: unos US$0,07.
 
 ## Siguientes historias, en orden
 
-1. **IA:** volver a Gemini 3 con el proveedor nativo de Google (sacar dbt-bigquery del lock del workspace, por
+1. **IA:** volver a Gemini 3 con el proveedor nativo de Google (es la causa principal de fallas en la evaluación) (sacar dbt-bigquery del lock del workspace, por
    ejemplo con `uvx`, para destrabar `pydantic-ai-slim[google]`); IA-3.1 e IA-7.2.
-2. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
-3. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
-4. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
+2. **Tecnología:** en el banco simulado, `abrir_disputa` sobre un caso ya abierto todavía da crédito provisional.
+3. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
+4. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
+5. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
    voz (spike S1) y WhatsApp de prueba.
-5. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
+6. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
 
 ## Cómo se trabaja
 
-Worktrees vivos: `../fh-datos` (guarda la copia local del bucket en `data/`, fuera de git) y el de la tabla
-"En curso". La carpeta `../fh-tec` quedó huérfana (git ya no la registra; se puede borrar a mano).
+Worktree vivo: `../fh-datos` (guarda la copia local del bucket en `data/`, fuera de git). La carpeta `../fh-tec` quedó huérfana (git ya no la registra; se puede borrar a mano).
 
 Ramas `feature/<cara>-<historia>-<tema>` desde `develop`, una por subagente en su propio worktree (`../fh-<tema>`);
 se fusionan a `develop` con `just check` en verde. Commits de una línea.
