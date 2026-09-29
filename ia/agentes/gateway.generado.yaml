@@ -8,7 +8,7 @@ model_list:
     max_tokens: 200
 - model_name: disputas
   litellm_params:
-    model: vertex_ai/gemini-3.1-flash-lite
+    model: vertex_ai/gemini-2.5-flash-lite
     vertex_project: os.environ/LATAM_GCP_PROJECT
     vertex_location: os.environ/LATAM_GEAP_LOCATION
     temperature: 0.0
