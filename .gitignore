@@ -34,3 +34,6 @@ dbt_packages/
 target/
 logs/
 .DS_Store
+datos/dbt/target/
+datos/dbt/logs/
+datos/dbt/dbt_packages/

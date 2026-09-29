@@ -1,0 +1,79 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_vista_cliente_segura
+name: oro_operacional_vista_cliente_segura
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Contexto mínimo del cliente para elegir la norma por país, sin segmento, acento ni contacto"
+  limitations: "Fuente sintética del organizador; sin PII; sin is_fraud ni fraud_score. Corte a AS_OF (fecha_corte)."
+  usage: "Solo lectura desde la instantánea publicada de oro operacional, nunca desde plata ni bronce."
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_vista_cliente_segura
+    physicalName: oro_operacional_vista_cliente_segura
+    physicalType: table
+    description: "customer_id|Una fila por cliente"
+    properties:
+      - name: customer_id
+        logicalType: string
+        description: "Llave del cliente"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cliente_identidad"
+      - name: country
+        logicalType: string
+        description: "ISO 3166-1 alfa 2"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cliente_identidad;motor"
+      - name: customer_status
+        logicalType: string
+        description: "Estado del cliente"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cliente_identidad"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "todas"
+slaProperties:
+  - property: frequency
+    value: 35
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 35 días (dimensión sin historia)"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct customer_id) from latam_bank.oro_operacional_vista_cliente_segura"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro

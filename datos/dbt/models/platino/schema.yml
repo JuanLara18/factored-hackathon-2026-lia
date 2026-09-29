@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: platino_cast_fallidos
+    description: "Conteo de valores no vacíos que fallaron al convertirse, por columna"
+  - name: platino_huerfanos
+    description: "Total de llaves huérfanas por relación"
+  - name: platino_conteos_plata
+    description: "Filas de bronce y plata; duplicados descartados"

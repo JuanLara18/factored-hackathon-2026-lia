@@ -1,0 +1,29 @@
+name: latam_datos
+version: "1.0.0"
+config-version: 2
+profile: latam_datos
+
+# Los casos del fixture (unit tests de dbt) viven en datos/fixtures, junto a sus filas sintéticas
+model-paths: ["models", "../fixtures"]
+macro-paths: ["macros"]
+target-path: target
+clean-targets: [target, dbt_packages, logs]
+
+vars:
+  # Reloj simulado (R-DAT-09): ningún modelo usa la hora real
+  as_of: "2026-06-18 00:00:00"
+  ventana_dias: 180
+
+models:
+  latam_datos:
+    +materialized: table
+    plata:
+      +tags: [plata]
+    oro:
+      +tags: [oro]
+    platino:
+      +tags: [platino]
+
+data_tests:
+  +store_failures: true
+  +store_failures_as: table

@@ -1,0 +1,199 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_transacciones_recientes
+name: oro_operacional_transacciones_recientes
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Transacciones recientes de un cliente para ubicar y listar cargos que quiere disputar el agente"
+  limitations: "Fuente sintética del organizador; sin PII; sin is_fraud ni fraud_score. Corte a AS_OF (fecha_corte)."
+  usage: "Solo lectura desde la instantánea publicada de oro operacional, nunca desde plata ni bronce."
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_transacciones_recientes
+    physicalName: oro_operacional_transacciones_recientes
+    physicalType: table
+    description: "transaction_id|Una fila por transacción de los últimos 180 días antes de AS_OF"
+    properties:
+      - name: transaction_id
+        logicalType: string
+        description: "Llave de la transacción"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones;ficha"
+      - name: customer_id
+        logicalType: string
+        description: "Solo para filtrar por la sesión"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: product_id
+        logicalType: string
+        description: "Producto de la transacción"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: product_type
+        logicalType: string
+        description: "Tipo de producto"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: event_ts
+        logicalType: timestamp
+        description: "Fecha y hora del evento, sin zona"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: event_date
+        logicalType: date
+        description: "Fecha del evento"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: amount
+        logicalType: number
+        description: "Monto en la moneda de la transacción, NUMERIC(18,2)"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones;casos"
+      - name: currency
+        logicalType: string
+        description: "ISO 4217"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: amount_usd
+        logicalType: number
+        description: "Monto en USD"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: amount_usd_origen
+        logicalType: string
+        description: "fuente, igual_monto, recalculado_tasa o sin_tasa"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: transaction_type
+        logicalType: string
+        description: "Tipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: transaction_status
+        logicalType: string
+        description: "Approved, Pending, Reversed o Declined"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: channel
+        logicalType: string
+        description: "Canal"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: merchant_name
+        logicalType: string
+        description: "Comercio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: merchant_category
+        logicalType: string
+        description: "Categoría del comercio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: transaction_country
+        logicalType: string
+        description: "ISO 3166-1 alfa 2"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: es_extranjera
+        logicalType: boolean
+        description: "País de la transacción distinto del del cliente"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: _moneda_anomala
+        logicalType: boolean
+        description: "Cliente de México con producto en USD"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "cuentas_transacciones"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "todas"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct transaction_id) from latam_bank.oro_operacional_transacciones_recientes"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro

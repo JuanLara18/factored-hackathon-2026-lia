@@ -1,0 +1,12 @@
+# Sin secretos: la identidad la da gcloud (ADC) o la cuenta de servicio del entorno
+latam_datos:
+  target: sandbox
+  outputs:
+    sandbox:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('LATAM_GCP_PROJECT', 'latam-bank-hackaton-2026') }}"
+      dataset: "{{ env_var('LATAM_BQ_DATASET', 'latam_bank') }}"
+      location: "{{ env_var('LATAM_GCP_LOCATION', 'US') }}"
+      threads: 4
+      priority: interactive

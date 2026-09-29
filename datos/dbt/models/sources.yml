@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: bronce
+    description: Copia cruda, todo STRING, cargada por el proceso externo (D-30)
+    schema: latam_bank
+    tables:
+      - {name: bronce_customers}
+      - {name: bronce_products}
+      - {name: bronce_transactions}
+      - {name: bronce_call_center_interactions}
+      - {name: bronce_complaints}
+      - {name: bronce_satisfaction_surveys}
+      - {name: bronce_service_agents}
+      - {name: bronce_daily_exchange_rates}
+      - {name: bronce_call_transcripts}
+      - {name: bronce_digital_events}
+      - {name: bronce_branches}
+      - {name: bronce_marketing_campaigns}
+      - {name: bronce_campaign_sends}
+  - name: seguridad
+    description: "Llave de seudonimización, solo la cuenta del pipeline; en el sandbox el IAM es de proyecto"
+    schema: latam_seguridad
+    tables:
+      - {name: llave}
