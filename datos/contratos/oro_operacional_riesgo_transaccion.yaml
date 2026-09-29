@@ -1,0 +1,87 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_riesgo_transaccion
+name: oro_operacional_riesgo_transaccion
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Puntaje y banda de riesgo de fraude para la política del servicio de diagnóstico"
+  limitations: "Acceso exclusivo del servicio de diagnóstico de fraude; nunca la ficha ni un modelo de lenguaje; sin is_fraud (R-DAT-39)"
+  usage: "Solo lectura por el servicio de diagnóstico de fraude"
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_riesgo_transaccion
+    physicalName: oro_operacional_riesgo_transaccion
+    physicalType: view
+    description: "Una fila por transacción de la ventana de 180 días antes de AS_OF"
+    properties:
+      - name: transaction_id
+        logicalType: string
+        description: "Llave de la transacción"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "diagnostico_fraude"
+      - name: customer_id
+        logicalType: string
+        description: "Cliente"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "diagnostico_fraude"
+      - name: fraud_score
+        logicalType: number
+        description: "Puntaje de fraude, 0 a 100, solo para la política"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "diagnostico_fraude"
+      - name: banda_riesgo
+        logicalType: string
+        description: "alto (sobre 30), zona_gris (revisión humana) o bajo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "diagnostico_fraude"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "diagnostico_fraude"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct transaction_id) from latam_bank.oro_operacional_riesgo_transaccion"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro

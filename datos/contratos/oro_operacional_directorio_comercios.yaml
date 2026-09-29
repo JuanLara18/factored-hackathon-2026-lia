@@ -1,0 +1,119 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_directorio_comercios
+name: oro_operacional_directorio_comercios
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Directorio de comercios para la ficha y la búsqueda por descriptor"
+  limitations: "Enriquecimiento sintético inventado por el equipo; versión congelada con el retenido; pendiente de validación de Clientes (S-DAT-09)"
+  usage: "Solo lectura desde la instantánea publicada de oro operacional"
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_directorio_comercios
+    physicalName: oro_operacional_directorio_comercios
+    physicalType: table
+    description: "Una fila por comercio (24 en la muestra)"
+    properties:
+      - name: merchant_key
+        logicalType: string
+        description: "Llave del comercio (MD5 del nombre, 10 hex)"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: merchant_name
+        logicalType: string
+        description: "Nombre del dataset"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: razon_social
+        logicalType: string
+        description: "Razón social inventada por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: descriptor_extracto
+        logicalType: string
+        description: "Descriptor de 5 a 22 caracteres, inventado por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha;busqueda"
+      - name: marca
+        logicalType: string
+        description: "Marca inventada por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: merchant_category
+        logicalType: string
+        description: "Categoría más frecuente"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: origen
+        logicalType: string
+        description: "Siempre equipo (R-DAT-40)"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: version
+        logicalType: string
+        description: "Versión del directorio"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: semilla
+        logicalType: integer
+        description: "Semilla de generación"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct merchant_key) from latam_bank.oro_operacional_directorio_comercios"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro

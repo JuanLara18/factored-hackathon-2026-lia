@@ -88,7 +88,8 @@ Todo vive en el dataset `latam_bank` con prefijo de capa.
 | `plata_transactions.amount_usd` | si la fuente lo trae vacío (57% de las filas) se recalcula: USD igual al monto, otras monedas por la tasa del día de `plata_daily_exchange_rates`; `amount_usd_origen` marca `fuente`, `igual_monto`, `recalculado_tasa` o `sin_tasa` |
 | `platino_cast_fallidos` | por columna, cuántos valores no vacíos no se pudieron convertir (pasan a NULL en plata). Ya detectó `products.last_transaction_date`, que es marca de tiempo y no fecha |
 | `platino_huerfanos`, `platino_conteos_plata` | llaves huérfanas por relación; filas de bronce contra plata y duplicados descartados |
-| `oro_operacional_*` (3) | `transacciones_recientes` (180 días antes de `AS_OF`, sin `is_fraud` ni `fraud_score`), `estado_productos`, `vista_cliente_segura`; contratos ODCS en `contratos/` |
+| `oro_operacional_*` (7) | `transacciones_recientes` (180 días antes de `AS_OF`, sin `is_fraud` ni `fraud_score`), `estado_productos`, `vista_cliente_segura`, `reclamos_cliente` (sin producto afectado ni monto reclamado), `directorio_comercios` (24 comercios; razón social, descriptor y marca inventados por el equipo, `origen = 'equipo'`), y las **vistas** `ficha_transaccion` (directorio, compras previas 12 meses, posibles duplicados 48 h, tasa y explicación del estado, todo con datos anteriores al evento, sin `fraud_score`) y `riesgo_transaccion` (`fraud_score` y `banda_riesgo`: alto sobre 30, zona gris desde 25, parámetros `riesgo_*` de `dbt_project.yml`; sin `is_fraud`); contratos ODCS en `contratos/` |
+| `dominios_canonicos` (seed) | dominios de `dominios/dominios_canonicos.csv`: canal, tipo y estado de transacción, categoría de comercio, tipo y estado de producto, categoría, subcategoría, canal, prioridad y estado de reclamo, banda de riesgo (valor de la fuente y etiqueta en español). Prueba genérica `dominio_canonico` con severidad `warn` en cada columna de oro |
 | `oro_analitico_linea_base_reclamos` | reclamos por país, canal y mes |
 
 Tests: llaves `unique`/`not_null` y `relationships` (huérfanas) con severidad `warn` y `store_failures` (tablas en `latam_pruebas`).
@@ -102,8 +103,7 @@ educación y banda de edad solo para auditar equidad. En el sandbox el IAM es de
 control de acceso; el destino de producción son etiquetas de política (policy tags) en las columnas, vistas autorizadas para oro operacional
 y acceso a `latam_seguridad` solo para la cuenta del pipeline.
 
-**Recortes.** Solo 3 de las fichas de oro operacional (faltan `ficha_transaccion`, `riesgo_transaccion`, `reclamos_cliente`, `directorio_comercios`);
-sin cuarentena por fila ni lotes (bronce sin `_lote_id`); dominios canónicos solo para país y moneda; `plata_digital_events` sin conteos de plata.
+**Recortes.** Sin cuarentena por fila ni lotes (bronce sin `_lote_id`); los dominios canónicos conservan los valores de la fuente (en inglés salvo producto y subcategoría), la traducción es solo etiqueta; las bandas de riesgo son provisionales hasta que Gobierno fije la zona gris; `plata_digital_events` sin conteos de plata.
 
 ## Dataset de pruebas
 

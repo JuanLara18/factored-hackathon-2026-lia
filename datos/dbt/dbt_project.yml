@@ -6,6 +6,7 @@ profile: latam_datos
 # Los casos del fixture (unit tests de dbt) viven en datos/fixtures, junto a sus filas sintéticas
 model-paths: ["models", "../fixtures"]
 macro-paths: ["macros"]
+seed-paths: ["../dominios"]
 target-path: target
 clean-targets: [target, dbt_packages, logs]
 
@@ -13,6 +14,15 @@ vars:
   # Reloj simulado (R-DAT-09): ningún modelo usa la hora real
   as_of: "2026-06-18 00:00:00"
   ventana_dias: 180
+  # Bandas de riesgo (R-DAT-39): sobre 30 es alto (30,0 es el máximo en legítimas); desde zona_gris_desde, revisión humana
+  riesgo_alto_sobre: 30
+  riesgo_zona_gris_desde: 25
+  directorio_version: "1.0.0"
+  directorio_semilla: 202616737
+
+seeds:
+  latam_datos:
+    +tags: [dominios]
 
 models:
   latam_datos:
@@ -21,6 +31,10 @@ models:
       +tags: [plata]
     oro:
       +tags: [oro]
+      oro_operacional_ficha_transaccion:
+        +materialized: view
+      oro_operacional_riesgo_transaccion:
+        +materialized: view
     platino:
       +tags: [platino]
 

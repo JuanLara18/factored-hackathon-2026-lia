@@ -1,0 +1,64 @@
+dominio,valor,etiqueta_es
+canal_transaccion,POS,Punto de venta
+canal_transaccion,ATM,Cajero automático
+canal_transaccion,Web,Web
+canal_transaccion,App,Aplicación móvil
+canal_transaccion,Branch,Sucursal
+canal_transaccion,Transfer,Transferencia
+tipo_transaccion,Purchase,Compra
+tipo_transaccion,Withdrawal,Retiro
+tipo_transaccion,Transfer,Transferencia
+tipo_transaccion,Payment,Pago
+tipo_transaccion,Deposit,Depósito
+tipo_transaccion,Adjustment,Ajuste
+estado_transaccion,Approved,Aprobada
+estado_transaccion,Declined,Rechazada
+estado_transaccion,Pending,Pendiente
+estado_transaccion,Reversed,Revertida
+categoria_comercio,Food,Alimentos
+categoria_comercio,Services,Servicios
+categoria_comercio,Other,Otros
+categoria_comercio,Transport,Transporte
+categoria_comercio,Entertainment,Entretenimiento
+categoria_comercio,Health,Salud
+tipo_producto,Cuenta Ahorro,Cuenta de ahorro
+tipo_producto,Tarjeta Crédito,Tarjeta de crédito
+tipo_producto,Cuenta Corriente,Cuenta corriente
+tipo_producto,Tarjeta Débito,Tarjeta débito
+tipo_producto,Préstamo Personal,Préstamo personal
+tipo_producto,Préstamo Hipotecario,Préstamo hipotecario
+tipo_producto,Inversión,Inversión
+tipo_producto,Seguro,Seguro
+estado_producto,Active,Activo
+estado_producto,Closed,Cerrado
+estado_producto,Blocked,Bloqueado
+estado_producto,Suspended,Suspendido
+categoria_reclamo,Transactions,Transacciones
+categoria_reclamo,Fees,Comisiones
+categoria_reclamo,Technical,Técnico
+categoria_reclamo,Branch,Sucursal
+categoria_reclamo,Service,Servicio
+subcategoria_reclamo,Cargo no reconocido,Cargo no reconocido
+subcategoria_reclamo,Cobro indebido,Cobro indebido
+subcategoria_reclamo,Problema con app,Problema con la aplicación
+subcategoria_reclamo,Atención en sucursal,Atención en sucursal
+subcategoria_reclamo,Calidad de servicio,Calidad de servicio
+canal_reclamo,Call Center,Centro de llamadas
+canal_reclamo,Email,Correo
+canal_reclamo,Web,Web
+canal_reclamo,App,Aplicación móvil
+canal_reclamo,Branch,Sucursal
+canal_reclamo,Regulator,Regulador
+prioridad_reclamo,Low,Baja
+prioridad_reclamo,Medium,Media
+prioridad_reclamo,High,Alta
+prioridad_reclamo,Critical,Crítica
+estado_reclamo,Open,Abierto
+estado_reclamo,In Process,En proceso
+estado_reclamo,Escalated,Escalado
+estado_reclamo,Resolved,Resuelto
+estado_reclamo,Closed,Cerrado
+estado_reclamo,Rejected,Rechazado
+banda_riesgo,bajo,Bajo
+banda_riesgo,zona_gris,"Zona gris, revisión humana"
+banda_riesgo,alto,Alto

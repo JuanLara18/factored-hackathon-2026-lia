@@ -1,0 +1,151 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_reclamos_cliente
+name: oro_operacional_reclamos_cliente
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Reclamos históricos del cliente para el servicio de casos"
+  limitations: "Sin affected_product_id ni claimed_amount, sin agente ni compensación ni texto libre; corte a AS_OF"
+  usage: "Solo lectura desde la instantánea publicada de oro operacional"
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_reclamos_cliente
+    physicalName: oro_operacional_reclamos_cliente
+    physicalType: table
+    description: "Una fila por queja del cliente"
+    properties:
+      - name: complaint_id
+        logicalType: string
+        description: "Llave de la queja"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: customer_id
+        logicalType: string
+        description: "Cliente"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: case_type
+        logicalType: string
+        description: "Tipo de caso"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: category
+        logicalType: string
+        description: "Categoría canónica"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: subcategory
+        logicalType: string
+        description: "Subcategoría canónica"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: status
+        logicalType: string
+        description: "Estado"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: priority
+        logicalType: string
+        description: "Prioridad"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: reception_channel
+        logicalType: string
+        description: "Canal de recepción"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: fecha_radicacion
+        logicalType: timestamp
+        description: "Fecha de radicación"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: fecha_primera_respuesta
+        logicalType: timestamp
+        description: "Primera respuesta"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: fecha_resolucion
+        logicalType: timestamp
+        description: "Resolución"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: sla_breached
+        logicalType: boolean
+        description: "Incumplió el SLA"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "casos"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct complaint_id) from latam_bank.oro_operacional_reclamos_cliente"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro
