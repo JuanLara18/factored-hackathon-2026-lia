@@ -8,6 +8,22 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ---
 
+## D-32 · El agente vive en Gemini Enterprise Agent Platform (29 sep 2026)
+
+- **Decisión:** con la facturación reabierta (presupuesto de COP 20.000 con alertas), el agente de disputas pasa a
+  Gemini Enterprise Agent Platform (GEAP, antes Vertex AI) en tres fases: (1) los modelos se sirven desde GEAP
+  (Gemini Flash-Lite por defecto) y las trazas van a Cloud Observability con OpenTelemetry; (2) el agente se despliega
+  en Agent Runtime como agente propio (PydanticAI envuelto, sin reescribirlo en ADK), con Sessions, y se registra en
+  Agent Registry con su Agent Identity; Cloud Run queda como canal (sitio y AG-UI) que llama al agente; (3) los 23
+  escenarios del arnés se corren también con el GenAI Evaluation Service.
+- **Alternativas:** seguir con Gemini por AI Studio (sin gobierno de plataforma); reescribir el agente en ADK (más
+  trabajo, sin ganancia para la demo).
+- **Por qué:** GEAP da identidad, registro, trazas y evaluación gestionadas, que responden a los criterios de gobierno
+  del enunciado. Costo: Agent Runtime cobra US$0,085 por vCPU-hora con 50 vCPU-horas gratis al mes y no cobra la
+  espera entre turnos; Flash-Lite cuesta centavos por cientos de conversaciones.
+- **Modifica:** D-29 y D-30 (el proveedor de modelos deja de ser AI Studio).
+- **Estado:** firme (instrucción de la presidencia humana).
+
 ## D-31 · Bloquear la tarjeta exige acr1, no acr2 (29 sep 2026)
 
 - **Decisión:** `bloquear_tarjeta` pide autenticación de consulta (`acr1`) más la confirmación explícita de la
