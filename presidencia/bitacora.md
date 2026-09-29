@@ -4,6 +4,22 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 
 ---
 
+## 29 de septiembre de 2026
+
+**Cerrado**
+- D-30: todo en Google Cloud, carga del dataset supuesta externa, capas como prefijo de tabla en `latam_bank`.
+- Proyecto `latam-bank-hackaton-2026` en sandbox de BigQuery; dataset completo cargado (13 tablas, 23,5 M filas).
+- Crítica en frío de datos (12 hallazgos) y correcciones: manifiesto encadenado, reglas robustas, limitaciones,
+  plata y oro con dbt, seudonimización, contratos y fixture.
+- Fusionadas a `develop` las diez ramas del arranque (gobierno, auditoría, tecnología, spikes S3 y S4,
+  Terraform y datos).
+
+**Bloquea**
+- Facturación cerrada: sin Cloud Run ni Vertex AI hasta que la Presidencia decida reabrirla.
+
+**Recortado**
+- Cuatro fichas de oro operacional, cuarentena por fila y lotes en bronce.
+
 ## 28 de septiembre de 2026
 
 **Cerrado**
