@@ -2,7 +2,7 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # Instala las dependencias de todas las caras
 setup:
-    uv sync
+    uv sync --all-packages --all-groups
 
 # Formato, tipos y pruebas: lo mismo que corre la CI
 check:

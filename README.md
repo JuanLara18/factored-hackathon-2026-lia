@@ -26,7 +26,7 @@ Cada carpeta de primer nivel es una cara de LATAM Bank y su dueña está en `.gi
 ## Empezar
 
 ```bash
-uv sync            # dependencias de todas las caras
+uv sync --all-packages --all-groups   # dependencias de todas las caras
 just check         # formato, tipos y pruebas
 ```
 
