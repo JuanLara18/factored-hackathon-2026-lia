@@ -1,0 +1,25 @@
+sesion: 2026-09-28_prueba_plantilla
+objeto: prueba de la plantilla de AUD-4.2 (sin auditoria real)
+invocacion:
+  agente: auditoria
+  contexto: frio
+  modelo: no aplica (informe de prueba)
+definicion_del_agente:
+  ruta: .claude/agents/auditoria.md
+  sha256: 496d50a0dbb50bc7f689a316ae90559b96e7a2334b8fa0b8f3090527a657be1b
+entradas:
+  - ruta: auditoria/plantillas/informe_sellado.md
+    sha256: bc528c763540ad556291ecf57dbfbf8361433e67b893fc742ffc231f38b90712
+herramientas_usadas: [Read, Write]
+informe:
+  ruta: auditoria/sesiones/2026-09-28_prueba_plantilla/informe.md
+  sha256_hallazgos: 5263f1039f02aca3bfc37d42716ce9ef59cf2bffd24df0069f75f3b0d6fac7d7
+  commit: el que introduce este archivo (git log -1 -- auditoria/sesiones/2026-09-28_prueba_plantilla)
+  rama: feature/gobierno-gob-10-guardas
+segunda_revision_fria:
+  requerida: no
+  informe: null
+declaraciones:
+  sin_acceso_a_credenciales: true
+  sin_acceso_al_diccionario_del_dataset: true
+  no_construyo_lo_auditado: true
