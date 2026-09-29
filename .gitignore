@@ -6,11 +6,20 @@ runs/
 !.env.example
 secretos/
 **/*Diccionario*
+**/*diccionario*
 *.pem
 *.key
 credentials*.json
 gobierno/retenido/casos/
 audio/
+eval/materializados/
+.aws/
+*.duckdb
+*.parquet
+*.csv
+*.wav
+*.mp3
+*.m4a
 
 # Python
 __pycache__/
