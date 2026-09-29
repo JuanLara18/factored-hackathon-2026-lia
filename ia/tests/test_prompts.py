@@ -33,9 +33,11 @@ PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----B
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
 REF_REDACCION = "redaccion/borrador_deslexicalizado@1.0.0"
-REF_DISPUTAS = "disputas/agente@1.0.0"
+REF_DISPUTAS = "disputas/agente@1.1.0"
+REF_DISPUTAS_ANTERIOR = "disputas/agente@1.0.0"
 VALORES: dict[str, dict[str, str]] = {
     REF_DISPUTAS: {},
+    REF_DISPUTAS_ANTERIOR: {},
     REF_COMPRENSION: {
         "mensaje_cliente": "[COMERCIO_1] me cobró algo que no hice",
         "motivos_permitidos": "fraude, error_procesamiento, disputa_comercial",

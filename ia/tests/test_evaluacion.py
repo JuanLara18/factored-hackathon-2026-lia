@@ -332,3 +332,26 @@ def test_un_escenario_con_nombre_de_archivo_distinto_del_id_se_rechaza(tmp_path:
     (tmp_path / "otro_nombre.yaml").write_text(origen.read_text(encoding="utf-8"), encoding="utf-8")
     with pytest.raises(ValueError, match="nombre del archivo"):
         cargar_escenarios(tmp_path)
+
+
+def test_simulador_cliente_llm_abre_con_el_guion_y_luego_conversa() -> None:
+    from latam_ia.evaluacion.esquema import cargar_escenarios
+    from latam_ia.evaluacion.simulador import ContextoSimulador, SimuladorClienteLLM
+    from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart
+    from pydantic_ai.models.function import AgentInfo, FunctionModel
+
+    vistos: list[str] = []
+
+    def responder(mensajes: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        vistos.append(str(mensajes))
+        return ModelResponse(
+            parts=[TextPart('{"texto": "El de 88000", "intencion": "hablar", "termina": false}')]
+        )
+
+    e = next(x for x in cargar_escenarios() if x.id == "A2_tres_candidatas")
+    sim = SimuladorClienteLLM(e.guion, e.idioma, e.registro, FunctionModel(responder))
+    primero = sim.siguiente(ContextoSimulador(None, False, 0))
+    assert primero is not None and "Super Norte" in primero.texto and vistos == []
+    segundo = sim.siguiente(ContextoSimulador("¿Cuál de los tres cobros?", False, 1))
+    assert segundo is not None and segundo.texto == "El de 88000"
+    assert "TX-" not in vistos[0]  # nunca ve identificadores ni resultados de herramientas

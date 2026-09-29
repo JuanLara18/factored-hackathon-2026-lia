@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from latam_tecnologia.canales.geap import MEDIDOR
 from pydantic_ai.models import Model
 
 from latam_ia.evaluacion.ejecutor import Corrida, ejecutar_corrida, elegir_modelo_agente
@@ -57,19 +58,22 @@ def ejecutar_suite(
     entorno: Mapping[str, str] | None = None,
     modelo_agente: Model | None = None,
     modelo_simulador: Model | None = None,
+    max_llamadas: int | None = None,
 ) -> list[ResultadoEscenario]:
-    return [
-        ResultadoEscenario(
-            e,
-            [
-                ejecutar_corrida(
-                    e, i, entorno=entorno, modelo_agente=modelo_agente, modelo_simulador=modelo_simulador
-                )
-                for i in range(k)
-            ],
-        )
-        for e in escenarios
-    ]
+    """Corre los escenarios en orden; con `max_llamadas` para antes de un escenario si el medidor de GEAP
+    ya llegó al tope (los escenarios que no corrieron se reportan como no ejecutados)."""
+    resultados: list[ResultadoEscenario] = []
+    for e in escenarios:
+        if max_llamadas is not None and MEDIDOR.llamadas >= max_llamadas:
+            break
+        corridas = [
+            ejecutar_corrida(
+                e, i, entorno=entorno, modelo_agente=modelo_agente, modelo_simulador=modelo_simulador
+            )
+            for i in range(k)
+        ]
+        resultados.append(ResultadoEscenario(e, corridas))
+    return resultados
 
 
 def huella_escenarios(directorio: Path = DIR_ESCENARIOS) -> str:
@@ -124,6 +128,23 @@ def _escalamiento(resultados: list[ResultadoEscenario]) -> dict[str, Any]:
     return tasa(ok, len(corridas))
 
 
+# Tarifa de lista de Gemini 2.5 Flash-Lite en USD por millón de tokens (entrada, salida).
+TARIFA_ENTRADA, TARIFA_SALIDA = 0.10, 0.40
+
+
+def consumo() -> dict[str, Any]:
+    m = MEDIDOR
+    return {
+        "llamadas": m.llamadas,
+        "reintentos": m.reintentos,
+        "errores": m.errores,
+        "tokens_entrada": m.entrada,
+        "tokens_salida": m.salida,
+        "latencia_media_s": round(m.segundos / m.llamadas, 2) if m.llamadas else 0.0,
+        "costo_estimado_usd": round((m.entrada * TARIFA_ENTRADA + m.salida * TARIFA_SALIDA) / 1e6, 4),
+    }
+
+
 def a_dict(resultados: list[ResultadoEscenario], k: int, agente: str) -> dict[str, Any]:
     modos = sorted({c.modo_simulador for r in resultados for c in r.corridas})
     return {
@@ -133,6 +154,7 @@ def a_dict(resultados: list[ResultadoEscenario], k: int, agente: str) -> dict[st
             "simulador": modos,
             "k": k,
             "huella_escenarios": huella_escenarios(),
+            "consumo": consumo(),
             "aviso": (
                 "Con la política de referencia guionada esto mide el arnés, los verificadores y las "
                 "herramientas, no la calidad de un modelo."
@@ -171,6 +193,18 @@ def a_markdown(datos: dict[str, Any]) -> str:
         "",
         m["aviso"],
         "",
+        *(
+            [
+                f"Consumo del modelo: {m['consumo']['llamadas']} llamadas "
+                f"({m['consumo']['reintentos']} reintentos), "
+                f"{m['consumo']['tokens_entrada']} tokens de entrada y {m['consumo']['tokens_salida']} de "
+                f"salida, latencia media {m['consumo']['latencia_media_s']} s, costo estimado "
+                f"US$ {m['consumo']['costo_estimado_usd']}.",
+                "",
+            ]
+            if m["consumo"]["llamadas"]
+            else []
+        ),
         "## Métricas agregadas",
         "",
         "| Métrica | Valor |",
@@ -225,9 +259,53 @@ def a_markdown(datos: dict[str, Any]) -> str:
     return "\n".join(lineas) + "\n"
 
 
-def escribir(datos: dict[str, Any], salida: Path) -> tuple[Path, Path]:
+def escribir_trazas(resultados: list[ResultadoEscenario], ruta: Path) -> None:
+    """Trazas completas (conversación y herramientas) para el GenAI Evaluation Service; no van a git."""
+    datos = [
+        {
+            "escenario": r.escenario.id,
+            "categoria": r.escenario.categoria,
+            "idioma": r.escenario.idioma,
+            "registro": r.escenario.registro,
+            "esperado_herramientas": esperado_herramientas(r.escenario),
+            "corridas": [
+                {
+                    "estado": c.estado,
+                    "inseguro": c.inseguro,
+                    "hallazgos": [h.como_dict() for h in c.hallazgos],
+                    "turnos": [{"rol": t.rol, "texto": t.texto} for t in c.traza.turnos],
+                    "herramientas": [
+                        {"nombre": h.nombre, "args": h.args, "retorno": h.retorno, "aprobacion": h.aprobacion}
+                        for h in c.traza.herramientas
+                    ],
+                    "errores": c.traza.errores,
+                }
+                for c in r.corridas
+            ],
+        }
+        for r in resultados
+    ]
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    ruta.write_text(json.dumps(datos, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+
+
+def esperado_herramientas(e: Escenario) -> list[str]:
+    """Secuencia esperada de herramientas con efecto, derivada del estado final esperado del escenario."""
+    x = e.esperado
+    secuencia: list[str] = []
+    if x.bloqueos:
+        secuencia.append("bloquear_tarjeta")
+    if x.casos and "abrir_disputa" not in x.herramientas_prohibidas:
+        nuevos = len(x.casos) - len(e.mundo_extra.casos_previos)
+        secuencia += ["abrir_disputa"] * max(nuevos, 0)
+    if x.debe_escalar:
+        secuencia.append("escalar")
+    return secuencia
+
+
+def escribir(datos: dict[str, Any], salida: Path, etiqueta: str = "ultimo") -> tuple[Path, Path]:
     salida.mkdir(parents=True, exist_ok=True)
-    ruta_json, ruta_md = salida / "ultimo.json", salida / "ultimo.md"
+    ruta_json, ruta_md = salida / f"{etiqueta}.json", salida / f"{etiqueta}.md"
     ruta_json.write_text(
         json.dumps(datos, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
     )
