@@ -24,7 +24,13 @@ latam-tecnologia = { workspace = true }
 latam-gobierno = { workspace = true }
 
 [dependency-groups]
-dev = ["pytest>=8", "hypothesis>=6", "ruff>=0.6", "pyright>=1.1.380"]
+dev = [
+    "pytest>=8",
+    "hypothesis>=6",
+    "ruff>=0.6",
+    "pyright>=1.1.380",
+    "httpx>=0.28.1",
+]
 
 [tool.ruff]
 line-length = 110
@@ -38,4 +44,4 @@ typeCheckingMode = "strict"
 include = ["comun/src", "clientes/src", "ia/src", "datos/src", "tecnologia/src", "gobierno/src"]
 
 [tool.pytest.ini_options]
-testpaths = ["comun/tests", "tests"]
+testpaths = ["comun/tests", "tecnologia/tests", "tests"]
