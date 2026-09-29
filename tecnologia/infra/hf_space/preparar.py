@@ -1,4 +1,4 @@
-"""Arma la carpeta del Space de Hugging Face con el subconjunto del repositorio que necesita el backend del chat.
+"""Arma la carpeta del Space de Hugging Face con lo que el backend del chat necesita del repositorio.
 
 Conserva la estructura del workspace porque el código resuelve plantillas, política y web por rutas relativas.
 Uso: `uv run python tecnologia/infra/hf_space/preparar.py <salida>`; luego se sube con `hf upload`.
