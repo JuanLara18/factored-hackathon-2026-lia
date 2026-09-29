@@ -97,6 +97,11 @@ class Herramientas:
         """Lo que `policy/v1` decide para esa transacción; el modelo no lo elige."""
         return self._politica.credito_provisional_aplica(transaccion.monto.moneda, transaccion.amount_usd)
 
+    def escalar_tras_radicar(self, transaccion: Transaccion) -> str | None:
+        """Motivo si `policy/v1` manda pasar el caso a una persona además de radicar (A-07); si no, `None`."""
+        d = self._politica.escalar_tras_radicar(transaccion.monto.moneda, transaccion.amount_usd)
+        return None if d is None else d.motivo
+
     # Efectos (bloquear con acr1, radicar con acr2; idempotentes por llave)
 
     def abrir_disputa(

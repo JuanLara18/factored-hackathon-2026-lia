@@ -46,7 +46,7 @@ fecha; un monto exige `{monto}` y `{moneda}` en chat y WhatsApp, y `{monto_en_pa
 ## Frases prohibidas y obligatorias
 
 La lista completa, con su motivo y su alternativa, está en `frases_prohibidas` de `estilo.yaml`; es la única del
-repositorio (los prompts de IA la reutilizan con `frases_prohibidas(estilo, "prompt")`). En resumen: nada de
+repositorio (los prompts y el arnés de IA la reutilizan con `frases_prohibidas(estilo, "prompt")` y el alcance `respuesta`). En resumen: nada de
 promesas de devolución, de "listo" sin verificar, de diagnósticos ("esto es fraude"), de acusaciones al cliente, de
 plazos sin regla, de certezas indebidas, de "caso cerrado" con el reclamo abierto, de pedir la clave o el código,
 de decir que es una persona, de revelar reglas internas ni de normas de otro país.

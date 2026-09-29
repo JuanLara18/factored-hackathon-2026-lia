@@ -18,6 +18,9 @@ INSTRUCCIONES = (
 )
 
 
+AVISO_ESCALAR = " Siguiente paso obligatorio: llamar a escalar con motivo {motivo}."
+
+
 @dataclass
 class ContextoAgente:
     """El cliente sale de la sesión; el modelo no puede nombrarlo ni cambiarlo."""
@@ -82,7 +85,10 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
             _confirmacion(ctx, "abrir_disputa"),
             credito_provisional=provisional,
         )
-        return accion.resultado_releido
+        tras = None if transaccion is None else d.herramientas.escalar_tras_radicar(transaccion)
+        if tras is None:
+            return accion.resultado_releido
+        return accion.resultado_releido + AVISO_ESCALAR.format(motivo=tras)
 
     @agente.tool(requires_approval=True)
     def bloquear_tarjeta(ctx: RunContext[ContextoAgente], product_id: str) -> str:  # pyright: ignore[reportUnusedFunction]

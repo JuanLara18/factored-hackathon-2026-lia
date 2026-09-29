@@ -210,3 +210,10 @@ def test_dbt_duplica_los_umbrales_de_riesgo(pol: PoliticaV1) -> None:
     v = dbt["vars"]
     assert D(str(v["riesgo_alto_sobre"])) == pol.riesgo.alto_sobre
     assert D(str(v["riesgo_zona_gris_desde"])) == pol.riesgo.zona_gris_desde
+
+
+def test_monto_sobre_el_umbral_radica_y_escala(pol: PoliticaV1) -> None:
+    d = pol.escalar_tras_radicar("COP", D(1500))
+    assert d is not None and d.id == "ESC-04" and d.motivo == "monto_sobre_umbral"
+    assert pol.escalar_tras_radicar("COP", D(1000)) is None
+    assert pol.escalar_tras_radicar("COP", None) is None

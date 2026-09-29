@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from latam_gobierno.politica import cargar as cargar_politica
+from latam_tecnologia.herramientas.agente import AVISO_ESCALAR
 from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 from latam_tecnologia.motor.caso import decidir
 from pydantic import TypeAdapter
@@ -57,6 +58,8 @@ TEXTOS: dict[str, dict[str, str]] = {
         "opciones": "Encontré varios cobros que podrían ser: {lista}. ¿Cuál es el que no reconoce?",
         "ya_abierto": "Ya tiene un reclamo abierto por ese cobro ({ret}). No abro otro; una persona del "
         "equipo lo está revisando.",
+        "radicado_y_escalado": "Su reclamo quedó radicado. Resultado: {caso}. Por el monto, paso además "
+        "su caso a una persona del equipo. Quedó en cola ({ret}) y no puedo prometer una hora de atención.",
         "abrir_ok": "Su reclamo quedó radicado. Resultado: {ret}. Una persona del equipo lo revisará.",
         "bloqueo_ok": "Su tarjeta quedó bloqueada. ",
         "ya_bloqueada": "Su tarjeta ya estaba bloqueada, no hace falta bloquearla de nuevo. ",
@@ -77,6 +80,8 @@ TEXTOS: dict[str, dict[str, str]] = {
         "opciones": "Encontrei várias cobranças possíveis: {lista}. Qual delas você não reconhece?",
         "ya_abierto": "Você já tem uma contestação aberta para essa cobrança ({ret}). Não abro outra; uma "
         "pessoa da equipe está analisando.",
+        "radicado_y_escalado": "Sua contestação foi registrada. Resultado: {caso}. Pelo valor, passo também "
+        "o seu caso a uma pessoa da equipe. Ficou na fila ({ret}) e não posso prometer um horário.",
         "abrir_ok": "Sua contestação foi registrada. Resultado: {ret}. Uma pessoa da equipe vai analisar.",
         "bloqueo_ok": "Seu cartão foi bloqueado. ",
         "ya_bloqueada": "Seu cartão já estava bloqueado, não precisa bloquear de novo. ",
@@ -266,6 +271,14 @@ def _resolver(
     return _llamar("abrir_disputa", transaction_id=tx.transaction_id, motivo=propuesta.motivo)
 
 
+def _aviso_de_escalar(llamadas: list[Llamada]) -> str | None:
+    """Motivo que la herramienta pidió tras radicar, si aún no se escaló."""
+    abierta = next((x for x in llamadas if x.nombre == "abrir_disputa"), None)
+    if abierta is None or abierta.retorno is None or "Siguiente paso obligatorio" not in abierta.retorno:
+        return None
+    return None if any(x.nombre == "escalar" for x in llamadas) else abierta.retorno
+
+
 def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
     t = TEXTOS[idioma]
     usuarios = _textos_usuario(mensajes)
@@ -304,8 +317,14 @@ def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
                 return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
             return _llamar("listar_transacciones", limite=50)
         case "abrir_disputa":
+            if _aviso_de_escalar(llamadas) is not None:
+                return _llamar("escalar", motivo="monto_sobre_umbral", urgente=False)
             return _decir(t, "abrir_ok", _prefijo(llamadas, t, robo), ret=ret)
         case "escalar":
+            abierta = next((x for x in llamadas if x.nombre == "abrir_disputa" and x.retorno), None)
+            if abierta is not None and AVISO_ESCALAR.split("{")[0] in (abierta.retorno or ""):
+                caso = (abierta.retorno or "").split(AVISO_ESCALAR.split("{")[0])[0]
+                return _decir(t, "radicado_y_escalado", _prefijo(llamadas, t, robo), caso=caso, ret=ret)
             return _decir(t, "escalar_ok", _prefijo(llamadas, t, robo), ret=ret)
         case _:
             return _decir(t, "sin_datos")
