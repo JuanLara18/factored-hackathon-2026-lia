@@ -1398,10 +1398,18 @@ version = "0.1.0"
 source = { editable = "clientes" }
 dependencies = [
     { name = "latam-comun" },
+    { name = "latam-tecnologia" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "latam-comun", editable = "comun" }]
+requires-dist = [
+    { name = "latam-comun", editable = "comun" },
+    { name = "latam-tecnologia", editable = "tecnologia" },
+    { name = "pydantic", specifier = ">=2.8" },
+    { name = "pyyaml", specifier = ">=6" },
+]
 
 [[package]]
 name = "latam-comun"
@@ -1461,6 +1469,7 @@ name = "latam-ia"
 version = "0.1.0"
 source = { editable = "ia" }
 dependencies = [
+    { name = "latam-clientes" },
     { name = "latam-comun" },
     { name = "pydantic" },
     { name = "pydantic-ai-slim", extra = ["openai"] },
@@ -1469,6 +1478,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "latam-clientes", editable = "clientes" },
     { name = "latam-comun", editable = "comun" },
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pydantic-ai-slim", extras = ["openai"], specifier = ">=2.51.0" },

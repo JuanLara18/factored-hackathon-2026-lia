@@ -14,7 +14,7 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
 | Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
 | IA | IA-7.1 (registro de agentes y config del gateway) e IA-9.1 (biblioteca de prompts) sobre Gemini gratuito; fábrica de modelos con `TestModel` sin llave | [ia/README.md](../ia/README.md) |
-| Clientes | Sin empezar | |
+| Clientes | CLI-1.1 a CLI-1.3 y CLI-1.6: matriz de 10 estados x 3 canales x usted y vos, guía de estilo, plantillas críticas y linter en pytest; la lista de frases prohibidas la comparte la IA | [clientes/README.md](../clientes/README.md) |
 
 ## BigQuery
 
@@ -47,7 +47,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
    motivo urgente o sin producto; crédito provisional hasta US$200) y el umbral de riesgo (zona gris desde 25, alto sobre 30).
 2. **IA-3.1 e IA-7.2:** redacción y renderizador por locale; hojas de vida generadas.
 3. **IA-5.1:** arnés de evaluación con verificadores deterministas sobre el agente de disputas.
-4. **Clientes:** CLI-1.1 a CLI-1.3 (matriz de estados, guía de estilo, plantillas críticas).
+4. **Clientes:** CLI-1.4 (catálogo completo de chat), CLI-1.5 (portugués) y visto bueno de Gobierno a la guía (S-CLI-02).
 5. **Tecnología:** web del chat sobre el spike S3 conectada al agente de disputas.
 
 ## Cómo se trabaja

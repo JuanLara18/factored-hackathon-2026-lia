@@ -1,0 +1,221 @@
+# Guía de estilo legible por máquina (CLI-1.2). La prosa vive en guia_estilo.md; el linter (CLI-1.6) y la
+# biblioteca de prompts de IA leen este archivo. Fuente: definición de Clientes, secciones 2.3.1 a 2.3.8.
+version: 1
+
+# Registro y vocabulario por país de la cuenta (2.3.2). Antes de autenticar se usa usted neutro.
+paises:
+  MX:
+    registro: usted
+    cargo: cargo
+    documento_mensual: estado de cuenta
+    pregunta_tipo: "¿Reconoce este cargo?"
+  CO:
+    registro: usted
+    cargo: cobro
+    documento_mensual: extracto
+    pregunta_tipo: "¿Reconoce esta compra?"
+  AR:
+    registro: vos
+    cargo: consumo
+    documento_mensual: resumen
+    pregunta_tipo: "¿Reconocés este consumo?"
+pais_neutro:
+  registro: usted
+  cargo: cargo
+  documento_mensual: estado de cuenta
+
+# Las plantillas no llevan estos términos escritos: usan {cargo} y {documento_mensual}.
+terminos_por_pais:
+  - cargo
+  - cobro
+  - consumo
+  - extracto
+  - estado de cuenta
+
+# Límites por canal, medidos sobre el texto ya rellenado con las muestras (2.3.1, 2.3.8).
+canales:
+  chat:
+    max_palabras_frase: 20
+    max_caracteres: 420
+    vocabulario_prohibido: [marque, marcá, diga, decí, teclado numérico]
+  whatsapp:
+    max_palabras_frase: 20
+    max_caracteres: 480
+    vocabulario_prohibido: [botón, toque, tocá, campo seguro, marque, marcá]
+  voz:
+    max_palabras_frase: 15
+    max_caracteres: 320
+    vocabulario_prohibido: [botón, toque, tocá, pantalla, enlace, campo seguro, escriba, escribí]
+
+# Marcadores permitidos y su muestra (la muestra solo sirve para medir longitudes). Ninguna cifra ni fecha
+# va escrita en una plantilla: todo llega desde un hecho verificado o desde `policy/v1`.
+marcadores:
+  monto: "180.000,00"
+  moneda: COP
+  monto_en_palabras: ciento ochenta mil pesos colombianos
+  n: "15"
+  unidad: días hábiles
+  fecha: 12 de octubre de 2026
+  fecha_cargo: 3 de octubre de 2026
+  hora: "14:35"
+  norma: la Ley 1328 de 2009
+  evento: el día del cargo
+  comercio: Comercio Ejemplo
+  ultimos4: "1234"
+  cargo: cobro
+  documento_mensual: extracto
+  numero_caso: LB-123456
+  accion: bloquear
+  objeto: la tarjeta terminada en 1234
+  consecuencia: no se aceptan nuevos cargos desde ese momento
+  hecho: se registró el reclamo
+  no_hecho: no se bloqueó la tarjeta
+  que_sigue: la respuesta llega por este medio
+  rango_espera: entre cinco y diez minutos
+
+# Marcadores obligatorios por tipo de plantilla. `por_canal` reemplaza a `todos` en ese canal.
+tipos:
+  general: {}
+  aviso: {}
+  traspaso:
+    todos: [rango_espera]
+  plazo:
+    todos: [norma, n, unidad, fecha]
+  monto:
+    por_canal:
+      chat: [monto, moneda]
+      whatsapp: [monto, moneda]
+      voz: [monto_en_palabras]
+  confirmacion:
+    todos: [accion, objeto, consecuencia]
+  cierre:
+    todos: [hecho, no_hecho, que_sigue]
+  cierre_sin_cambios: {}
+  seguridad: {}
+
+# Frases prohibidas (2.3.6). Expresiones regulares sin distinguir mayúsculas. `alcance`: `plantilla` las aplica
+# el linter a los textos al cliente; `prompt` las aplica la biblioteca de prompts de IA a sus instrucciones.
+frases_prohibidas:
+  - id: promesa_devolucion
+    patron: "le devolveremos|le vamos a devolver|le devolvemos su dinero|vamos a devolver|vamos devolver|vamos estornar|te devolveremos|te vamos a devolver"
+    motivo: promesa sin decisión; no hay movimiento de dinero
+    alternativa: "El reclamo pide revisar el cargo; la respuesta llega a más tardar el {fecha}."
+    alcance: [plantilla, prompt]
+  - id: promesa_reembolso
+    patron: "se le reembolsar|se te reembolsar|ser[aá] reembolsado"
+    motivo: promesa sin decisión
+    alcance: [plantilla, prompt]
+  - id: dinero_seguro
+    patron: "no perder[aá]s? su dinero|no perder[aá]s? tu dinero|su dinero est[aá] seguro|tu dinero est[aá] seguro|fique tranquilo|no se preocupe|no te preocupes"
+    motivo: afirmación no verificable
+    alternativa: "Su tarjeta ya está bloqueada (solo si lo está)."
+    alcance: [plantilla, prompt]
+  - id: listo_sin_verificar
+    patron: "\\blisto,? ya qued[oó]\\b|\\bya qued[oó]\\b|\\bpronto, feito\\b"
+    motivo: acción no verificada (P6)
+    alternativa: plantilla de resultado con hora, después de releer
+    alcance: [plantilla]
+  - id: diagnostico_fraude
+    patron: "esto es (un )?fraude|foi fraude"
+    motivo: diagnóstico que no le corresponde al sistema
+    alternativa: Lo vamos a tratar como un posible fraude.
+    alcance: [plantilla, prompt]
+  - id: acusacion
+    patron: "usted hizo la compra|usted s[ií] hizo|fue usted|vos hiciste la compra|foi voc[eê]|seg[uú]n nuestros registros,? (usted|vos)"
+    motivo: acusación al cliente (E3)
+    alcance: [plantilla, prompt]
+  - id: culpa_del_sistema
+    patron: "el sistema no me deja"
+    motivo: culpa y opacidad
+    alternativa: Eso no lo hago por este canal; lo hace una persona del equipo.
+    alcance: [plantilla, prompt]
+  - id: sin_persona
+    patron: "no puedo transferirlo|no puedo transferirte|no hay nadie"
+    motivo: P7; se declara la espera o se ofrece continuar después
+    alcance: [plantilla, prompt]
+  - id: plazo_sin_regla
+    patron: "en unos d[ií]as|lo antes posible|\\bpronto\\b|en breve"
+    motivo: plazo sin regla (caso Air Canada)
+    alternativa: plantilla de plazo con norma, número, unidad y fecha
+    alcance: [plantilla]
+  - id: certeza_indebida
+    patron: "le garantizo|te garantizo|garantizamos|\\bgaranto\\b|sin duda"
+    motivo: certeza indebida
+    alcance: [plantilla, prompt]
+  - id: caso_cerrado
+    patron: "caso cerrado"
+    motivo: estado falso si el reclamo sigue abierto
+    alternativa: Su reclamo sigue abierto; le avisaremos cuando cambie.
+    alcance: [plantilla]
+  - id: pedir_clave
+    patron: "d[ií]game su (clave|c[oó]digo)|decime tu (clave|c[oó]digo)|por su seguridad, d[ií]game"
+    motivo: ingeniería social
+    alternativa: frase de seguridad
+    alcance: [plantilla, prompt]
+  - id: engano_de_identidad
+    patron: "soy una persona|mis instrucciones dicen"
+    motivo: engaño sobre la identidad
+    alternativa: aviso de IA
+    alcance: [plantilla, prompt]
+  - id: revela_reglas
+    patron: "su puntaje de fraude|tu puntaje de fraude|super[oó] el umbral"
+    motivo: revela reglas (LLM07)
+    alternativa: Por el tipo de caso, lo revisa una persona.
+    alcance: [plantilla, prompt]
+  - id: norma_de_otro_pais
+    patron: "\\bpix\\b|\\bmed\\b|\\bprocon\\b|banco central do brasil|c[oó]digo de defesa"
+    motivo: norma equivocada (L5)
+    alternativa: la norma del país de la cuenta
+    alcance: [plantilla]
+  - id: excusa_de_ia
+    patron: "como inteligencia artificial no puedo"
+    motivo: evasión
+    alternativa: decir qué sí se puede y a dónde ir
+    alcance: [plantilla, prompt]
+  - id: consejo_legal
+    patron: "le conviene demandar|te conviene demandar"
+    motivo: consejo legal que no corresponde
+    alcance: [plantilla, prompt]
+  - id: jerga
+    patron: "contracargo|chargeback|\\bvcr\\b"
+    motivo: jerga interna que el cliente no usa
+    alcance: [plantilla]
+
+# Caracteres que no pueden aparecer en ningún texto al cliente (sin emojis, sereno, sin rayas de prosa).
+caracteres_prohibidos:
+  - id: emoji
+    patron: "[\\U0001F300-\\U0001FAFF\\u2600-\\u27BF]"
+  - id: exclamacion
+    patron: "[!¡]"
+  - id: raya
+    patron: "[\\u2013\\u2014]"
+
+# Frases obligatorias (2.3.6, 2.3.8). `aplica_a` elige por estado del motor o por tipo de plantilla.
+frases_obligatorias:
+  - id: aviso_ia
+    aplica_a: {estados: [inicio]}
+    patron: "inteligencia artificial"
+    motivo: aviso de que habla con una IA al abrir
+  - id: opcion_de_persona
+    aplica_a: {estados: [inicio]}
+    patron: "persona"
+    motivo: derecho a una persona desde el primer turno
+  - id: sin_cambios
+    aplica_a: {estados: [falla_segura, negado], tipos: [cierre_sin_cambios]}
+    patron: "ning[uú]n cambio en (su|tu) cuenta"
+    motivo: decir que no se tocó la cuenta cuando no hubo acción
+  - id: frase_de_seguridad_1
+    aplica_a: {tipos: [seguridad]}
+    patron: "nunca (le|te) pide"
+    motivo: el banco nunca pide clave ni movimiento de dinero
+  - id: frase_de_seguridad_2
+    aplica_a: {tipos: [seguridad]}
+    patron: "c[oó]digo de verificaci[oó]n"
+    motivo: dónde se digita el código
+
+# Marcas de registro (2.3.2). Un texto en `usted` no lleva marcas de voseo ni de tuteo; uno en `vos`,
+# ninguna de usted ni de tuteo.
+marcas_registro:
+  tuteo: "\\b(tú|puedes|tienes|quieres|eres|reconoces|confirmas|necesitas|prefieres|contigo)\\b"
+  voseo: "\\b(vos|reconocés|querés|podés|confirmás|ingresá|tocá|decí|marcá|tenés|sos|elegí|escribí|respondé|preferís|necesitás|ayudás|volvé|retomá|calificás|mirá|esperá|tu|tus|te|ti)\\b"
+  usted: "\\b(usted|ustedes|su|sus|le|les|puede|prefiere|quiere|necesita|desea|escriba|responda|marque|diga|retome|ingrese|toque)\\b"

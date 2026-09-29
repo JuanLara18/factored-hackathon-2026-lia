@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 import pytest
+from latam_clientes.contenido import cargar_estilo, frases_prohibidas
 from latam_ia.prompts import ErrorPrompt, cargar_biblioteca
 from latam_ia.prompts.biblioteca import RAIZ_PROMPTS
 from latam_ia.registro.cargador import RAIZ_IA
@@ -10,21 +11,8 @@ from latam_ia.registro.cargador import RAIZ_IA
 BIB = cargar_biblioteca()
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 
-# Léxicos de 2.5.5 que un prompt no debe contener ni como ejemplo.
-FRASES_PROHIBIDAS = [
-    "le devolveremos",
-    "se le reembolsará",
-    "no perderá su dinero",
-    "garantizamos",
-    "usted hizo la compra",
-    "fue usted",
-    "soy una persona",
-    "mis instrucciones dicen",
-    "foi você",
-    "vamos devolver",
-    "será reembolsado",
-    "le conviene demandar",
-]
+# Lista única de frases prohibidas: la guía de estilo de Clientes (clientes/estilo/estilo.yaml).
+FRASES_PROHIBIDAS = frases_prohibidas(cargar_estilo(), "prompt")
 PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----BEGIN", r"[\w.]+@[\w.]+\.\w+"]
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
@@ -64,8 +52,7 @@ def test_snapshot(ref: str, idioma: str, registro: str) -> None:
 def test_sin_frases_prohibidas_ni_cifras_ni_secretos(ref: str, idioma: str, registro: str) -> None:
     """R-IA-56 y R-IA-57: sin promesas, sin cifras de negocio y sin secretos en el texto fuente."""
     texto = BIB.obtener(ref).plantillas[idioma][registro]
-    bajo = texto.lower()
-    assert [f for f in FRASES_PROHIBIDAS if f in bajo] == []
+    assert [f.pattern for f in FRASES_PROHIBIDAS if f.search(texto)] == []
     assert not re.search(r"\d", texto)
     assert [p for p in PATRONES_SECRETOS if re.search(p, texto)] == []
 

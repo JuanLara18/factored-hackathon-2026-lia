@@ -1,0 +1,130 @@
+# CLI-1.1: matriz estado x canal x registro (definición de Clientes, 2.2.1). Las claves de `estados` son los
+# valores del `StrEnum` `Estado` del motor (tecnologia/src/latam_tecnologia/motor/caso.py); una prueba exige
+# que coincidan. Cada celda dice qué intención cumple y qué plantilla la realiza en cada registro exigido.
+version: 1
+canales: [chat, whatsapp, voz]
+registros:
+  usted: {idioma: es, exigido: true}
+  vos: {idioma: es, exigido: true}
+  voce: {idioma: pt, exigido: false, pendiente: CLI-1.5}
+estados:
+  inicio:
+    nunca: pedir datos antes de saber el motivo; saludos largos
+    celdas:
+      chat:
+        intencion: avisar que es una IA, ofrecer una persona e invitar con una pregunta abierta
+        plantilla: inicio.chat
+      whatsapp:
+        intencion: igual que en chat, con la palabra que llama a una persona en lugar del botón
+        plantilla: inicio.whatsapp
+      voz:
+        intencion: aviso breve, cómo pedir una persona (decir persona o tecla cero) y pregunta abierta
+        plantilla: inicio.voz
+  identificando_transaccion:
+    nunca: decir que un cargo no existe si no aparece; tomar el monto del texto del cliente
+    celdas:
+      chat:
+        intencion: mostrar la transacción candidata con comercio, fecha y monto de la base y preguntar si es esa
+        plantilla: identificando.chat
+      whatsapp:
+        intencion: la misma ficha en texto, con respuesta de sí o no
+        plantilla: identificando.whatsapp
+      voz:
+        intencion: ficha en frases cortas con el monto en palabras y respuesta por voz
+        plantilla: identificando.voz
+  confirmando_accion:
+    nunca: tomar un texto libre como confirmación; ejecutar sin un sí explícito
+    celdas:
+      chat:
+        intencion: resumir verbo, objeto y consecuencia y pedir confirmar, corregir o pasar a una persona
+        plantilla: confirmando.chat
+      whatsapp:
+        intencion: el mismo resumen con confirmación por respuesta de sí o por la palabra persona
+        plantilla: confirmando.whatsapp
+      voz:
+        intencion: lectura de vuelta del resumen y sí explícito o tecla uno
+        plantilla: confirmando.voz
+  ejecutando:
+    nunca: decir listo, hecho o quedó antes de verificar
+    celdas:
+      chat:
+        intencion: relleno honesto, todavía no completado
+        plantilla: ejecutando.chat
+      whatsapp:
+        intencion: relleno honesto, todavía no completado
+        plantilla: ejecutando.chat
+      voz:
+        intencion: relleno hablado, presintetizado, todavía no completado
+        plantilla: ejecutando.voz
+  verificando:
+    nunca: informar antes de releer el estado
+    celdas:
+      chat:
+        intencion: avisar que se verifica el resultado antes de confirmarlo
+        plantilla: verificando.chat
+      whatsapp:
+        intencion: avisar que se verifica el resultado antes de confirmarlo
+        plantilla: verificando.chat
+      voz:
+        intencion: segundo relleno breve mientras se relee el estado
+        plantilla: verificando.voz
+  informando:
+    nunca: plazos que no vengan de `policy/v1`; montos que no vengan de la base
+    celdas:
+      chat:
+        intencion: resultado verificado con hora, número de caso, monto y plazo con norma y fecha límite
+        plantilla: informando.chat
+      whatsapp:
+        intencion: el mismo resultado, con aviso de que el cambio de estado llega por este medio
+        plantilla: informando.whatsapp
+      voz:
+        intencion: resultado en frases cortas, monto en palabras, número de caso y plazo
+        plantilla: informando.voz
+  traspaso:
+    nunca: pedir que repita lo dicho; prometer un tiempo exacto
+    celdas:
+      chat:
+        intencion: decir que el contexto ya se compartió, declarar la espera y ofrecer seguir o recibir aviso
+        plantilla: traspaso.chat
+      whatsapp:
+        intencion: igual, con aviso por este medio cuando la persona esté disponible
+        plantilla: traspaso.whatsapp
+      voz:
+        intencion: "traspaso tibio: contexto compartido, espera declarada y opción de seguir en línea"
+        plantilla: traspaso.voz
+  cierre:
+    nunca: decir caso cerrado si el reclamo sigue abierto
+    celdas:
+      chat:
+        intencion: resumen que distingue lo hecho, lo no hecho y lo que sigue, con pregunta de satisfacción
+        plantilla: cierre.chat
+      whatsapp:
+        intencion: el mismo resumen y satisfacción por respuesta numérica
+        plantilla: cierre.whatsapp
+      voz:
+        intencion: resumen hablado de lo hecho, lo no hecho y lo que sigue, y despedida
+        plantilla: cierre.voz
+  falla_segura:
+    nunca: decir radicado o bloqueado sin acción verificada
+    celdas:
+      chat:
+        intencion: decir qué no se completó, que la cuenta no cambió y ofrecer persona o retomar
+        plantilla: falla_segura.chat
+      whatsapp:
+        intencion: lo mismo, con la palabra que llama a una persona
+        plantilla: falla_segura.whatsapp
+      voz:
+        intencion: lo mismo en frases cortas y con una pregunta de elección
+        plantilla: falla_segura.voz
+  negado:
+    nunca: revelar reglas; acusar; sermonear
+    celdas:
+      chat:
+        intencion: frase neutra, no puede ayudar con eso, sí con su propio caso, sin cambios en la cuenta
+        plantilla: negado.todos
+      whatsapp:
+        intencion: la misma frase neutra
+        plantilla: negado.todos
+      voz:
+        intencion: la misma frase neutra, breve
+        plantilla: negado.todos

@@ -1,0 +1,430 @@
+# CLI-1.3: plantillas críticas en español, registros usted y vos. Sin cifras ni fechas escritas: todo entra por
+# marcadores `{nombre}` (plazos y normas de `policy/v1`, montos de la base). `canales` dice dónde se usa; el
+# linter (CLI-1.6) las mide, las compara con la matriz y exige que cada celda tenga texto en cada registro.
+version: 1
+idioma: es
+plantillas:
+  # Estados del motor, celda por celda
+  - id: inicio.chat
+    canales: [chat]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      usted: >-
+        Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial.
+        Si prefiere hablar con una persona, puede pedirlo en cualquier momento. ¿En qué le puedo ayudar?
+      vos: >-
+        Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial.
+        Si preferís hablar con una persona, podés pedirlo en cualquier momento. ¿En qué te puedo ayudar?
+  - id: inicio.whatsapp
+    canales: [whatsapp]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      usted: >-
+        Hola. Soy el asistente virtual de LATAM Bank, una inteligencia artificial.
+        Si prefiere hablar con una persona, escriba persona en cualquier momento. ¿En qué le puedo ayudar?
+      vos: >-
+        Hola. Soy el asistente virtual de LATAM Bank, una inteligencia artificial.
+        Si preferís hablar con una persona, escribí persona en cualquier momento. ¿En qué te puedo ayudar?
+  - id: inicio.voz
+    canales: [voz]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      usted: >-
+        Hola, soy el asistente virtual de LATAM Bank, una inteligencia artificial.
+        Para hablar con una persona, diga persona o marque cero. ¿En qué le ayudo?
+      vos: >-
+        Hola, soy el asistente virtual de LATAM Bank, una inteligencia artificial.
+        Para hablar con una persona, decí persona o marcá cero. ¿En qué te ayudo?
+  - id: identificando.chat
+    canales: [chat]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto, moneda]
+    textos:
+      usted: >-
+        Revisé sus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+        ¿Es este?
+      vos: >-
+        Revisé tus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+        ¿Es este?
+  - id: identificando.whatsapp
+    canales: [whatsapp]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto, moneda]
+    textos:
+      usted: >-
+        Revisé sus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+        ¿Es este? Responda sí o no.
+      vos: >-
+        Revisé tus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+        ¿Es este? Respondé sí o no.
+  - id: identificando.voz
+    canales: [voz]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto_en_palabras]
+    textos:
+      usted: >-
+        Revisé sus movimientos. Encontré un {cargo} en {comercio}. Fue el {fecha}, por {monto_en_palabras}.
+        ¿Es este? Diga sí o no.
+      vos: >-
+        Revisé tus movimientos. Encontré un {cargo} en {comercio}. Fue el {fecha}, por {monto_en_palabras}.
+        ¿Es este? Decí sí o no.
+  - id: confirmando.chat
+    canales: [chat]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      usted: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}. ¿Lo confirma?
+        También puede corregirlo o hablar con una persona.
+      vos: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}. ¿Lo confirmás?
+        También podés corregirlo o hablar con una persona.
+  - id: confirmando.whatsapp
+    canales: [whatsapp]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      usted: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}. Responda sí para confirmar
+        o escriba persona para hablar con alguien del equipo.
+      vos: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}. Respondé sí para confirmar
+        o escribí persona para hablar con alguien del equipo.
+  - id: confirmando.voz
+    canales: [voz]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      usted: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}.
+        Para confirmar, diga sí o marque uno. Para corregir, marque dos.
+      vos: >-
+        Voy a {accion} {objeto}. Esto significa que {consecuencia}.
+        Para confirmar, decí sí o marcá uno. Para corregir, marcá dos.
+  - id: ejecutando.chat
+    canales: [chat, whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: Estoy procesando su solicitud. Todavía no está completada.
+      vos: Estoy procesando tu solicitud. Todavía no está completada.
+  - id: ejecutando.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: Un momento, estoy procesando su solicitud. Todavía no está completada.
+      vos: Un momento, estoy procesando tu solicitud. Todavía no está completada.
+  - id: verificando.chat
+    canales: [chat, whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: Estoy verificando el resultado antes de confirmárselo.
+      vos: Estoy verificando el resultado antes de confirmártelo.
+  - id: verificando.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: Sigo verificando el resultado antes de confirmárselo.
+      vos: Sigo verificando el resultado antes de confirmártelo.
+  - id: informando.chat
+    canales: [chat]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto, moneda, hora, norma, n, unidad, fecha]
+    textos:
+      usted: >-
+        Su reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}.
+        Según {norma}, LATAM Bank debe responderle en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}. ¿Algo más?
+      vos: >-
+        Tu reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}.
+        Según {norma}, LATAM Bank debe responderte en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}. ¿Algo más?
+  - id: informando.whatsapp
+    canales: [whatsapp]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto, moneda, hora, norma, n, unidad, fecha]
+    textos:
+      usted: >-
+        Su reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}.
+        Según {norma}, LATAM Bank debe responderle en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}. Le avisaremos por este medio cuando cambie el estado.
+      vos: >-
+        Tu reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}.
+        Según {norma}, LATAM Bank debe responderte en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}. Te avisaremos por este medio cuando cambie el estado.
+  - id: informando.voz
+    canales: [voz]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto_en_palabras, hora, norma, n, unidad, fecha]
+    textos:
+      usted: >-
+        Su reclamo quedó registrado a las {hora}. Es por {monto_en_palabras}.
+        El número de caso es {numero_caso}. Según {norma}, el banco debe responderle en {n} {unidad}.
+        Como máximo, el {fecha}. ¿Algo más?
+      vos: >-
+        Tu reclamo quedó registrado a las {hora}. Es por {monto_en_palabras}.
+        El número de caso es {numero_caso}. Según {norma}, el banco debe responderte en {n} {unidad}.
+        Como máximo, el {fecha}. ¿Algo más?
+  - id: traspaso.chat
+    canales: [chat]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      usted: >-
+        Ya compartí lo que conversamos con una persona del equipo, así que no tendrá que repetirlo.
+        La espera estimada es de {rango_espera}. ¿Prefiere seguir esperando o que le avisemos?
+      vos: >-
+        Ya compartí lo que conversamos con una persona del equipo, así que no tendrás que repetirlo.
+        La espera estimada es de {rango_espera}. ¿Preferís seguir esperando o que te avisemos?
+  - id: traspaso.whatsapp
+    canales: [whatsapp]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      usted: >-
+        Ya compartí lo que conversamos con una persona del equipo, así que no tendrá que repetirlo.
+        La espera estimada es de {rango_espera}. Le escribiremos por este medio cuando esté disponible.
+      vos: >-
+        Ya compartí lo que conversamos con una persona del equipo, así que no tendrás que repetirlo.
+        La espera estimada es de {rango_espera}. Te escribiremos por este medio cuando esté disponible.
+  - id: traspaso.voz
+    canales: [voz]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      usted: >-
+        Ya compartí su caso con una persona del equipo. No tendrá que repetirlo.
+        La espera estimada es de {rango_espera}. Puede seguir en línea o pedir que le avisemos.
+      vos: >-
+        Ya compartí tu caso con una persona del equipo. No tendrás que repetirlo.
+        La espera estimada es de {rango_espera}. Podés seguir en línea o pedir que te avisemos.
+  - id: cierre.chat
+    canales: [chat]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      usted: >-
+        Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}.
+        ¿Nos ayuda con una pregunta sobre la atención?
+      vos: >-
+        Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}.
+        ¿Nos ayudás con una pregunta sobre la atención?
+  - id: cierre.whatsapp
+    canales: [whatsapp]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      usted: >-
+        Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}.
+        ¿Cómo calificaría la atención? Responda con un número del uno al cinco.
+      vos: >-
+        Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}.
+        ¿Cómo calificarías la atención? Respondé con un número del uno al cinco.
+  - id: cierre.voz
+    canales: [voz]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      usted: >-
+        Esto quedó hecho: {hecho}. Esto no se hizo: {no_hecho}. Lo que sigue: {que_sigue}.
+        Si necesita algo más, vuelva a llamar. Gracias.
+      vos: >-
+        Esto quedó hecho: {hecho}. Esto no se hizo: {no_hecho}. Lo que sigue: {que_sigue}.
+        Si necesitás algo más, volvé a llamar. Gracias.
+  - id: falla_segura.chat
+    canales: [chat]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: >-
+        No pude completar la acción y no hicimos ningún cambio en su cuenta.
+        Puede hablar con una persona o retomar más tarde.
+      vos: >-
+        No pude completar la acción y no hicimos ningún cambio en tu cuenta.
+        Podés hablar con una persona o retomar más tarde.
+  - id: falla_segura.whatsapp
+    canales: [whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: >-
+        No pude completar la acción y no hicimos ningún cambio en su cuenta.
+        Escriba persona para hablar con alguien del equipo, o retome esta conversación más tarde.
+      vos: >-
+        No pude completar la acción y no hicimos ningún cambio en tu cuenta.
+        Escribí persona para hablar con alguien del equipo, o retomá esta conversación más tarde.
+  - id: falla_segura.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: >-
+        No pude completar la acción. No hicimos ningún cambio en su cuenta.
+        Puede hablar con una persona o retomar más tarde. ¿Qué prefiere?
+      vos: >-
+        No pude completar la acción. No hicimos ningún cambio en tu cuenta.
+        Podés hablar con una persona o retomar más tarde. ¿Qué preferís?
+  - id: negado.todos
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: >-
+        Con eso no le puedo ayudar. Sí puedo ayudarle con su propio caso.
+        No hicimos ningún cambio en su cuenta.
+      vos: >-
+        Con eso no te puedo ayudar. Sí puedo ayudarte con tu propio caso.
+        No hicimos ningún cambio en tu cuenta.
+
+  # Críticas fuera de la matriz: plazos, montos, cierre que distingue y frase de seguridad
+  - id: plazo.respuesta.chat
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, fecha]
+    textos:
+      usted: >-
+        Según {norma}, LATAM Bank debe responderle en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}.
+      vos: >-
+        Según {norma}, LATAM Bank debe responderte en un máximo de {n} {unidad}.
+        Es decir, a más tardar el {fecha}.
+  - id: plazo.respuesta.voz
+    canales: [voz]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, fecha]
+    textos:
+      usted: Según {norma}, el banco debe responderle en {n} {unidad}. Como máximo, el {fecha}.
+      vos: Según {norma}, el banco debe responderte en {n} {unidad}. Como máximo, el {fecha}.
+  - id: plazo.abono_provisional
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [hora, n, unidad, norma, fecha]
+    textos:
+      usted: >-
+        Registramos su reporte hoy a las {hora}. Lo hizo dentro de {n} {unidad}, y {norma} prevé un abono
+        provisional. El área de aclaraciones lo revisa a más tardar el {fecha}. Le avisaremos cuando se aplique.
+      vos: >-
+        Registramos tu reporte hoy a las {hora}. Lo hiciste dentro de {n} {unidad}, y {norma} prevé un abono
+        provisional. El área de aclaraciones lo revisa a más tardar el {fecha}. Te avisaremos cuando se aplique.
+  - id: plazo.fuera_de_termino.chat
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, evento, cargo, fecha_cargo, fecha]
+    textos:
+      usted: >-
+        Según {norma}, este reclamo se presenta dentro de {n} {unidad} desde {evento}.
+        Este {cargo} es del {fecha_cargo}, así que ese plazo venció el {fecha}.
+        Si quiere, una persona del equipo revisa su caso.
+      vos: >-
+        Según {norma}, este reclamo se presenta dentro de {n} {unidad} desde {evento}.
+        Este {cargo} es del {fecha_cargo}, así que ese plazo venció el {fecha}.
+        Si querés, una persona del equipo revisa tu caso.
+  - id: plazo.fuera_de_termino.voz
+    canales: [voz]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, evento, fecha]
+    textos:
+      usted: >-
+        Según {norma}, el reclamo se presenta dentro de {n} {unidad}. Se cuenta desde {evento}.
+        Ese plazo venció el {fecha}. Si quiere, una persona del equipo revisa su caso.
+      vos: >-
+        Según {norma}, el reclamo se presenta dentro de {n} {unidad}. Se cuenta desde {evento}.
+        Ese plazo venció el {fecha}. Si querés, una persona del equipo revisa tu caso.
+  - id: monto.no_confirmado
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: No tengo el monto confirmado de este movimiento. ¿Puede contarme qué pasó?
+      vos: No tengo el monto confirmado de este movimiento. ¿Podés contarme qué pasó?
+  - id: monto.moneda_registrada.chat
+    canales: [chat, whatsapp]
+    tipos: [monto]
+    marcadores: [monto, moneda]
+    textos:
+      usted: >-
+        El monto es {monto} {moneda}, tal como figura en el registro.
+        El producto está registrado en esa moneda y no la convertimos.
+      vos: >-
+        El monto es {monto} {moneda}, tal como figura en el registro.
+        El producto está registrado en esa moneda y no la convertimos.
+  - id: monto.moneda_registrada.voz
+    canales: [voz]
+    tipos: [monto]
+    marcadores: [monto_en_palabras]
+    textos:
+      usted: El monto es {monto_en_palabras}, tal como figura en el registro. No lo convertimos.
+      vos: El monto es {monto_en_palabras}, tal como figura en el registro. No lo convertimos.
+  - id: confirmacion.reclamo.chat
+    canales: [chat, whatsapp]
+    tipos: [confirmacion, monto]
+    marcadores: [accion, objeto, monto, moneda, consecuencia]
+    textos:
+      usted: >-
+        Voy a {accion} {objeto}, por {monto} {moneda}. Esto significa que {consecuencia}. ¿Lo confirma?
+      vos: >-
+        Voy a {accion} {objeto}, por {monto} {moneda}. Esto significa que {consecuencia}. ¿Lo confirmás?
+  - id: confirmacion.reclamo.voz
+    canales: [voz]
+    tipos: [confirmacion, monto]
+    marcadores: [accion, objeto, monto_en_palabras, consecuencia]
+    textos:
+      usted: >-
+        Voy a {accion} {objeto}, por {monto_en_palabras}. Esto significa que {consecuencia}.
+        Para confirmar, diga sí o marque uno.
+      vos: >-
+        Voy a {accion} {objeto}, por {monto_en_palabras}. Esto significa que {consecuencia}.
+        Para confirmar, decí sí o marcá uno.
+  - id: cierre.reclamo_abierto
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      usted: Su reclamo sigue abierto. Le avisaremos cuando cambie.
+      vos: Tu reclamo sigue abierto. Te avisaremos cuando cambie.
+  - id: cierre.sin_cambios
+    canales: [chat, whatsapp, voz]
+    tipos: [cierre_sin_cambios]
+    marcadores: []
+    textos:
+      usted: No hicimos ningún cambio en su cuenta. Si necesita algo más, estamos a su disposición.
+      vos: No hicimos ningún cambio en tu cuenta. Si necesitás algo más, estamos a tu disposición.
+  - id: seguridad.frase.chat
+    canales: [chat]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      usted: >-
+        LATAM Bank nunca le pide su clave ni que mueva su dinero a otra cuenta.
+        El código de verificación solo se escribe en el campo seguro; nunca se comparte.
+      vos: >-
+        LATAM Bank nunca te pide tu clave ni que muevas tu plata a otra cuenta.
+        El código de verificación solo se escribe en el campo seguro; nunca se comparte.
+  - id: seguridad.frase.whatsapp
+    canales: [whatsapp]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      usted: >-
+        LATAM Bank nunca le pide su clave ni que mueva su dinero a otra cuenta.
+        No comparta con nadie su código de verificación.
+      vos: >-
+        LATAM Bank nunca te pide tu clave ni que muevas tu plata a otra cuenta.
+        No compartas con nadie tu código de verificación.
+  - id: seguridad.frase.voz
+    canales: [voz]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      usted: >-
+        LATAM Bank nunca le pide su clave ni que mueva su dinero a otra cuenta.
+        El código de verificación se marca con el teclado, nunca en voz alta.
+      vos: >-
+        LATAM Bank nunca te pide tu clave ni que muevas tu plata a otra cuenta.
+        El código de verificación se marca con el teclado, nunca en voz alta.
