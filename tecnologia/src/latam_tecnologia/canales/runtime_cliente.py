@@ -8,6 +8,7 @@ conserva lo suyo: vencimiento de la aprobación, texto de la plantilla y filtro 
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import secrets
 from collections.abc import AsyncIterator, Callable
@@ -24,6 +25,9 @@ from ag_ui.core import (
     TextMessageContentEvent,
     TextMessageEndEvent,
     TextMessageStartEvent,
+    ToolCallArgsEvent,
+    ToolCallEndEvent,
+    ToolCallStartEvent,
 )
 from ag_ui.encoder import EventEncoder
 from latam_comun.dominio import SesionAutenticada
@@ -154,6 +158,18 @@ async def flujo_agui(
         return salida
 
     interrupciones: list[Interrupt] = []
+    herramientas: list[BaseEvent] = []  # se emiten tras el texto, como el modo en proceso
+
+    def llamada(nombre: str, args: str) -> None:
+        i = f"t-{secrets.token_hex(6)}"
+        herramientas.extend(
+            [
+                ToolCallStartEvent(tool_call_id=i, tool_call_name=nombre, parent_message_id=mensaje_id),
+                ToolCallArgsEvent(tool_call_id=i, delta=args),
+                ToolCallEndEvent(tool_call_id=i),
+            ]
+        )
+
     try:
         async for ev in cliente.turno(
             user_id=user_id,
@@ -169,6 +185,10 @@ async def flujo_agui(
                         abierto = True
                         yield _evento(TextMessageStartEvent(message_id=mensaje_id))
                     yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
+            elif tipo == "herramienta":
+                llamada(str(ev.get("nombre")), "{}")
+            elif tipo == "ficha":
+                llamada("FichaTransaccion", json.dumps({k: str(v) for k, v in dict(ev["datos"]).items()}))
             elif tipo == "aprobacion":
                 for a in ev["aprobaciones"]:
                     texto, expira = enriquecer(f"int-{a['id']}", a["herramienta"], dict(a["args"]))
@@ -197,6 +217,8 @@ async def flujo_agui(
         yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
     if abierto:
         yield _evento(TextMessageEndEvent(message_id=mensaje_id))
+    for e in herramientas:
+        yield _evento(e)
     resultado = (
         RunFinishedInterruptOutcome(interrupts=interrupciones)
         if interrupciones

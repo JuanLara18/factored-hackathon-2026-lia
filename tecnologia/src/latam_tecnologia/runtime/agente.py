@@ -20,7 +20,7 @@ import sys
 from collections.abc import AsyncIterator, Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 ESTADO_REQUERIDO = ("cliente_id", "nivel", "expira", "conversacion_id")
 AUTOR = "agente"
@@ -141,6 +141,53 @@ def _buscar_paquete() -> str | None:
             if "latam_paquete" in dirs and (Path(actual) / "latam_paquete" / "tecnologia" / "src").is_dir():
                 return str(Path(actual) / "latam_paquete")
     return None
+
+
+def _dinero(monto: Any) -> str:
+    entero, _, dec = f"{float(monto):,.2f}".partition(".")
+    return f"{entero.replace(',', '.')},{dec}"
+
+
+def construir_ficha(tx: dict[str, Any]) -> dict[str, str]:
+    """Ficha de la transacción consultada, armada en el servidor: tarjeta enmascarada, sin PII."""
+    import re
+
+    from latam_tecnologia.canales.textos import describir_comercio, estado_transaccion
+
+    return {
+        "comercio": describir_comercio(tx["comercio"], tx.get("tipo")),
+        "monto": _dinero(tx["monto"]["monto"]),
+        "moneda": str(tx["monto"]["moneda"]),
+        "fecha": str(tx["event_ts"])[:10],
+        "estado": estado_transaccion(tx["estado"]),
+        "tarjeta_final": re.sub(r"\D", "", str(tx["product_id"])).rjust(4, "0")[-4:],
+    }
+
+
+def _ficha_de(mensajes: list[Any]) -> dict[str, str] | None:
+    """Transacción que el agente consultó en este turno (consultar, o listar con una sola fila)."""
+    import json
+
+    from pydantic_ai.messages import ModelRequest, ToolReturnPart
+
+    tx: dict[str, Any] | None = None
+    for m in mensajes:
+        if not isinstance(m, ModelRequest):
+            continue
+        for p in m.parts:
+            if not isinstance(p, ToolReturnPart) or p.tool_name not in (
+                "consultar_transaccion",
+                "listar_transacciones",
+            ):
+                continue
+            c = p.content
+            datos: Any = json.loads(c) if isinstance(c, str) else c
+            if p.tool_name == "listar_transacciones":
+                filas = cast(list[Any], datos) if isinstance(datos, list) else []
+                datos = filas[0] if len(filas) == 1 else None
+            if isinstance(datos, dict):
+                tx = cast(dict[str, Any], datos)
+    return construir_ficha(tx) if tx else None
 
 
 def _en_hilo(corrutina: Any) -> Any:
@@ -330,6 +377,19 @@ class AgenteDisputasRuntime:
             str(len(historial)),
             ModelMessagesTypeAdapter.dump_json(nuevos).decode(),
         )
+        pedidas = (
+            {c.tool_call_id for c in salida.approvals}
+            if isinstance(salida, DeferredToolRequests)
+            else set[str]()
+        )
+        for m in nuevos:  # solo el nombre de la herramienta: los argumentos llevan ids
+            if isinstance(m, ModelResponse):
+                for p in m.parts:
+                    if isinstance(p, ToolCallPart) and p.tool_call_id not in pedidas:
+                        yield {"tipo": "herramienta", "nombre": p.tool_name}
+        ficha = _ficha_de(nuevos)
+        if ficha is not None:
+            yield {"tipo": "ficha", "datos": ficha}
         if isinstance(salida, DeferredToolRequests):
             yield {
                 "tipo": "aprobacion",

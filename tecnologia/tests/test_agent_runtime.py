@@ -287,3 +287,109 @@ def test_desplegar_dry_run_arma_y_valida(capsys: pytest.CaptureFixture[str]) -> 
         and "LATAM_TRABAJADOR_VERSION" in salida
         and "dry-run correcto" in salida
     )
+
+
+def _guion_ficha() -> FunctionModel:
+    """Consulta una transacción y responde con texto."""
+
+    async def flujo(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str | DeltaToolCalls]:
+        hay_retorno = any(
+            isinstance(p, ToolReturnPart) for m in messages if isinstance(m, ModelRequest) for p in m.parts
+        )
+        if hay_retorno:
+            yield "Este es el cargo. "
+            return
+        args = json.dumps({"transaction_id": "tx-1-1"})
+        yield {0: DeltaToolCall(name="consultar_transaccion", json_args=args, tool_call_id="c1")}
+
+    return FunctionModel(stream_function=flujo)
+
+
+class RuntimeConFicha(RuntimeEnProceso):
+    def __init__(self) -> None:
+        self.sesiones = SesionesMemoria()
+        lectura, _ = lectura_sembrada()
+        self.agente = AgenteDisputasRuntime(
+            "p", modelo=_guion_ficha(), lectura=lectura, sesiones=self.sesiones, reloj=lambda: AHORA
+        )
+        self.agente.set_up()
+        self.estados = []
+
+
+@sincrona
+async def test_agente_emite_herramienta_y_ficha_enmascarada() -> None:
+    rt = RuntimeConFicha()
+    _abrir(rt.sesiones)
+    eventos = await _turno(rt.agente, message="Mi ultimo cargo")
+    assert {"tipo": "herramienta", "nombre": "consultar_transaccion"} in eventos
+    ficha = next(e["datos"] for e in eventos if e["tipo"] == "ficha")
+    assert set(ficha) == {"comercio", "monto", "moneda", "fecha", "estado", "tarjeta_final"}
+    assert (
+        ficha["comercio"] == "Tienda Uno"
+        and ficha["monto"] == "1.234,56"
+        and len(ficha["tarjeta_final"]) == 4
+    )
+    assert "tx-1-1" not in json.dumps(eventos)  # sin ids en los eventos de herramienta ni en la ficha
+
+
+def test_chat_web_dibuja_la_ficha_como_en_proceso() -> None:
+    c = _cliente_web(RuntimeConFicha())
+    r = c.post("/api/sesion", json={"cliente": 0}).json()
+    evs = _correr(c, {"X-Sesion": r["sesion"]}, r["conversacion"], "Mi ultimo cargo")
+    tipos = [e["type"] for e in evs]
+    assert tipos[-1] == "RUN_FINISHED" and tipos.index("TEXT_MESSAGE_END") < tipos.index("TOOL_CALL_START")
+    nombres = [e["toolCallName"] for e in evs if e["type"] == "TOOL_CALL_START"]
+    assert nombres == ["consultar_transaccion", "FichaTransaccion"]
+    ids = [e["toolCallId"] for e in evs if e["type"] == "TOOL_CALL_START"]
+    args = [e for e in evs if e["type"] == "TOOL_CALL_ARGS"]
+    assert json.loads(args[0]["delta"]) == {} and args[0]["toolCallId"] == ids[0]
+    ficha = json.loads(args[1]["delta"])
+    assert ficha["comercio"] == "Tienda Uno" and ficha["tarjeta_final"].isdigit()
+    assert tipos.count("TOOL_CALL_END") == 2
+
+
+def _cargar_desplegar() -> Any:
+    import importlib.util
+    from pathlib import Path
+
+    ruta = Path(__file__).resolve().parents[1] / "infra" / "agent_runtime" / "desplegar.py"
+    spec = importlib.util.spec_from_file_location("desplegar_agente", ruta)
+    assert spec and spec.loader
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    return modulo
+
+
+def test_desplegar_dry_run_con_recurso_actualiza(capsys: pytest.CaptureFixture[str]) -> None:
+    modulo = _cargar_desplegar()
+    recurso = "projects/p/locations/us-central1/reasoningEngines/123"
+    assert modulo.main(["--dry-run", "--recurso", recurso]) == 0
+    assert f"actualizar {recurso}" in capsys.readouterr().out
+    assert modulo.main(["--dry-run", "--recurso", "malo"]) == 1
+    assert modulo.main(["--dry-run"]) == 0
+    assert "crear un recurso nuevo" in capsys.readouterr().out
+
+
+def test_desplegar_usa_update_con_recurso_y_create_sin_el(monkeypatch: pytest.MonkeyPatch) -> None:
+    modulo = _cargar_desplegar()
+    llamadas: list[tuple[str, dict[str, Any]]] = []
+
+    class Api:
+        def _r(self, nombre: str, kw: dict[str, Any]) -> Any:
+            llamadas.append((nombre, kw))
+            return type("R", (), {"api_resource": type("A", (), {"name": "projects/p/x"})()})()
+
+        def create(self, **kw: Any) -> Any:
+            return self._r("create", kw)
+
+        def update(self, **kw: Any) -> Any:
+            return self._r("update", kw)
+
+    cliente = type("C", (), {"agent_engines": Api()})()
+    monkeypatch.setattr(modulo, "_cliente", lambda p, u: (cliente, object()))
+    config = {"env_vars": {"LATAM_GCP_PROJECT": "p"}}
+    recurso = "projects/p/locations/l/reasoningEngines/9"
+    modulo.desplegar(config, "p", "l", recurso)
+    modulo.desplegar(config, "p", "l")
+    assert [n for n, _ in llamadas] == ["update", "create"]
+    assert llamadas[0][1]["name"] == recurso and "name" not in llamadas[1][1]
