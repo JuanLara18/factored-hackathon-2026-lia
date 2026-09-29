@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spike S3: chat AG-UI</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
+  #chat > div { margin: .5rem 0; }
+  .ficha, .aprobacion { border: 1px solid #888; border-radius: 6px; padding: .75rem; }
+  #metricas { color: #555; font-size: .85rem; }
+  button { margin-right: .5rem; }
+</style>
+</head>
+<body>
+<h1>Spike S3: chat AG-UI</h1>
+<button id="iniciar">No reconozco un cargo</button>
+<div id="chat" aria-live="polite"></div>
+<p id="metricas"></p>
+<script src="app.js"></script>
+</body>
+</html>
