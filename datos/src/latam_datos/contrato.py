@@ -1,6 +1,6 @@
-"""Contrato de las tablas crudas que deja el proceso externo de carga en `latam_bronce` (D-30).
+"""Contrato de las tablas crudas que deja el proceso externo de carga en `latam_bank` (D-30).
 
-Nombre de tabla igual al del archivo del organizador; todas las columnas STRING. Las columnas listadas son las
+Tabla `latam_bank.bronce_<archivo>`; todas las columnas STRING. Las columnas listadas son las
 que la definición de Datos nombra de forma explícita; el resto se confirma en F1 contra el diccionario del
 dataset (que no vive en el repositorio) y se agrega aquí.
 """
@@ -10,9 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-BRONCE = "latam_bronce"
-PLATINO = "latam_platino"
-REPORTE = f"{PLATINO}.reporte_calidad_corrida"
+DATASET = "latam_bank"  # una sola base de datos; la capa es el prefijo del nombre de la tabla
+PREFIJO_BRONCE = "bronce_"
+REPORTE = f"{DATASET}.platino_reporte_calidad_corrida"
 INICIO_PARTICIONES = date(2023, 6, 17)
 FIN_PARTICIONES = date(2026, 6, 17)
 

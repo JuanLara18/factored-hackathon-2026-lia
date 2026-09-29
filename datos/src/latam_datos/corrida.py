@@ -3,8 +3,8 @@
     LATAM_GCP_PROJECT   proyecto de Google Cloud
     LATAM_GCP_LOCATION  ubicación de BigQuery (por defecto us-central1)
 
-`python -m latam_datos validar` evalúa las reglas Q-BRZ sobre `latam_bronce` y escribe el reporte en
-`latam_platino.reporte_calidad_corrida`. Sale con 1 si hay un hallazgo bloqueante, para que el Job falle.
+`python -m latam_datos validar` evalúa las reglas Q-BRZ sobre `latam_bank.bronce_*` y escribe el reporte en
+`latam_bank.platino_reporte_calidad_corrida`. Sale con 1 si hay un hallazgo bloqueante, para que el Job falle.
 """
 
 from __future__ import annotations

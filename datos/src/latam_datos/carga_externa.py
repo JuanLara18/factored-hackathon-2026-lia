@@ -1,4 +1,4 @@
-"""Carga supuesta por D-30: CSV del espejo local a tablas crudas de `latam_bronce`.
+"""Carga supuesta por D-30: CSV del espejo local a tablas crudas `latam_bank.bronce_<archivo>`.
 
 No es parte del pipeline. La corre una persona una vez, después de
 `aws s3 sync s3://<bucket>/data/ data/espejo/ --profile latam-organizador`.
@@ -14,16 +14,8 @@ from pathlib import Path
 
 from google.cloud import bigquery
 
-DATASETS = (
-    "latam_bronce",
-    "latam_plata",
-    "latam_plata_restringida",
-    "latam_oro_analitico",
-    "latam_oro_aprendizaje",
-    "latam_oro_operacional",
-    "latam_platino",
-    "latam_seguridad",
-)
+# Las capas son prefijos de tabla dentro de `latam_bank`; `latam_seguridad` guarda la llave de tokenización.
+DATASETS = ("latam_bank", "latam_seguridad")
 
 
 def encabezado(ruta: Path) -> list[str]:
@@ -40,7 +32,7 @@ def crear_datasets(cliente: bigquery.Client, ubicacion: str) -> None:
 
 
 def cargar_csv(cliente: bigquery.Client, ruta: Path) -> int:
-    tabla = f"{cliente.project}.latam_bronce.{ruta.stem}"
+    tabla = f"{cliente.project}.latam_bank.bronce_{ruta.stem}"
     config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.CSV,
         skip_leading_rows=1,

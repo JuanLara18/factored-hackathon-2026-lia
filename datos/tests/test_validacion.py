@@ -36,9 +36,9 @@ def test_tabla_ausente_y_columna_faltante_bloquean(motor: MotorDuckDB) -> None:
 
 def test_columna_no_texto_avisa(motor: MotorDuckDB) -> None:
     motor.ejecutar(
-        "CREATE TABLE latam_bronce.customers (customer_id VARCHAR, document_type VARCHAR, n BIGINT)"
+        "CREATE TABLE latam_bank.bronce_customers (customer_id VARCHAR, document_type VARCHAR, n BIGINT)"
     )
-    motor.ejecutar("INSERT INTO latam_bronce.customers VALUES ('1', 'DNI', 5)")
+    motor.ejecutar("INSERT INTO latam_bank.bronce_customers VALUES ('1', 'DNI', 5)")
     h = _por_regla(evaluar(motor, (CLIENTES,)), "Q-BRZ-03")
     assert [x.resultado for x in h] == ["aviso"] and "n" in h[0].detalle
 
@@ -85,7 +85,9 @@ def test_reporte_cubre_todas_las_reglas_y_persiste(motor: MotorDuckDB) -> None:
     motor.cruda("customers", ["customer_id", "document_type"], [("1", "DNI")])
     hallazgos = validar(motor, AHORA)
     assert any(h.resultado == "bloqueado" for h in hallazgos)  # el resto del contrato no existe
-    reglas = {r for (r,) in motor.consultar("SELECT regla_id FROM latam_platino.reporte_calidad_corrida")}
+    reglas = {
+        r for (r,) in motor.consultar("SELECT regla_id FROM latam_bank.platino_reporte_calidad_corrida")
+    }
     assert reglas == set(REGLAS)
 
 
@@ -99,10 +101,10 @@ def test_sql_en_dialecto_bigquery() -> None:
     m = MotorBigQuery(MagicMock(), "proy")
     q1 = sql_dias_faltantes(m, HECHOS)
     assert "GENERATE_DATE_ARRAY(DATE '2023-06-17', DATE '2026-06-17')" in q1
-    assert "SAFE_CAST(`process_date` AS DATE)" in q1 and "`proy.latam_bronce.ventas`" in q1
+    assert "SAFE_CAST(`process_date` AS DATE)" in q1 and "`proy.latam_bank.bronce_ventas`" in q1
     q6 = sql_conteos_atipicos(m, HECHOS)
     assert "PERCENTILE_CONT(n, 0.01) OVER (PARTITION BY dow)" in q6 and "EXTRACT(DAYOFWEEK" in q6
-    assert "INFORMATION_SCHEMA.COLUMNS" in m.columnas_de("latam_bronce")
+    assert "INFORMATION_SCHEMA.COLUMNS" in m.columnas_de("latam_bank")
 
 
 def test_motor_bigquery_ejecuta_y_consulta_con_ubicacion() -> None:

@@ -1,4 +1,4 @@
-"""Reglas Q-BRZ sobre las tablas crudas de `latam_bronce` (definición, sección 2.4, ajustadas por D-30).
+"""Reglas Q-BRZ sobre las tablas crudas `latam_bank.bronce_<tabla>` (definición 2.4, ajustadas por D-30).
 
 Todo es SQL generado con el dialecto del motor (BigQuery en producción). Las reglas que hablaban de objetos,
 etag, BOM, codificación o lotes quedaron fuera porque la carga es de un proceso externo (ver README).
@@ -11,10 +11,11 @@ from datetime import date, datetime
 from typing import Literal
 
 from latam_datos.contrato import (
-    BRONCE,
     CONTRATO,
+    DATASET,
     FIN_PARTICIONES,
     INICIO_PARTICIONES,
+    PREFIJO_BRONCE,
     REPORTE,
     TablaCruda,
 )
@@ -47,7 +48,7 @@ class Hallazgo:
 
 
 def _t(motor: Motor, tabla: str) -> str:
-    return motor.t(f"{BRONCE}.{tabla}")
+    return motor.t(f"{DATASET}.{PREFIJO_BRONCE}{tabla}")
 
 
 def _vacio(motor: Motor, columna: str) -> str:
@@ -127,13 +128,14 @@ def evaluar(motor: Motor, contrato: tuple[TablaCruda, ...] = CONTRATO) -> list[H
     """Corre las reglas sobre cada tabla del contrato y devuelve los hallazgos."""
     hallazgos: list[Hallazgo] = []
     columnas: dict[str, dict[str, str]] = {}
-    for tabla, col, tipo in motor.consultar(motor.columnas_de(BRONCE)):
-        columnas.setdefault(str(tabla), {})[str(col)] = str(tipo)
+    for tabla, col, tipo in motor.consultar(motor.columnas_de(DATASET)):
+        if str(tabla).startswith(PREFIJO_BRONCE):
+            columnas.setdefault(str(tabla).removeprefix(PREFIJO_BRONCE), {})[str(col)] = str(tipo)
 
     for t in contrato:
         if t.nombre not in columnas:
             hallazgos.append(
-                Hallazgo("Q-BRZ-03", "bloqueado", "tabla esperada ausente en latam_bronce", t.nombre)
+                Hallazgo("Q-BRZ-03", "bloqueado", "tabla esperada ausente en latam_bank (bronce_*)", t.nombre)
             )
             continue
         presentes = columnas[t.nombre]

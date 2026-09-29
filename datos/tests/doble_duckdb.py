@@ -19,16 +19,15 @@ _TIPOS: dict[Logico, str] = {
 class MotorDuckDB:
     def __init__(self) -> None:
         self.con = duckdb.connect()
-        self.con.execute("CREATE SCHEMA latam_bronce")
-        self.con.execute("CREATE SCHEMA latam_platino")
+        self.con.execute("CREATE SCHEMA latam_bank")
 
     def cruda(self, tabla: str, columnas: list[str], filas: list[tuple[str, ...]]) -> None:
-        """Crea una tabla cruda todo texto en `latam_bronce`, como la dejaría el proceso externo."""
+        """Crea `latam_bank.bronce_<tabla>` todo texto, como la dejaría el proceso externo."""
         defs = ", ".join(f'"{c}" VARCHAR' for c in columnas)
-        self.con.execute(f"CREATE TABLE latam_bronce.{tabla} ({defs})")
+        self.con.execute(f"CREATE TABLE latam_bank.bronce_{tabla} ({defs})")
         if filas:
             marcas = ", ".join("?" * len(columnas))
-            self.con.executemany(f"INSERT INTO latam_bronce.{tabla} VALUES ({marcas})", filas)
+            self.con.executemany(f"INSERT INTO latam_bank.bronce_{tabla} VALUES ({marcas})", filas)
 
     def t(self, nombre: str) -> str:
         return nombre

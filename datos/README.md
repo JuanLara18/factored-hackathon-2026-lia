@@ -12,11 +12,11 @@
 ## Carga supuesta
 
 La carga del dataset queda fuera de alcance (D-30). Un proceso externo baja el bucket del organizador y deja
-cada archivo como tabla cruda en el dataset `latam_bronce` de BigQuery: nombre de tabla igual al del archivo y
+cada archivo como tabla cruda en el dataset `latam_bank` de BigQuery: tabla `bronce_<archivo>` (la capa es el prefijo del nombre) y
 todas las columnas `STRING`. Este es el contrato que ese proceso debe cumplir (`src/latam_datos/contrato.py`);
 las columnas listadas son las que `definicion.md` nombra de forma explícita, el resto se confirma en F1.
 
-| Tabla | Llave | Columnas requeridas | Partición diaria |
+| Tabla (`latam_bank.bronce_<tabla>`) | Llave | Columnas requeridas | Partición diaria |
 |---|---|---|---|
 | `customers` | `customer_id` | `customer_id`, `document_type` | no |
 | `products` | `product_id` | `product_id`, `customer_id` | no |
@@ -33,7 +33,7 @@ las columnas listadas son las que `definicion.md` nombra de forma explícita, el
 
 `just validar` (o `python -m latam_datos validar`, con `LATAM_GCP_PROJECT` y `LATAM_GCP_LOCATION`) evalúa las
 reglas sobre esas tablas y escribe una fila por hallazgo, y una fila `ok` por regla sin hallazgos, en
-`latam_platino.reporte_calidad_corrida`. Sale con código 1 si hay un hallazgo bloqueante.
+`latam_bank.platino_reporte_calidad_corrida`. Sale con código 1 si hay un hallazgo bloqueante.
 
 | Regla | Qué comprueba | Severidad |
 |---|---|---|
