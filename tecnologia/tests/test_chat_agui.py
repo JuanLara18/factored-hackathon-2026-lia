@@ -227,3 +227,19 @@ def test_la_web_minima_se_sirve_y_declara_el_contrato() -> None:
     js = cliente.get("/app.js").text
     for marca in ("TOOL_CALL_START", "TEXT_MESSAGE_CONTENT", "interruptId", "FichaTransaccion"):
         assert marca in js
+
+
+@pytest.mark.parametrize(
+    ("entrada", "salida"),
+    [
+        ("Su tarjeta PRD-R7AEZL80P060 está activa.", "Su tarjeta terminada en 0060 está activa."),
+        ("Bloqueo PRD-1 ahora.", "Bloqueo tarjeta terminada en 0001 ahora."),
+        ("La tarjeta tarjeta-4001 y la compra.", "La tarjeta terminada en 4001 y la compra."),
+        ("Cobro de Tienda Uno (TX-1001) por 120.000.", "Cobro de Tienda Uno por 120.000."),
+        ("La transacción tx-1-1, del 3 de junio.", "La transacción, del 3 de junio."),
+        ("Cobro de Café Norte por 48,90.", "Cobro de Café Norte por 48,90."),
+    ],
+)
+def test_filtro_enmascara_identificadores_internos(entrada: str, salida: str) -> None:
+    r = filtrar_frase(entrada)
+    assert r.texto == salida and not r.bloqueada

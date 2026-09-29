@@ -78,9 +78,32 @@ _TARJETA = re.compile(r"\b(?:\d[ -]?){12,18}(\d{4})\b")
 _PROHIBIDAS = re.compile(r"\b(radicad[oa]|bloquead[oa]|reembols\w+|abonad[oa]|estorn\w+)\b", re.IGNORECASE)
 
 
+# Identificadores internos (defensa en profundidad, además del prompt): el de producto pasa a "terminada en
+# NNNN" y el de transacción se quita.
+_PRODUCTO = re.compile(
+    r"(?P<pre>\btarjeta\s+)?\b(?:PRD|tarjeta)-(?P<id>[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)", re.IGNORECASE
+)
+_TRANSACCION = re.compile(
+    r"[ \t]*[(\[]?\b(?:TXN?|transaction)[-_][A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\b[)\]]?", re.IGNORECASE
+)
+
+
+def _final(identificador: str) -> str:
+    return re.sub(r"\D", "", identificador).rjust(4, "0")[-4:]
+
+
+def enmascarar_identificadores(frase: str) -> str:
+    """`PRD-R7AEZL80P060` pasa a `terminada en 0060`; `TX-1001` se elimina."""
+    sin_producto = _PRODUCTO.sub(
+        lambda m: f"{m.group('pre') or 'tarjeta '}terminada en {_final(m.group('id'))}", frase
+    )
+    sin_transaccion = _TRANSACCION.sub("", sin_producto)
+    return re.sub(r"\s+([,.;:?])", r"\1", re.sub(r" {2,}", " ", sin_transaccion)).strip()
+
+
 def filtrar_frase(frase: str) -> ResultadoFiltro:
-    """Enmascara tarjetas y bloquea afirmaciones de acción sin `AccionVerificada`."""
-    enmascarada = _TARJETA.sub(lambda m: f"**** {m.group(1)}", frase)
+    """Enmascara tarjetas e ids internos y bloquea afirmaciones de acción sin `AccionVerificada`."""
+    enmascarada = enmascarar_identificadores(_TARJETA.sub(lambda m: f"**** {m.group(1)}", frase))
     if (m := _PROHIBIDAS.search(enmascarada)) is not None:
         return ResultadoFiltro(
             enmascarada, bloqueada=True, motivo=f"afirmacion_prohibida:{m.group(1).lower()}"
