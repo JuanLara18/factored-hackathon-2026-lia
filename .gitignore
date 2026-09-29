@@ -43,3 +43,5 @@ dbt_packages/
 target/
 logs/
 .DS_Store
+*.tfvars
+!*.tfvars.example
