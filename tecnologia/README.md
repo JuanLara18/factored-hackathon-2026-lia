@@ -11,3 +11,32 @@
 | `src/latam_tecnologia/gateway/` | LiteLLM, Presidio, Model Armor |
 | `web/` | sitio de LATAM Bank, vista del experto, panel de trazas |
 | `infra/terraform/` | Google Cloud como código |
+| `src/latam_tecnologia/runtime/` | agente de disputas como agente propio de Agent Runtime (`query`, `stream_query`, Sessions) |
+| `infra/agent_runtime/` | `desplegar.py` (paquete, `--dry-run`, despliegue), `iam.sh` (mínimo privilegio) |
+
+## Agente en Agent Runtime (D-32, fase 2)
+
+`AgenteDisputasRuntime` envuelve `crear_agente_disputas` y expone `query`, `stream_query`, `async_query` y
+`async_stream_query`. Reglas:
+
+- El cliente, el nivel y el vencimiento salen del **estado de la sesión** de Agent Runtime Sessions, que el canal
+  fija al abrirla (`crear_sesion`). Los argumentos de `query` no los aceptan y el modelo no los nombra.
+- El historial de mensajes se guarda como eventos de la sesión.
+- Las herramientas con efecto devuelven `{"tipo": "aprobacion", "aprobaciones": [...]}`; el canal la resuelve con
+  `aprobaciones={id: true|false}` y solo entonces se ejecutan. Un texto escrito no resuelve una pendiente.
+- Lectura de BigQuery con `LecturaBigQuery` (solo lectura); banco y almacén siguen simulados, en memoria de la
+  instancia (la idempotencia vale por instancia; con `max_instances=1` basta para la demo).
+
+El chat web reenvía los turnos al agente si existe `LATAM_AGENT_RUNTIME_RECURSO`
+(`projects/<p>/locations/<l>/reasoningEngines/<id>`); sin ella corre el agente en proceso, sin cambios. En ese
+modo la ficha visual (`FichaTransaccion`) no se dibuja, porque es una herramienta del navegador que el agente
+remoto no conoce.
+
+Despliegue: `just probar-agente-runtime` (arma y valida, sin API), `just desplegar-agente`, `iam.sh` para los
+permisos. El registro en Agent Registry es automático al desplegar con el SDK.
+
+Cuentas: el chat en Cloud Run usa `latam-chat@` con solo `bigquery.dataViewer` sobre `latam_bank` (a nivel de
+dataset), `bigquery.jobUser`, `aiplatform.user` (invocar el agente, Sessions y modelos) y `cloudtrace.agent`. El
+agente corre con su Agent Identity con permisos análogos. Así se deja de depender de la cuenta de Compute por
+defecto con `roles/editor`.
+

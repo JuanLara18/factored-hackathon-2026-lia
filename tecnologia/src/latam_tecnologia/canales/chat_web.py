@@ -19,7 +19,7 @@ from typing import Any
 from ag_ui.core import RunFinishedInterruptOutcome
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from latam_comun.dominio import Canal
 from pydantic_ai import DeferredToolRequests
@@ -30,6 +30,14 @@ from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.chat_agui import ChatAdapter, FiltradoEventStream
 from latam_tecnologia.canales.demo import Demo, Sesion, crear_demo
 from latam_tecnologia.canales.modelo import crear_modelo
+from latam_tecnologia.canales.runtime_cliente import (
+    VARIABLE_RECURSO,
+    ClienteAgentRuntime,
+    ClienteRuntime,
+    estado_de_confianza,
+    flujo_agui,
+    id_usuario,
+)
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
 from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
 
@@ -109,6 +117,11 @@ def _texto_ultimo_usuario(cuerpo: dict[str, Any]) -> str:
     return ""
 
 
+def _aprobada(resume: dict[str, Any]) -> bool:
+    carga: dict[str, Any] = resume.get("payload") or {}
+    return bool(carga.get("approved"))
+
+
 def _dinero(monto: Any) -> str:
     entero, _, dec = f"{float(monto):,.2f}".partition(".")
     return f"{entero.replace(',', '.')},{dec}"
@@ -138,6 +151,7 @@ def crear_app(
     modelo: Model | None = None,
     entorno: dict[str, str] | None = None,
     web_dir: Path | None = WEB_DIR,
+    runtime: ClienteRuntime | None = None,
 ) -> FastAPI:
     app = FastAPI()
     app.add_middleware(
@@ -148,11 +162,17 @@ def crear_app(
     )
     demo = demo or crear_demo(entorno)
     observabilidad.configurar(entorno if entorno is not None else os.environ)
-    if modelo is None:
-        modelo, nombre_modelo = crear_modelo(entorno)
+    recurso = (entorno if entorno is not None else os.environ).get(VARIABLE_RECURSO, "")
+    if runtime is None and recurso:
+        runtime = ClienteAgentRuntime(recurso)
+    if runtime is not None:  # el agente corre en Agent Runtime; aquí no se arma modelo ni agente
+        nombre_modelo, agente = "agent_runtime", None
     else:
-        nombre_modelo = "inyectado"
-    agente = crear_agente_disputas(modelo)
+        if modelo is None:
+            modelo, nombre_modelo = crear_modelo(entorno)
+        else:
+            nombre_modelo = "inyectado"
+        agente = crear_agente_disputas(modelo)
     herramientas = Herramientas(demo.lectura, demo.banco, demo.almacen, reloj=demo.reloj)
     vencimientos = Vencimientos(reloj=demo.reloj)
     traza: list[str] = []
@@ -196,6 +216,12 @@ def crear_app(
         if not 0 <= indice < len(demo.clientes):
             return JSONResponse({"error": "cliente_desconocido"}, status_code=400)
         s = demo.abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+        if runtime is not None:
+            runtime.crear_sesion(
+                user_id=id_usuario(s.autenticada.cliente_id),
+                session_id=s.conversacion_id,
+                estado=estado_de_confianza(s.autenticada, s.conversacion_id),
+            )
         return JSONResponse(
             {"sesion": s.autenticada.id_sesion, "conversacion": s.conversacion_id, "registro": s.registro}
         )
@@ -255,6 +281,22 @@ def crear_app(
                 return JSONResponse({"error": f"confirmacion_{veredicto}"}, status_code=409)
         if _PERSONA.search(_texto_ultimo_usuario(cuerpo)):
             traza.append("pedido_de_persona_en_texto")
+        if runtime is not None:
+            aprobaciones = {str(r["interruptId"])[4:]: _aprobada(r) for r in entradas}
+            return StreamingResponse(
+                flujo_agui(
+                    runtime,
+                    thread_id=s.conversacion_id,
+                    user_id=id_usuario(s.autenticada.cliente_id),
+                    mensaje=None if aprobaciones else _texto_ultimo_usuario(cuerpo),
+                    aprobaciones=aprobaciones or None,
+                    registro=reg,
+                    enriquecer=enriquecedor(s, reg),
+                    traza=traza,
+                ),
+                media_type="text/event-stream",
+            )
+        assert agente is not None
         ctx = ContextoAgente(herramientas, s.autenticada, s.conversacion_id, Canal.CHAT)
         return await AdaptadorChat.dispatch_request(
             request,

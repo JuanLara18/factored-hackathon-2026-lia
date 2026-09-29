@@ -7,6 +7,7 @@ dependencies = [
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
     "google-cloud-bigquery>=3.45.2",
+    "google-cloud-aiplatform>=1.148",
     "latam-comun",
     "google-auth>=2.30",
     "opentelemetry-sdk>=1.30",
