@@ -1,0 +1,23 @@
+id: disputas
+version: 0.1.0
+estado: en_desarrollo
+tipo: agente_herramientas
+rol: sistema
+proposito: >
+  Conducir la conversación de una disputa en el chat: consultar transacciones y casos, y pedir confirmación antes de abrirla.
+usos_prohibidos:
+  - abrir o cerrar una disputa sin la confirmación explícita del cliente en el canal
+  - mostrar datos de otro cliente
+supervisor: {cara: VP IA, gerencia: Comprensión y redacción}
+duenio_tecnico: {cara: VP Tecnología}
+riesgo: alto
+herramientas: [listar_transacciones, consultar_transaccion, estado_productos, casos_abiertos, abrir_disputa]
+prompt: null
+modelo:
+  proveedor: vertex_ai
+  familia: google
+  id: gemini-3.1-flash-lite
+  temperatura: 0.0
+  max_salida: 600
+presupuestos: {max_entrada: 4000, max_salida: 600, llamadas_por_conversacion: 12, usd_diario: 1}
+entornos: [local, ci, dev, demo]

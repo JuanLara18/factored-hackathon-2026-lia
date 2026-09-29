@@ -1,11 +1,12 @@
 """Fábrica delgada de modelos de PydanticAI.
 
-Con `GEMINI_API_KEY` en el entorno usa Gemini (nivel gratuito de AI Studio, D-30); sin ella devuelve
-`TestModel`, de modo que las pruebas y el CI nunca llaman a un proveedor real. Cuando se reabra la
-facturación basta con otra rama en `crear_modelo` para `Proveedor.VERTEX_AI` (D-29).
+Orden: `LATAM_MODELO=guionado` fuerza `TestModel`; con `LATAM_MODELO_PROVEEDOR=geap` (o `LATAM_GCP_PROJECT`
+sin llave) Gemini en Gemini Enterprise Agent Platform con ADC (D-32); con `GEMINI_API_KEY` Gemini de AI Studio
+(D-30); si no, `TestModel`, de modo que las pruebas y el CI nunca llaman a un proveedor real.
 
-Gemini se consulta por su punto de compatibilidad con OpenAI: el paquete `google-genai` que exige el
-proveedor `google-gla:` de PydanticAI choca hoy con `google-cloud-aiplatform` de dbt-bigquery.
+Ambos puntos usan la compatibilidad con OpenAI: el paquete `google-genai` que exige el proveedor `google` de
+PydanticAI choca hoy con `google-cloud-aiplatform` de dbt-bigquery. La parte de GEAP vive en Tecnología
+(`latam_tecnologia.canales.geap`) porque el chat la usa y IA depende de Tecnología.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 
+from latam_tecnologia.canales.geap import VARIABLE_MODELO, crear_modelo_geap, usa_geap
 from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.models.test import TestModel
@@ -27,6 +29,10 @@ URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta/openai/"
 def crear_modelo(spec: Modelo, entorno: Mapping[str, str] | None = None) -> Model:
     """Modelo real si hay llave para el proveedor del registro; `TestModel` si no."""
     env = os.environ if entorno is None else entorno
+    if env.get(VARIABLE_MODELO) == "guionado":
+        return TestModel()
+    if usa_geap(env):
+        return crear_modelo_geap(env)[0]
     if spec.proveedor is Proveedor.GEMINI_API and env.get(VARIABLE_LLAVE):
         proveedor = OpenAIProvider(base_url=URL_GEMINI, api_key=env[VARIABLE_LLAVE])
         return OpenAIChatModel(spec.id, provider=proveedor)

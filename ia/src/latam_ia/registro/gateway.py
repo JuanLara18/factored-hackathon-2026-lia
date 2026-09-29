@@ -22,7 +22,7 @@ def _parametros(proveedor: Proveedor, modelo_id: str) -> dict[str, Any]:
         p["api_key"] = "os.environ/GEMINI_API_KEY"
     else:
         p["vertex_project"] = "os.environ/LATAM_GCP_PROJECT"
-        p["vertex_location"] = "os.environ/LATAM_GCP_REGION"
+        p["vertex_location"] = "os.environ/LATAM_GEAP_LOCATION"
     return p
 
 
