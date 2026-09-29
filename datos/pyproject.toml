@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "VP Datos: ingesta, capas y contratos"
 requires-python = ">=3.12"
 dependencies = [
+    "google-cloud-bigquery>=3.45.2",
     "latam-comun",
 ]
 
@@ -13,3 +14,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/latam_datos"]
+
+[dependency-groups]
+dev = [
+    "duckdb>=1.5.6",
+]
