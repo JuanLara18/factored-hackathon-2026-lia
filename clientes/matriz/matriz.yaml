@@ -1,5 +1,5 @@
 # CLI-1.1: matriz estado x canal x registro (definición de Clientes, 2.2.1). Las claves de `estados` son los
-# valores del `StrEnum` `Estado` del motor (tecnologia/src/latam_tecnologia/motor/caso.py); una prueba exige
+# valores del `StrEnum` `Estado` del motor (comun/src/latam_comun/dominio/caso.py); una prueba exige
 # que coincidan. Cada celda dice qué intención cumple y qué plantilla la realiza en cada registro exigido.
 version: 1
 canales: [chat, whatsapp, voz]

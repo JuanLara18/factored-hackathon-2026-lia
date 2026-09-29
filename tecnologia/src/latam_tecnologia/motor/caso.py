@@ -8,43 +8,28 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from enum import StrEnum
 from typing import Final
 
 from latam_comun.dominio import AccionVerificada, Canal, Confirmacion, NivelAcr, SesionAutenticada
+from latam_comun.dominio.caso import Estado, Evento
 from latam_gobierno.politica import PoliticaV1, cargar
 
 from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.retoma import Almacen, Conversacion, EfectoIncierto
 
-
-class Estado(StrEnum):
-    INICIO = "inicio"
-    IDENTIFICANDO_TRANSACCION = "identificando_transaccion"
-    CONFIRMANDO_ACCION = "confirmando_accion"
-    EJECUTANDO = "ejecutando"
-    VERIFICANDO = "verificando"
-    INFORMANDO = "informando"
-    TRASPASO = "traspaso"
-    CIERRE = "cierre"
-    FALLA_SEGURA = "falla_segura"
-    NEGADO = "negado"
-
-
-class Evento(StrEnum):
-    ABRIR = "abrir"
-    TRANSACCION_ENCONTRADA = "transaccion_encontrada"
-    TRANSACCION_NO_ENCONTRADA = "transaccion_no_encontrada"
-    CONFIRMADA = "confirmada"
-    RECHAZADA = "rechazada"
-    EFECTO_HECHO = "efecto_hecho"
-    EFECTO_FALLIDO = "efecto_fallido"
-    VERIFICADO = "verificado"
-    ESCALAR = "escalar"
-    INFORMADO = "informado"
-    ACCESO_DENEGADO = "acceso_denegado"
-
+__all__ = [
+    "TERMINALES",
+    "TRANSICIONES",
+    "Estado",
+    "Evento",
+    "MotorCaso",
+    "Propuesta",
+    "Resultado",
+    "Transicion",
+    "decidir",
+    "transicionar",
+]
 
 TERMINALES: Final = frozenset({Estado.CIERRE, Estado.FALLA_SEGURA, Estado.NEGADO})
 
