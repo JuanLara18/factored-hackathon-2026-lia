@@ -306,8 +306,10 @@ class AgenteDisputasRuntime:
         elif not mensaje:
             yield {"tipo": "error", "codigo": "mensaje_vacio"}
             return
-        ctx = ContextoAgente(self._herramientas, sesion, conversacion_id, Canal.CHAT)
-        instrucciones = f"Registro: {registro}. Responde en español, en frases cortas y sin inventar cifras."
+        registro = registro if registro in ("usted", "vos") else "usted"
+        # El prompt versionado (ia/prompts/disputas) ya fija el registro; aquí solo se elige cuál.
+        ctx = ContextoAgente(self._herramientas, sesion, conversacion_id, Canal.CHAT, registro=registro)
+        instrucciones = f"Registro: {registro}."
         async with self._agente.run_stream(
             mensaje,
             deps=ctx,

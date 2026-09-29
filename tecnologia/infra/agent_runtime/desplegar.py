@@ -29,7 +29,14 @@ AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parents[2]
 NOMBRE_PAQUETE = "latam_paquete"
 IGNORAR = shutil.ignore_patterns("__pycache__", "*.pyc", "tests", ".pytest_cache")
-COPIAS = ("comun/src", "gobierno/src", "gobierno/politica", "tecnologia/src")
+COPIAS = (
+    "comun/src",
+    "gobierno/src",
+    "gobierno/politica",
+    "tecnologia/src",
+    "ia/prompts/disputas",
+    "clientes/plantillas",
+)
 PROYECTO = "latam-bank-hackaton-2026"
 NOMBRE_VISIBLE = "latam-disputas"
 ETIQUETAS = {"proyecto": "latam-bank", "agente": "disputas", "fase": "geap-2"}
