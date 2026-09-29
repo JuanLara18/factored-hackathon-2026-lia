@@ -11,7 +11,7 @@ import re
 import sys
 from dataclasses import dataclass
 
-from latam_tecnologia.motor.caso import Estado
+from latam_comun.dominio.caso import Estado
 
 from latam_clientes.contenido import (
     MARCADOR,

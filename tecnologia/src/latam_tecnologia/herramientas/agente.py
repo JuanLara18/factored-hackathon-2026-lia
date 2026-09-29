@@ -10,12 +10,15 @@ from pydantic_ai import Agent, DeferredToolRequests, RunContext
 from pydantic_ai.models import Model
 
 from latam_tecnologia.herramientas.catalogo import Herramientas
-from latam_tecnologia.herramientas.puertos import Producto, Transaccion
+from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 
 INSTRUCCIONES = (
     "Eres el asistente de disputas de un banco. Consulta con las herramientas, nunca inventes cifras "
     "y pide aprobación del cliente antes de cualquier acción."
 )
+
+
+AVISO_ESCALAR = " Siguiente paso obligatorio: llamar a escalar con motivo {motivo}."
 
 
 @dataclass
@@ -60,16 +63,32 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
         hecho = ctx.deps.herramientas.estado_productos(ctx.deps.sesion)
         return TypeAdapter(tuple[Producto, ...]).dump_json(hecho.valor).decode()
 
+    @agente.tool
+    def casos_abiertos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
+        """Casos de disputa ya abiertos del cliente. Consultar antes de abrir uno, para no duplicarlo."""
+        hecho = ctx.deps.herramientas.casos_abiertos(ctx.deps.sesion)
+        return TypeAdapter(tuple[CasoAbierto, ...]).dump_json(hecho.valor).decode()
+
     @agente.tool(requires_approval=True)
     def abrir_disputa(  # pyright: ignore[reportUnusedFunction]
         ctx: RunContext[ContextoAgente], transaction_id: str, motivo: str
     ) -> str:
         """Abre la disputa de una transacción del cliente. Idempotente."""
         d = ctx.deps
+        transaccion = d.herramientas.transaccion(d.sesion, transaction_id).valor
+        provisional = transaccion is not None and d.herramientas.credito_provisional(transaccion)
         accion, _ = d.herramientas.abrir_disputa(
-            d.sesion, d.conversacion_id, transaction_id, motivo, _confirmacion(ctx, "abrir_disputa")
+            d.sesion,
+            d.conversacion_id,
+            transaction_id,
+            motivo,
+            _confirmacion(ctx, "abrir_disputa"),
+            credito_provisional=provisional,
         )
-        return accion.resultado_releido
+        tras = None if transaccion is None else d.herramientas.escalar_tras_radicar(transaccion)
+        if tras is None:
+            return accion.resultado_releido
+        return accion.resultado_releido + AVISO_ESCALAR.format(motivo=tras)
 
     @agente.tool(requires_approval=True)
     def bloquear_tarjeta(ctx: RunContext[ContextoAgente], product_id: str) -> str:  # pyright: ignore[reportUnusedFunction]

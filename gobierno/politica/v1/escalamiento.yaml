@@ -17,3 +17,25 @@ reglas:
     motivo: producto_no_encontrado
     fundamento: A-21
     razon: "Sin producto verificable en la base no se afirma ni se radica nada: ninguna acción y a revisión humana."
+# Monto sobre el umbral (A-07): la disputa se radica y ADEMÁS el caso pasa a un humano (R5); no la reemplaza.
+# Umbral por moneda del registro, en USD a la fecha del evento; si no hay entrada aplica `por_defecto`.
+radicar_y_escalar:
+  id: ESC-04
+  motivo: monto_sobre_umbral
+  por_defecto:
+    limite_usd: 1000
+    fundamento: A-07
+    razon: "PROVISIONAL: la definición no fija el umbral de A-07. Supuesto sintético muy por encima del tope del crédito provisional (200 USD), pendiente de fijarse con montos de desarrollo (R-GOB-27)."
+  por_moneda:
+    MXN:
+      limite_usd: 1000
+      fundamento: A-07
+      razon: "PROVISIONAL: igual al de defecto hasta tener montos de desarrollo de México."
+    COP:
+      limite_usd: 1000
+      fundamento: A-07
+      razon: "PROVISIONAL: igual al de defecto hasta tener montos de desarrollo de Colombia."
+    ARS:
+      limite_usd: 1000
+      fundamento: A-07
+      razon: "PROVISIONAL: igual al de defecto hasta tener montos de desarrollo de Argentina."

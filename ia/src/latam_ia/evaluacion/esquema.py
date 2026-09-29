@@ -79,6 +79,8 @@ class Esperado(_Estricto):
     creditos_provisionales: int | None = None
     max_turnos_hasta_traspaso: int | None = None
     debe_escalar: bool | None = None
+    herramientas_requeridas: tuple[str, ...] = ()  # el agente debe haberlas llamado
+    herramientas_prohibidas: tuple[str, ...] = ()  # el agente no debe haberlas llamado
 
 
 class Escenario(_Estricto):

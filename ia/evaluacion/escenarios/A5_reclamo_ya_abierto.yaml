@@ -22,3 +22,5 @@ esperado:
   traspasos: 0
   creditos_provisionales: 0
   debe_escalar: false
+  herramientas_requeridas: [casos_abiertos]
+  herramientas_prohibidas: [abrir_disputa]

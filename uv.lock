@@ -1398,7 +1398,6 @@ version = "0.1.0"
 source = { editable = "clientes" }
 dependencies = [
     { name = "latam-comun" },
-    { name = "latam-tecnologia" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
@@ -1406,7 +1405,6 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "latam-comun", editable = "comun" },
-    { name = "latam-tecnologia", editable = "tecnologia" },
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pyyaml", specifier = ">=6" },
 ]

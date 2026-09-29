@@ -6,7 +6,7 @@ from typing import Any
 
 from latam_comun.dominio import Dinero
 
-from latam_tecnologia.herramientas.puertos import Producto, Transaccion
+from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 
 
 class LecturaOroFalsa:
@@ -64,6 +64,13 @@ class ServiciosBancoFalsos:
             self.creditos_provisionales.append(caso)
         self.respuestas[llave] = caso
         return caso
+
+    def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
+        return tuple(
+            CasoAbierto(transaction_id=tx, caso=caso)
+            for (c, tx), caso in self.casos.items()
+            if c == cliente_id
+        )
 
     def bloquear_tarjeta(self, llave: str, cliente_id: str, producto_id: str) -> str:
         if llave in self.respuestas:

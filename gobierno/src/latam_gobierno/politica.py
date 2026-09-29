@@ -48,12 +48,22 @@ class ReglaEscalamiento(_Cita):
         return self
 
 
-class Escalamiento(_Modelo):
-    reglas: tuple[ReglaEscalamiento, ...] = Field(min_length=1)
-
-
 class TopeCredito(_Cita):
     limite_usd: Decimal = Field(ge=0)
+
+
+class RadicarYEscalar(_Modelo):
+    """Monto sobre el umbral (A-07): se radica la disputa y además se pasa el caso a una persona (R5)."""
+
+    id: Texto
+    motivo: Texto
+    por_defecto: TopeCredito
+    por_moneda: dict[str, TopeCredito] = {}
+
+
+class Escalamiento(_Modelo):
+    reglas: tuple[ReglaEscalamiento, ...] = Field(min_length=1)
+    radicar_y_escalar: RadicarYEscalar
 
 
 class CreditoProvisional(_Modelo):
@@ -137,6 +147,14 @@ class PoliticaV1(_Modelo):
             )
             if coincide:
                 return Decision(id=r.id, motivo=r.motivo)
+        return None
+
+    def escalar_tras_radicar(self, moneda: str, amount_usd: Decimal | None) -> Decision | None:
+        """Monto sobre el umbral de la moneda: radica y luego escala. Sin monto en USD no se adivina."""
+        r = self.escalamiento.radicar_y_escalar
+        umbral = r.por_moneda.get(moneda, r.por_defecto).limite_usd
+        if amount_usd is not None and amount_usd > umbral:
+            return Decision(id=r.id, motivo=r.motivo)
         return None
 
     def limite_credito_usd(self, moneda: str) -> Decimal:

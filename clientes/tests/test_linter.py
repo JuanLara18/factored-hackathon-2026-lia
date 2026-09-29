@@ -11,7 +11,7 @@ from latam_clientes.contenido import (
     renderizar,
 )
 from latam_clientes.linter import Hallazgo, verificar
-from latam_tecnologia.motor.caso import Estado
+from latam_comun.dominio.caso import Estado
 
 MATRIZ = cargar_matriz()
 ESTILO = cargar_estilo()

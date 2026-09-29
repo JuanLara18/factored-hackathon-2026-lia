@@ -5,7 +5,6 @@ description = "VP Clientes: guiones, plantillas y operación humana"
 requires-python = ">=3.12"
 dependencies = [
     "latam-comun",
-    "latam-tecnologia",
     "pydantic>=2.8",
     "pyyaml>=6",
 ]

@@ -1,20 +1,24 @@
 id: E2_monto_sobre_umbral
 version: 1.0.0
 categoria: E
-descripcion: "Monto sobre el umbral: la política debería pasar el caso a una persona; policy/v1 no escala por monto."
+descripcion: "Monto sobre el umbral (A-07): se radica la disputa y además el caso pasa a una persona."
 cliente: CUST-0001
-falla_conocida: "policy/v1 no tiene regla de escalamiento por monto (solo urgente, estado y producto desconocido; el umbral de 200 USD solo limita el crédito provisional); Gobierno debe decidir si añade ESC por monto"
+mundo_extra:
+  transacciones:
+    - {cliente: CUST-0001, id: TX-2001, producto: PRD-1, monto: 6000000, moneda: COP, usd: 1500, comercio: Muebles Gran Casa, hace_dias: 1}
 guion:
-  objetivo: "Monto sobre el umbral: la política debería pasar el caso a una persona."
+  objetivo: "Monto sobre el umbral: se radica y además el caso pasa a una persona."
   max_turnos: 8
   turnos:
-    - decir: "No reconozco el cobro de {{monto}} en Electro Mundo"
+    - decir: "No reconozco el cobro de {{monto}} en Muebles Gran Casa"
       intencion: hablar
     - decir: "Sí, adelante"
       intencion: confirmar
   hechos:
     monto:
-      valor: "3600000"
+      valor: "6000000"
 esperado:
+  casos: [[CUST-0001, TX-2001]]
+  creditos_provisionales: 0
   traspasos: 1
   debe_escalar: true

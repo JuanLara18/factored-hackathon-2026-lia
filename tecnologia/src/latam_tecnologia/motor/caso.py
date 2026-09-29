@@ -8,43 +8,28 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from enum import StrEnum
 from typing import Final
 
 from latam_comun.dominio import AccionVerificada, Canal, Confirmacion, NivelAcr, SesionAutenticada
+from latam_comun.dominio.caso import Estado, Evento
 from latam_gobierno.politica import PoliticaV1, cargar
 
 from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.retoma import Almacen, Conversacion, EfectoIncierto
 
-
-class Estado(StrEnum):
-    INICIO = "inicio"
-    IDENTIFICANDO_TRANSACCION = "identificando_transaccion"
-    CONFIRMANDO_ACCION = "confirmando_accion"
-    EJECUTANDO = "ejecutando"
-    VERIFICANDO = "verificando"
-    INFORMANDO = "informando"
-    TRASPASO = "traspaso"
-    CIERRE = "cierre"
-    FALLA_SEGURA = "falla_segura"
-    NEGADO = "negado"
-
-
-class Evento(StrEnum):
-    ABRIR = "abrir"
-    TRANSACCION_ENCONTRADA = "transaccion_encontrada"
-    TRANSACCION_NO_ENCONTRADA = "transaccion_no_encontrada"
-    CONFIRMADA = "confirmada"
-    RECHAZADA = "rechazada"
-    EFECTO_HECHO = "efecto_hecho"
-    EFECTO_FALLIDO = "efecto_fallido"
-    VERIFICADO = "verificado"
-    ESCALAR = "escalar"
-    INFORMADO = "informado"
-    ACCESO_DENEGADO = "acceso_denegado"
-
+__all__ = [
+    "TERMINALES",
+    "TRANSICIONES",
+    "Estado",
+    "Evento",
+    "MotorCaso",
+    "Propuesta",
+    "Resultado",
+    "Transicion",
+    "decidir",
+    "transicionar",
+]
 
 TERMINALES: Final = frozenset({Estado.CIERRE, Estado.FALLA_SEGURA, Estado.NEGADO})
 
@@ -90,6 +75,7 @@ class Propuesta:
     accion: str  # "abrir_disputa" o "escalar"
     motivo: str
     credito_provisional: bool = False
+    escalar_despues: str | None = None  # motivo: se radica y luego se pasa a una persona (A-07)
 
 
 def decidir(
@@ -104,7 +90,8 @@ def decidir(
     if escalar is not None:
         return Propuesta("escalar", escalar.motivo)
     provisional = politica.credito_provisional_aplica(transaccion.monto.moneda, transaccion.amount_usd)
-    return Propuesta("abrir_disputa", "cargo_no_reconocido", provisional)
+    tras = politica.escalar_tras_radicar(transaccion.monto.moneda, transaccion.amount_usd)
+    return Propuesta("abrir_disputa", "cargo_no_reconocido", provisional, tras.motivo if tras else None)
 
 
 @dataclass(frozen=True)
@@ -112,6 +99,7 @@ class Resultado:
     estado: Estado
     propuesta: Propuesta | None = None
     accion: AccionVerificada | None = None
+    escalada: AccionVerificada | None = None
 
 
 def _ahora() -> datetime:
@@ -188,6 +176,7 @@ class MotorCaso:
             accion=propuesta.accion,
             motivo=propuesta.motivo,
             provisional=str(propuesta.credito_provisional),
+            **({"escalar_despues": propuesta.escalar_despues} if propuesta.escalar_despues else {}),
         )
         return Resultado(Estado(c.estado), propuesta)
 
@@ -218,8 +207,13 @@ class MotorCaso:
             c = self._mover(c, Evento.EFECTO_FALLIDO)
             return Resultado(Estado(c.estado))
         c = self._mover(c, Evento.EFECTO_HECHO)
-        c = self._mover(c, Evento.VERIFICADO) if accion.exito else self._mover(c, Evento.EFECTO_FALLIDO)
-        return Resultado(Estado(c.estado), accion=accion)
+        if not accion.exito:
+            c = self._mover(c, Evento.EFECTO_FALLIDO)
+            return Resultado(Estado(c.estado), accion=accion)
+        c = self._mover(c, Evento.VERIFICADO)
+        motivo = c.datos.get("escalar_despues")
+        escalada = self._h.escalar(sesion, c.id, motivo, urgente=False)[0] if motivo else None
+        return Resultado(Estado(c.estado), accion=accion, escalada=escalada)
 
     def cerrar(self, conversacion_id: str, sesion: SesionAutenticada) -> Resultado:
         c = self._cargar(conversacion_id, sesion)

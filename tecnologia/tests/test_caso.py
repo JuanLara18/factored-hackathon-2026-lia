@@ -46,6 +46,7 @@ class Mundo:
                 ("c1", _tx("t1")),
                 ("c1", _tx("t2", estado="declined")),
                 ("c1", _tx("t3", usd="900")),
+                ("c1", _tx("t4", usd="1500")),
                 ("c2", _tx("t9", producto="p9")),
             ],
             productos=[
@@ -183,7 +184,7 @@ def test_cliente_no_ve_datos_de_otro_cliente() -> None:
     m = Mundo()
     s = _sesion("c1")
     assert m.h.transaccion(s, "t9").valor is None
-    assert {t.transaction_id for t in m.h.transacciones_recientes(s).valor} == {"t1", "t2", "t3"}
+    assert {t.transaction_id for t in m.h.transacciones_recientes(s).valor} == {"t1", "t2", "t3", "t4"}
     assert m.h.ficha_transaccion(s, "t9").valor is None
     assert all(p.product_id != "p9" for p in m.h.estado_productos(s).valor)
 
@@ -209,8 +210,11 @@ def test_nivel_y_vigencia() -> None:
     with pytest.raises(AccesoDenegado):
         m.h.transacciones_recientes(_sesion().model_copy(update={"expira": AHORA - timedelta(seconds=1)}))
     m.motor.abrir("k1", _sesion(), Canal.CHAT)
+    consulta = _sesion(nivel=NivelAcr.CONSULTA)
+    accion, _ = m.h.bloquear_tarjeta(consulta, "k1", "p1", _conf("bloquear_tarjeta"))  # D-31: acr1 basta
+    assert accion.exito
     with pytest.raises(AccesoDenegado):
-        m.h.bloquear_tarjeta(_sesion(nivel=NivelAcr.CONSULTA), "k1", "p1", _conf("bloquear_tarjeta"))
+        m.h.abrir_disputa(consulta, "k1", "t1", "fraude", _conf())  # radicar sigue en acr2
 
 
 def test_agente_testmodel_lee_solo_lo_del_cliente() -> None:
@@ -230,3 +234,15 @@ def test_agente_pide_aprobacion_antes_de_cualquier_efecto() -> None:
     r = agente.run_sync("disputa t1", deps=deps)
     assert isinstance(r.output, DeferredToolRequests)
     assert m.banco.llamadas == 0
+
+
+def test_monto_sobre_el_umbral_radica_y_luego_escala() -> None:
+    m = Mundo()
+    s = _sesion()
+    m.motor.abrir("k1", s, Canal.CHAT)
+    r = m.motor.identificar("k1", s, "t4")
+    assert r.estado is Estado.CONFIRMANDO_ACCION and r.propuesta is not None
+    assert r.propuesta.escalar_despues == "monto_sobre_umbral"
+    r = m.motor.confirmar("k1", s, _conf())
+    assert r.accion is not None and r.accion.exito and r.escalada is not None
+    assert m.banco.casos == {("c1", "t4"): "caso-1"} and len(m.banco.traspasos) == 1
