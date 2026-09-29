@@ -309,3 +309,14 @@ def test_sin_comercio_se_describe_por_el_tipo_y_el_estado_va_en_espanol() -> Non
     assert textos.describir_comercio("Tienda Uno", "Purchase") == "Tienda Uno"
     assert textos.describir_comercio(None, "Desconocido") == "Movimiento sin comercio"
     assert textos.estado_transaccion("Approved") == "Aprobada"
+
+
+def test_modelo_geap_y_llave_de_muerte() -> None:
+    proyecto = {"LATAM_GCP_PROJECT": "p"}
+    modelo, nombre = crear_modelo(proyecto)
+    assert nombre == "geap:gemini-3.1-flash-lite"
+    assert modelo.model_name == "google/gemini-3.1-flash-lite"
+    assert crear_modelo({**proyecto, "LATAM_MODELO": "gemini-3.1-flash-lite"})[1].startswith("geap:")
+    assert crear_modelo({**proyecto, "LATAM_MODELO": "guionado"})[1] == "guionado"
+    assert crear_modelo({**proyecto, "GEMINI_API_KEY": "x"})[1].startswith("gemini:")
+    assert crear_modelo({"LATAM_MODELO_PROVEEDOR": "geap", "LATAM_GCP_PROJECT": "p"})[1].startswith("geap:")

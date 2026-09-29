@@ -1,4 +1,4 @@
-"""Modelo del chat: Gemini con `GEMINI_API_KEY`; sin ella, un guion que usa las herramientas reales."""
+"""Modelo del chat: Gemini en GEAP (D-32) o con `GEMINI_API_KEY`; sin nada, un guion con las herramientas."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
+from latam_tecnologia.canales.geap import VARIABLE_MODELO, VARIABLE_PROYECTO, crear_modelo_geap, usa_geap
 from latam_tecnologia.canales.textos import describir_comercio, estado_transaccion, plantilla
 
 VARIABLE_LLAVE = "GEMINI_API_KEY"
@@ -129,8 +130,12 @@ def crear_modelo_guionado() -> FunctionModel:
 
 
 def crear_modelo(entorno: Mapping[str, str] | None = None) -> tuple[Model, str]:
-    """Gemini si hay llave (nivel gratuito, D-30); guion determinista si no. Devuelve modelo y nombre."""
+    """`LATAM_MODELO=guionado` fuerza el guion; luego GEAP (D-32), luego AI Studio, luego el guion."""
     env = os.environ if entorno is None else entorno
+    if env.get(VARIABLE_MODELO) == "guionado":
+        return crear_modelo_guionado(), "guionado"
+    if env.get(VARIABLE_PROYECTO) and usa_geap(env):
+        return crear_modelo_geap(env)
     if env.get(VARIABLE_LLAVE):
         proveedor = OpenAIProvider(base_url=URL_GEMINI, api_key=env[VARIABLE_LLAVE])
         return OpenAIChatModel(MODELO_GEMINI, provider=proveedor), f"gemini:{MODELO_GEMINI}"

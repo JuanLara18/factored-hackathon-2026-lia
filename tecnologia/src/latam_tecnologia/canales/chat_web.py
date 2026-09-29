@@ -25,6 +25,7 @@ from latam_comun.dominio import Canal
 from pydantic_ai import DeferredToolRequests
 from pydantic_ai.models import Model
 
+from latam_tecnologia import observabilidad
 from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.chat_agui import ChatAdapter, FiltradoEventStream
 from latam_tecnologia.canales.demo import Demo, Sesion, crear_demo
@@ -146,6 +147,7 @@ def crear_app(
         allow_headers=["*"],
     )
     demo = demo or crear_demo(entorno)
+    observabilidad.configurar(entorno if entorno is not None else os.environ)
     if modelo is None:
         modelo, nombre_modelo = crear_modelo(entorno)
     else:
