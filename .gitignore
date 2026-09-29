@@ -45,3 +45,7 @@ logs/
 .DS_Store
 *.tfvars
 !*.tfvars.example
+datos/dbt/target/
+datos/dbt/logs/
+datos/dbt/dbt_packages/
+datos/dbt/.user.yml

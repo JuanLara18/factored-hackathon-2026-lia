@@ -1,0 +1,1 @@
+{{ plata_base('complaints') }}

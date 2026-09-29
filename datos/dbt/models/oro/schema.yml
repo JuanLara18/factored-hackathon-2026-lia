@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: oro_operacional_transacciones_recientes
+    description: "Transacciones de la ventana, sin PII ni is_fraud"
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+  - name: oro_operacional_estado_productos
+    description: "Estado de productos, sin número ni saldo"
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: oro_operacional_vista_cliente_segura
+    description: "Cliente sin segmento, acento ni contacto"
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+  - name: oro_analitico_linea_base_reclamos
+    description: "Línea base de reclamos por país, canal y mes"

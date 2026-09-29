@@ -1,0 +1,103 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_estado_productos
+name: oro_operacional_estado_productos
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Estado de los productos del cliente que lee el servicio de tarjetas antes de bloquear"
+  limitations: "Fuente sintética del organizador; sin PII; sin is_fraud ni fraud_score. Corte a AS_OF (fecha_corte)."
+  usage: "Solo lectura desde la instantánea publicada de oro operacional, nunca desde plata ni bronce."
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_estado_productos
+    physicalName: oro_operacional_estado_productos
+    physicalType: table
+    description: "product_id|Una fila por producto con cliente existente"
+    properties:
+      - name: product_id
+        logicalType: string
+        description: "Llave del producto"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: customer_id
+        logicalType: string
+        description: "Solo para filtrar por la sesión"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: product_type
+        logicalType: string
+        description: "Tipo de producto"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: product_status
+        logicalType: string
+        description: "Estado (bloqueo)"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: currency
+        logicalType: string
+        description: "ISO 4217"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: _moneda_anomala
+        logicalType: boolean
+        description: "Cliente de México con producto en USD"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "tarjetas"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "todas"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct product_id) from latam_bank.oro_operacional_estado_productos"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro
