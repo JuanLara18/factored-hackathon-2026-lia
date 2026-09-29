@@ -1,14 +1,35 @@
+# Perfiles (TEC-10.1): `nucleo` (estado), `observabilidad` (trazas), `voz` y `llm-local` (modelos abiertos).
+# `docker compose --profile nucleo up -d`; varios perfiles se combinan con más `--profile`.
 services:
   postgres:
     image: postgres:16
+    profiles: ["nucleo"]
     environment:
       POSTGRES_USER: latam
       POSTGRES_PASSWORD: latam
       POSTGRES_DB: latam
     ports: ["5432:5432"]
     volumes: ["pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U latam -d latam"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
   phoenix:
     image: arizephoenix/phoenix:latest
+    profiles: ["observabilidad"]
     ports: ["6006:6006", "4317:4317"]
+  # Voz: los servicios de reconocimiento y síntesis locales; el marco (Pipecat) corre en proceso con el motor (D-18).
+  voz-stt:
+    image: fedirz/faster-whisper-server:latest-cpu
+    profiles: ["voz"]
+    ports: ["8001:8000"]
+  # Modelos abiertos locales para generador y juez (D-29).
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm-local"]
+    ports: ["11434:11434"]
+    volumes: ["ollama:/root/.ollama"]
 volumes:
   pg: {}
+  ollama: {}
