@@ -14,9 +14,21 @@ check:
 test:
     uv run pytest -q
 
-# Servicios locales: Postgres y Phoenix
+# Servicios locales por perfil de Compose (TEC-10.1): nucleo, voz, llm-local, observabilidad
 up:
-    docker compose up -d
+    docker compose --profile nucleo --profile observabilidad up -d
+
+demo-nucleo:
+    docker compose --profile nucleo up -d
+
+demo-voz:
+    docker compose --profile nucleo --profile voz up -d
+
+demo-llm-local:
+    docker compose --profile nucleo --profile llm-local up -d
+
+demo-observabilidad:
+    docker compose --profile nucleo --profile observabilidad up -d
 
 down:
-    docker compose down
+    docker compose --profile nucleo --profile voz --profile llm-local --profile observabilidad down
