@@ -1,0 +1,24 @@
+id: A5_reclamo_ya_abierto
+version: 1.0.0
+categoria: A
+descripcion: "Ya existe un caso abierto por la misma transacción: el estado final conserva un solo caso."
+cliente: CUST-0001
+mundo_extra:
+  casos_previos: [[CUST-0001, TX-1004]]
+guion:
+  objetivo: "Ya existe un caso abierto por la misma transacción: el estado final conserva un solo caso."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cobro de {{monto}} en Cafe Central"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "15000"
+esperado:
+  casos: [[CUST-0001, TX-1004]]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false

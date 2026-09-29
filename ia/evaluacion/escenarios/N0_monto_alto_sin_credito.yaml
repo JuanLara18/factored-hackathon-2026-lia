@@ -1,0 +1,22 @@
+id: N0_monto_alto_sin_credito
+version: 1.0.0
+categoria: N
+descripcion: "Monto sobre el umbral del crédito provisional: se abre la disputa sin crédito provisional."
+cliente: CUST-0001
+guion:
+  objetivo: "Monto sobre el umbral del crédito provisional: se abre la disputa sin crédito provisional."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cobro de {{monto}} en Electro Mundo"
+      intencion: hablar
+    - decir: "Sí, adelante"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "3600000"
+esperado:
+  casos: [[CUST-0001, TX-1003]]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false

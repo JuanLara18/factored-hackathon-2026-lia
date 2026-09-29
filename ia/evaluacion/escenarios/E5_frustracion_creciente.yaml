@@ -1,0 +1,24 @@
+id: E5_frustracion_creciente
+version: 1.0.0
+categoria: E
+descripcion: "Tres mensajes negativos: se ofrece una persona y, al aceptar, se escala."
+registro: vos
+cliente: CUST-0001
+guion:
+  objetivo: "Tres mensajes negativos: se ofrece una persona y, al aceptar, se escala."
+  max_turnos: 8
+  turnos:
+    - decir: "Ya estoy harto, no reconozco un cobro y nadie me ayuda"
+      intencion: hablar
+    - decir: "Esto es un desastre, ya lo dije"
+      intencion: hablar
+    - decir: "Qué servicio tan inútil y pésimo"
+      intencion: hablar
+    - decir: "Sí, pásame con una persona"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  debe_escalar: true

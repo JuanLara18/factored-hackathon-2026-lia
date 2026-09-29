@@ -66,3 +66,7 @@ dbt-build:
 # Datos: solo los casos del fixture de actualización (unit tests de dbt, sin tocar tablas reales)
 dbt-test-fixture:
     cd datos/dbt; uv run dbt test --select "test_type:unit"
+
+# IA: arnés de evaluación del agente de disputas; escribe ia/evaluacion/reportes/ultimo.json y ultimo.md
+evaluar *args:
+    uv run python -m latam_ia.evaluacion {{args}}

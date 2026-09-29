@@ -50,3 +50,6 @@ datos/dbt/target/
 datos/dbt/logs/
 datos/dbt/dbt_packages/
 datos/dbt/.user.yml
+
+# Reportes del arnés de evaluación (se regeneran con `just evaluar`)
+ia/evaluacion/reportes/

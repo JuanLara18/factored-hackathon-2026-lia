@@ -1,0 +1,24 @@
+id: A2_tres_candidatas
+version: 1.0.0
+categoria: A
+descripcion: "Tres cobros posibles en el mismo comercio: se listan opciones y se disputa solo el que el cliente elige."
+cliente: CUST-0001
+guion:
+  objetivo: "Tres cobros posibles en el mismo comercio: se listan opciones y se disputa solo el que el cliente elige."
+  max_turnos: 8
+  turnos:
+    - decir: "Hay un cobro de Super Norte que no reconozco"
+      intencion: hablar
+    - decir: "El de {{monto}}"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "88000"
+      si_pregunta: [cuál]
+esperado:
+  casos: [[CUST-0001, TX-1008]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

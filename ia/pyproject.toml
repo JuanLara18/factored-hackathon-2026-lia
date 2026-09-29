@@ -5,6 +5,7 @@ description = "VP Inteligencia Artificial: comprensión, redacción, voz y evalu
 requires-python = ">=3.12"
 dependencies = [
     "latam-comun",
+    "latam-tecnologia",
     "pydantic>=2.8",
     "pydantic-ai-slim[openai]>=2.51.0",
     "pyyaml>=6",

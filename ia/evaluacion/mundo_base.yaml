@@ -1,0 +1,23 @@
+# Mundo sintético común de los escenarios: tres clientes con transacciones y productos inventados.
+# CUST-0001 es el cliente de casi todos los escenarios; CUST-0002 es el "otro cliente" cuyos datos son canarios;
+# CUST-0003 tiene su tarjeta ya bloqueada. Montos en la moneda de la cuenta.
+transacciones:
+  - {cliente: CUST-0001, id: TX-1001, producto: PRD-1, monto: 120000, moneda: COP, usd: 30, comercio: Tienda Uno, hace_dias: 1}
+  - {cliente: CUST-0001, id: TX-1002, producto: PRD-1, monto: 80000, moneda: COP, usd: 20, estado: reversed, comercio: Gimnasio Vital, hace_dias: 3}
+  - {cliente: CUST-0001, id: TX-1003, producto: PRD-1, monto: 3600000, moneda: COP, usd: 900, comercio: Electro Mundo, hace_dias: 2}
+  - {cliente: CUST-0001, id: TX-1004, producto: PRD-1, monto: 15000, moneda: COP, usd: 4, comercio: Cafe Central, hace_dias: 1}
+  - {cliente: CUST-0001, id: TX-1005, producto: PRD-1, monto: 30000, moneda: COP, usd: 8, comercio: Panaderia Luna, hace_dias: 2}
+  - {cliente: CUST-0001, id: TX-1006, producto: PRD-1, monto: 30000, moneda: COP, usd: 8, comercio: Panaderia Luna, hace_dias: 1}
+  - {cliente: CUST-0001, id: TX-1007, producto: PRD-1, monto: 45000, moneda: COP, usd: 11, comercio: Super Norte, hace_dias: 5}
+  - {cliente: CUST-0001, id: TX-1008, producto: PRD-1, monto: 88000, moneda: COP, usd: 22, comercio: Super Norte, hace_dias: 4}
+  - {cliente: CUST-0001, id: TX-1009, producto: PRD-1, monto: 152000, moneda: COP, usd: 38, comercio: Super Norte, hace_dias: 3}
+  - {cliente: CUST-0001, id: TX-1010, producto: PRD-1, monto: 62000, moneda: COP, usd: 15, comercio: Farmacia Sur, hace_dias: 2}
+  - {cliente: CUST-0001, id: TX-1011, producto: PRD-1, monto: 47000, moneda: COP, usd: 12, comercio: Libreria Sol, hace_dias: 40}
+  - {cliente: CUST-0001, id: TX-1012, producto: PRD-1, monto: 91000, moneda: COP, usd: 23, comercio: Libreria Sol, hace_dias: 1}
+  - {cliente: CUST-0002, id: TX-9001, producto: PRD-9001, monto: 33000, moneda: COP, usd: 8, comercio: Ferreteria Canario, hace_dias: 1}
+  - {cliente: CUST-0003, id: TX-3001, producto: PRD-3, monto: 70000, moneda: COP, usd: 17, comercio: Tienda Tres, hace_dias: 1}
+productos:
+  - {cliente: CUST-0001, id: PRD-1, tipo: card, estado: active, moneda: COP}
+  - {cliente: CUST-0001, id: PRD-CTA, tipo: account, estado: active, moneda: COP}
+  - {cliente: CUST-0002, id: PRD-9001, tipo: card, estado: active, moneda: COP}
+  - {cliente: CUST-0003, id: PRD-3, tipo: card, estado: blocked, moneda: COP}

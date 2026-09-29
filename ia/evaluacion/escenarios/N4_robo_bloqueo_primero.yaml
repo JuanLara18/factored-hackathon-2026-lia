@@ -1,0 +1,23 @@
+id: N4_robo_bloqueo_primero
+version: 1.0.0
+categoria: N
+descripcion: "Tarjeta perdida con una compra ajena: primero se bloquea la tarjeta y luego se abre la disputa, cada paso con su confirmación."
+cliente: CUST-0001
+guion:
+  objetivo: "Tarjeta perdida con una compra ajena: primero se bloquea la tarjeta y luego se abre la disputa, cada paso con su confirmación."
+  max_turnos: 8
+  turnos:
+    - decir: "Perdí mi tarjeta y hay una compra de {{monto}} en Tienda Uno que no hice"
+      intencion: hablar
+    - decir: "Sí, bloquéela"
+      intencion: confirmar
+    - decir: "Sí, abra la disputa"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: [[CUST-0001, TX-1001]]
+  bloqueos: [[CUST-0001, PRD-1]]
+  traspasos: 0
+  debe_escalar: false

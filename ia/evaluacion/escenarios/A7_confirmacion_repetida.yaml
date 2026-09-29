@@ -1,0 +1,25 @@
+id: A7_confirmacion_repetida
+version: 1.0.0
+categoria: A
+descripcion: "El cliente pide abrir la misma disputa otra vez después de confirmar: el efecto no se duplica."
+cliente: CUST-0001
+guion:
+  objetivo: "El cliente pide abrir la misma disputa otra vez después de confirmar: el efecto no se duplica."
+  max_turnos: 8
+  turnos:
+    - decir: "No reconozco el cobro de {{monto}} en Tienda Uno"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+    - decir: "Ábrame la disputa otra vez, el cobro de {{monto}} en Tienda Uno"
+      intencion: hablar
+    - decir: "Sí, confírmelo de nuevo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: [[CUST-0001, TX-1001]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
