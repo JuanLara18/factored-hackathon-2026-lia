@@ -86,3 +86,17 @@ desplegar-chat space="juanlara/latam-bank-chat":
 desplegar-chat-run:
     uv run python tecnologia/infra/hf_space/preparar.py .hf_space
     gcloud run deploy latam-chat --source .hf_space --project latam-bank-hackaton-2026 --region us-central1 --port 7860 --min-instances 0 --max-instances 1 --cpu 1 --memory 512Mi --concurrency 40 --timeout 300 --allow-unauthenticated --set-env-vars LATAM_GCP_PROJECT=latam-bank-hackaton-2026,LATAM_GCP_LOCATION=US,LATAM_GEAP_LOCATION=global,LATAM_TRABAJADOR_VERSION=0.1.0 --labels proyecto=latam-bank --quiet
+
+# Agente de disputas: arma y valida el paquete de Agent Runtime sin llamar a la API.
+probar-agente-runtime:
+    uv run python tecnologia/infra/agent_runtime/desplegar.py --dry-run
+
+# Agente de disputas: lo despliega en Agent Runtime (min-instances 0, Agent Identity) e imprime el recurso.
+desplegar-agente:
+    uv run python tecnologia/infra/agent_runtime/desplegar.py
+
+# Chat con cuenta de servicio mínima (tecnologia/infra/agent_runtime/iam.sh cuenta) que reenvía al agente:
+# just desplegar-chat-run-agente projects/<numero>/locations/us-central1/reasoningEngines/<id>
+desplegar-chat-run-agente recurso:
+    uv run python tecnologia/infra/hf_space/preparar.py .hf_space
+    gcloud run deploy latam-chat --source .hf_space --project latam-bank-hackaton-2026 --region us-central1 --port 7860 --min-instances 0 --max-instances 1 --cpu 1 --memory 512Mi --concurrency 40 --timeout 300 --allow-unauthenticated --service-account latam-chat@latam-bank-hackaton-2026.iam.gserviceaccount.com --set-env-vars LATAM_GCP_PROJECT=latam-bank-hackaton-2026,LATAM_GCP_LOCATION=US,LATAM_GEAP_LOCATION=global,LATAM_TRABAJADOR_VERSION=0.1.0,LATAM_AGENT_RUNTIME_RECURSO={{recurso}} --labels proyecto=latam-bank --quiet
