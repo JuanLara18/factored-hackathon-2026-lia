@@ -1,0 +1,287 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_ficha_transaccion
+name: oro_operacional_ficha_transaccion
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Ficha de una transacción para explicarla al cliente y traspasarla: directorio, historia previa, tasa y estado"
+  limitations: "Fuente sintética; directorio inventado por el equipo (origen_directorio); sin PII, is_fraud ni fraud_score; ningún cálculo usa datos posteriores al evento"
+  usage: "Solo lectura desde la instantánea publicada de oro operacional"
+team:
+  name: VP Datos
+servers:
+  - server: sandbox
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_ficha_transaccion
+    physicalName: oro_operacional_ficha_transaccion
+    physicalType: view
+    description: "Una fila por transacción de la ventana de 180 días antes de AS_OF"
+    properties:
+      - name: transaction_id
+        logicalType: string
+        description: "Llave de la transacción"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: customer_id
+        logicalType: string
+        description: "Solo para filtrar por la sesión"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: product_id
+        logicalType: string
+        description: "Producto de la transacción"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: product_type
+        logicalType: string
+        description: "Tipo de producto"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: event_ts
+        logicalType: timestamp
+        description: "Fecha y hora del evento, sin zona"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: event_date
+        logicalType: date
+        description: "Fecha del evento"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: amount
+        logicalType: number
+        description: "Monto en la moneda de la transacción, NUMERIC(18,2)"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: currency
+        logicalType: string
+        description: "ISO 4217"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: amount_usd
+        logicalType: number
+        description: "Monto en USD"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: amount_usd_origen
+        logicalType: string
+        description: "fuente, igual_monto, recalculado_tasa o sin_tasa"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: transaction_type
+        logicalType: string
+        description: "Tipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: transaction_status
+        logicalType: string
+        description: "Approved, Pending, Reversed o Declined"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: channel
+        logicalType: string
+        description: "Canal"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: merchant_name
+        logicalType: string
+        description: "Comercio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: merchant_category
+        logicalType: string
+        description: "Categoría del comercio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: transaction_country
+        logicalType: string
+        description: "ISO 3166-1 alfa 2"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: es_extranjera
+        logicalType: boolean
+        description: "País de la transacción distinto del del cliente"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: _moneda_anomala
+        logicalType: boolean
+        description: "Cliente de México con producto en USD"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: fecha_corte
+        logicalType: date
+        description: "AS_OF del producto"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: merchant_key
+        logicalType: string
+        description: "Llave del comercio en el directorio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: razon_social
+        logicalType: string
+        description: "Razón social inventada por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: descriptor_extracto
+        logicalType: string
+        description: "Descriptor de extracto de 5 a 22 caracteres, inventado por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: marca
+        logicalType: string
+        description: "Marca inventada por el equipo"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: origen_directorio
+        logicalType: string
+        description: "equipo si el comercio está en el directorio (enriquecimiento sintético)"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: compras_previas_mismo_comercio_12m
+        logicalType: integer
+        description: "Compras aprobadas del cliente en el mismo comercio en los 12 meses anteriores al evento"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: ultima_compra_previa
+        logicalType: timestamp
+        description: "Última compra aprobada previa en el mismo comercio"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: posibles_duplicados_48h
+        logicalType: integer
+        description: "Transacciones previas del cliente con mismo comercio y monto en las 48 horas anteriores"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: tasa_usd
+        logicalType: number
+        description: "Tasa a USD del día del evento (1 en USD)"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: fecha_tasa
+        logicalType: date
+        description: "Fecha de la tasa usada"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+      - name: explicacion_estado_clave
+        logicalType: string
+        description: "Explicación del estado para pendiente, revertida y rechazada; vacío si aprobada"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "ficha"
+slaProperties:
+  - property: frequency
+    value: 1
+    unit: d
+  - property: latency
+    value: 1
+    unit: d
+    description: "Frescura de 1 día contra AS_OF"
+quality:
+  - type: sql
+    description: "Llave sin duplicados"
+    query: "select count(*) - count(distinct transaction_id) from latam_bank.oro_operacional_ficha_transaccion"
+    mustBe: 0
+customProperties:
+  - property: zona
+    value: oro_operacional
+  - property: pii
+    value: ninguna
+  - property: capa
+    value: oro

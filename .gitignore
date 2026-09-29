@@ -17,6 +17,7 @@ eval/materializados/
 *.duckdb
 *.parquet
 *.csv
+!datos/dominios/*.csv
 *.wav
 *.mp3
 *.m4a

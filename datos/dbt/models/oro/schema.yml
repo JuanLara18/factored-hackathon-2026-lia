@@ -8,11 +8,46 @@ models:
         data_tests: [unique, not_null]
       - name: customer_id
         data_tests: [not_null]
+      - name: channel
+        data_tests:
+          - dominio_canonico:
+              dominio: canal_transaccion
+              config: {severity: warn}
+      - name: transaction_type
+        data_tests:
+          - dominio_canonico:
+              dominio: tipo_transaccion
+              config: {severity: warn}
+      - name: transaction_status
+        data_tests:
+          - dominio_canonico:
+              dominio: estado_transaccion
+              config: {severity: warn}
+      - name: merchant_category
+        data_tests:
+          - dominio_canonico:
+              dominio: categoria_comercio
+              config: {severity: warn}
+      - name: product_type
+        data_tests:
+          - dominio_canonico:
+              dominio: tipo_producto
+              config: {severity: warn}
   - name: oro_operacional_estado_productos
     description: "Estado de productos, sin número ni saldo"
     columns:
       - name: product_id
         data_tests: [unique, not_null]
+      - name: product_type
+        data_tests:
+          - dominio_canonico:
+              dominio: tipo_producto
+              config: {severity: warn}
+      - name: product_status
+        data_tests:
+          - dominio_canonico:
+              dominio: estado_producto
+              config: {severity: warn}
   - name: oro_operacional_vista_cliente_segura
     description: "Cliente sin segmento, acento ni contacto"
     columns:
@@ -20,3 +55,130 @@ models:
         data_tests: [unique, not_null]
   - name: oro_analitico_linea_base_reclamos
     description: "Línea base de reclamos por país, canal y mes"
+  - name: oro_operacional_ficha_transaccion
+    description: "Ficha de la transacción de la ventana: directorio, historia previa, tasa y explicación del estado. Vista. Sin is_fraud ni fraud_score"
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+      - name: merchant_key
+        data_tests:
+          - relationships:
+              to: ref('oro_operacional_directorio_comercios')
+              field: merchant_key
+              config: {severity: warn}
+      - name: origen_directorio
+        data_tests:
+          - accepted_values:
+              values: [equipo]
+              config: {severity: warn}
+      - name: compras_previas_mismo_comercio_12m
+        data_tests: [not_null]
+      - name: posibles_duplicados_48h
+        data_tests: [not_null]
+      - name: channel
+        data_tests:
+          - dominio_canonico:
+              dominio: canal_transaccion
+              config: {severity: warn}
+      - name: transaction_type
+        data_tests:
+          - dominio_canonico:
+              dominio: tipo_transaccion
+              config: {severity: warn}
+      - name: transaction_status
+        data_tests:
+          - dominio_canonico:
+              dominio: estado_transaccion
+              config: {severity: warn}
+      - name: merchant_category
+        data_tests:
+          - dominio_canonico:
+              dominio: categoria_comercio
+              config: {severity: warn}
+      - name: product_type
+        data_tests:
+          - dominio_canonico:
+              dominio: tipo_producto
+              config: {severity: warn}
+  - name: oro_operacional_riesgo_transaccion
+    description: "Puntaje y banda de riesgo por transacción de la ventana, solo para la política. Vista. Sin is_fraud"
+    columns:
+      - name: transaction_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+      - name: banda_riesgo
+        data_tests:
+          - dominio_canonico:
+              dominio: banda_riesgo
+              config: {severity: warn}
+  - name: oro_operacional_reclamos_cliente
+    description: "Quejas del cliente, sin producto afectado ni monto reclamado"
+    columns:
+      - name: complaint_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+      - name: category
+        data_tests:
+          - dominio_canonico:
+              dominio: categoria_reclamo
+              config: {severity: warn}
+      - name: subcategory
+        data_tests:
+          - dominio_canonico:
+              dominio: subcategoria_reclamo
+              config: {severity: warn}
+      - name: status
+        data_tests:
+          - dominio_canonico:
+              dominio: estado_reclamo
+              config: {severity: warn}
+      - name: priority
+        data_tests:
+          - dominio_canonico:
+              dominio: prioridad_reclamo
+              config: {severity: warn}
+      - name: reception_channel
+        data_tests:
+          - dominio_canonico:
+              dominio: canal_reclamo
+              config: {severity: warn}
+  - name: oro_operacional_directorio_comercios
+    description: "Directorio de comercios con razón social, descriptor y marca inventados por el equipo (origen = equipo)"
+    columns:
+      - name: merchant_key
+        data_tests: [unique, not_null]
+      - name: merchant_name
+        data_tests: [unique, not_null]
+      - name: descriptor_extracto
+        data_tests:
+          - not_null:
+              config: {severity: warn}
+      - name: origen
+        data_tests:
+          - accepted_values:
+              values: [equipo]
+      - name: merchant_category
+        data_tests:
+          - dominio_canonico:
+              dominio: categoria_comercio
+              config: {severity: warn}
+
+seeds:
+  - name: dominios_canonicos
+    description: "Dominios canónicos de los campos categóricos de oro operacional (valor de la fuente y etiqueta en español)"
+    columns:
+      - name: dominio
+        data_tests: [not_null]
+      - name: valor
+        data_tests: [not_null]
+  - name: directorio_comercios_equipo
+    description: "Razón social, descriptor de extracto (5 a 22 caracteres) y marca inventados por el equipo"
+    columns:
+      - name: merchant_name
+        data_tests: [unique, not_null]
+      - name: descriptor_extracto
+        data_tests: [not_null]
