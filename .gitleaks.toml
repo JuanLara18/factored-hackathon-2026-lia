@@ -1,0 +1,20 @@
+title = "LATAM Bank: escaneo de secretos"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "llave-hmac-tokenizacion"
+description = "Llave HMAC de tokenizacion (R-DAT-58) escrita como literal"
+regex = '''(?i)(hmac|tokeniz\w*)[_-]?(key|llave|secret)\s*[=:]\s*['"]?[0-9a-f]{64}\b'''
+tags = ["latam", "hmac"]
+
+[[rules]]
+id = "credenciales-del-organizador"
+description = "Perfil de AWS con llave secreta en texto plano"
+regex = '''(?i)aws_secret_access_key\s*[=:]\s*['"]?[A-Za-z0-9/+=]{40}\b'''
+tags = ["latam", "aws"]
+
+[allowlist]
+description = "Documentacion y pruebas con ejemplos falsos"
+paths = ['''^tests/test_guardas_repo\.py$''', '''^gobierno/src/latam_gobierno/guardas\.py$''']

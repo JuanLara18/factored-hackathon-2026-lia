@@ -18,6 +18,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run pyright
       - run: uv run pytest -q
+      - run: uv run python -m latam_gobierno.guardas
   secretos:
     runs-on: ubuntu-latest
     steps:
