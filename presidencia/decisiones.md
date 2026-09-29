@@ -22,7 +22,7 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 - **Por qué:** una sola plataforma que se pueda demostrar y auditar; el crédito de prueba cubre el costo.
   La reproducibilidad (PD6) se conserva con huellas y manifiesto encadenado en `latam_platino`.
 - **Modifica:** D-28 (se retira el perfil local de referencia y la paridad R-DAT-03), D-29 (Ollama local
-  pasa a Vertex AI) R-DAT-01 de la definición de Datos y las historias de ingesta DAT-1.1 a DAT-1.6, que se
+  pasa a Vertex AI), R-DAT-01 de la definición de Datos y las historias de ingesta DAT-1.1 a DAT-1.6, que se
   reducen a validar las tablas crudas con las reglas Q-BRZ que sigan aplicando.
 - **Estado:** firme (instrucción de la presidencia humana).
 
