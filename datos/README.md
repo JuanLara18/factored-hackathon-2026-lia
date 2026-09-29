@@ -63,20 +63,25 @@ recomputa la cadena y sale con 1 si alguien editó un manifiesto viejo. La prime
 registrara. El cargador ahora escribe a `bronce_<t>_nuevo`, compara con las filas de los CSV y solo entonces
 reemplaza la tabla vigente (si no cuadra, la borra y no toca la vigente). Límite del sandbox: recargar `digital_events` (3,9 GB) necesita
 espacio para `_nuevo` y la vigente a la vez, y el tope de 10 GB no lo permite hoy; habría que borrar tablas que no se usan.
+
 `just comparar-respaldo` compara `respaldo_20260831` con el espejo por ruta relativa y sha256 (y filas donde difieren) y
 guarda solo el resumen en `platino_comparacion_respaldo` y `manifiestos/comparacion_respaldo.json`. El respaldo no se carga.
 Hallazgo: solo `branches`, `daily_exchange_rates` y `marketing_campaigns` son idénticos; el respaldo no trae `call_transcripts` ni
 `satisfaction_surveys`; `transactions` del respaldo llega hasta 2024-09-25 (453 de 1.097 archivos), y así está en el bucket
 del organizador (verificado con `aws s3 ls` el 29 sep: 453 objetos; la descarga local está completa); el resto difiere en contenido con conteos de filas distintos en `call_center_interactions`, `campaign_sends`,
 `digital_events` y `transactions`.
+
 **Vencimiento.** Las tablas del sandbox vencen el 2026-11-28. Fuente reproducible: el espejo local
 (`aws s3 sync`) más el manifiesto, que dice qué archivos y qué huellas produjeron cada tabla; con eso se recarga y se verifica.
 `just inventario` deja `platino_inventario_insumos` (clase de procedencia, origen, `AS_OF`); la política de
 actualización está en `POLITICA_ACTUALIZACION.md`.
+
 ## Plata, oro y platino (dbt)
+
 `just dbt-build` crea la llave (una sola vez, idempotente) y corre `dbt build` sobre BigQuery (`datos/dbt`, perfil
 `profiles.yml` sin secretos: identidad por gcloud/ADC; `LATAM_GCP_PROJECT`, `LATAM_BQ_DATASET`, `LATAM_GCP_LOCATION`).
 Todo vive en el dataset `latam_bank` con prefijo de capa.
+
 | Modelo | Qué es |
 |---|---|
 | `plata_<tabla>` (13) | tipos canónicos con `SAFE_CAST` (dinero `NUMERIC(2)`, fechas `DATE`, marcas `DATETIME`, país ISO 3166), dedup por llave (gana la mayor fecha de actualización, luego la huella de la fila). `plata_digital_events` es **vista** (15,6 M filas) por el tope de 10 GB del sandbox |
@@ -85,17 +90,22 @@ Todo vive en el dataset `latam_bank` con prefijo de capa.
 | `platino_huerfanos`, `platino_conteos_plata` | llaves huérfanas por relación; filas de bronce contra plata y duplicados descartados |
 | `oro_operacional_*` (3) | `transacciones_recientes` (180 días antes de `AS_OF`, sin `is_fraud` ni `fraud_score`), `estado_productos`, `vista_cliente_segura`; contratos ODCS en `contratos/` |
 | `oro_analitico_linea_base_reclamos` | reclamos por país, canal y mes |
+
 Tests: llaves `unique`/`not_null` y `relationships` (huérfanas) con severidad `warn` y `store_failures` (tablas en `latam_pruebas`).
 Fixture: `fixtures/refresco.yml` son 10 casos FX-01 a FX-10 (duplicado, reentrega, llegada tardía, fallo de conversión, moneda inválida,
 huérfano, dueño ajeno, `amount_usd` recalculado, país, seudónimos) como unit tests de dbt (`just dbt-test-fixture`).
+
 **Privacidad (C2).** La llave vive en `latam_seguridad.llave` (32 bytes aleatorios, generados dentro de BigQuery por `crear_llave`,
 nunca en el repositorio). Documento, correo y teléfonos (y el número de producto) llegan a plata como `SHA-256(secreto || valor
 normalizado)`; nombres, dirección, fecha de nacimiento, IP y texto libre no pasan. `plata_restringida_clientes` guarda género, estado civil,
 educación y banda de edad solo para auditar equidad. En el sandbox el IAM es de proyecto, así que esa separación es por construcción, no por
 control de acceso; el destino de producción son etiquetas de política (policy tags) en las columnas, vistas autorizadas para oro operacional
 y acceso a `latam_seguridad` solo para la cuenta del pipeline.
+
 **Recortes.** Solo 3 de las fichas de oro operacional (faltan `ficha_transaccion`, `riesgo_transaccion`, `reclamos_cliente`, `directorio_comercios`);
 sin cuarentena por fila ni lotes (bronce sin `_lote_id`); dominios canónicos solo para país y moneda; `plata_digital_events` sin conteos de plata.
+
 ## Dataset de pruebas
+
 `latam_pruebas` guarda los fallos de las pruebas de dbt (`store_failures`) y las tablas temporales de las
 pruebas unitarias, con vencimiento de 7 días, para que `latam_bank` solo muestre las capas.
