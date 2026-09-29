@@ -20,6 +20,5 @@ variable "apis" {
     "aiplatform.googleapis.com",
     "bigquery.googleapis.com",
     "storage.googleapis.com",
-    "storagetransfer.googleapis.com",
   ]
 }

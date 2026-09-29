@@ -81,17 +81,6 @@ module "servicios" {
   depends_on      = [module.proyecto, module.presupuesto]
 }
 
-module "espejo" {
-  source               = "../../modules/espejo"
-  project_id           = var.project_id
-  project_number       = var.project_number
-  region               = var.region
-  etiquetas            = merge(local.etiquetas, { componente = "espejo" })
-  bucket_espejo        = var.bucket_espejo
-  bucket_s3            = var.bucket_s3_organizador
-  transferencia_activa = var.transferencia_activa
-  depends_on           = [module.proyecto, module.presupuesto]
-}
 
 module "pipeline" {
   source        = "../../modules/pipeline"
@@ -99,7 +88,6 @@ module "pipeline" {
   region        = var.region
   prefijo       = local.prefijo
   etiquetas     = local.etiquetas
-  bucket_espejo = module.espejo.bucket
   depends_on    = [module.proyecto, module.presupuesto]
 }
 

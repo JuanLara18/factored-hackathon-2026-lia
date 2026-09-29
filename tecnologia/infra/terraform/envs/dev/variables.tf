@@ -27,14 +27,7 @@ variable "cloud_sql_encendida" {
   type    = bool
   default = true
 }
-variable "bucket_espejo" { type = string }
-variable "bucket_s3_organizador" { type = string }
 variable "bigquery_location" {
   type    = string
   default = "US"
-}
-variable "transferencia_activa" {
-  description = "true solo despues de cargar el secreto de AWS."
-  type        = bool
-  default     = false
 }

@@ -31,19 +31,9 @@ Para desmontar: poner `proteccion_borrado = false` en el módulo `datos` y ejecu
 
 ## Datos en Google Cloud (D-30)
 
-Terraform crea el bucket `espejo`, los ocho datasets de BigQuery, el Cloud Run Job `pipeline-datos` y el
-trabajo de Storage Transfer Service (cada 6 horas, DAT-1.5), que nace deshabilitado
-(`transferencia_activa = false`). Las llaves de AWS del organizador no van en `tfvars`, en el estado ni en
-el repositorio. Pasos manuales:
+Terraform crea los ocho datasets de BigQuery y el Cloud Run Job `pipeline-datos` (validaciones y dbt sobre
+BigQuery). `latam_seguridad` solo lo lee la cuenta del pipeline. Las tablas crudas deben existir en `latam_bronce` antes de correr el pipeline (las deja un proceso externo).
 
-1. Tras el primer `apply`, cargar el secreto vacío `aws-organizador-credenciales` con un JSON
-   `{"access_key_id": "...", "secret_access_key": "..."}` desde un archivo temporal fuera del repositorio:
-   `gcloud secrets versions add aws-organizador-credenciales --data-file=<archivo>` y borrar el archivo.
-2. Poner `transferencia_activa = true` en `terraform.tfvars` y volver a aplicar.
-3. Para no esperar seis horas, lanzar la primera corrida:
-   `gcloud transfer jobs run <nombre del trabajo>` (el nombre sale del output del módulo `espejo`).
-4. Verificar que el espejo se llena: `gcloud storage ls gs://<bucket_espejo>`.
-
-`latam_seguridad` solo lo lee la cuenta del pipeline. Los servicios usan Vertex AI (Gemini y Model Garden
-como servicio) con el rol `roles/aiplatform.user`; la API `aiplatform` se habilita en el módulo `proyecto`.
-Si un modelo de Model Garden pide aceptar términos, se hace una vez en la consola.
+Los servicios usan Vertex AI (Gemini y Model Garden como servicio) con el rol `roles/aiplatform.user`; la
+API `aiplatform` se habilita en el módulo `proyecto`. Si un modelo de Model Garden pide aceptar términos,
+se hace una vez en la consola.

@@ -5,12 +5,9 @@ billing_account = "XXXXXX-XXXXXX-XXXXXX"
 correos_alerta  = ["equipo@example.com"]
 bucket_oro      = "mi-proyecto-hackathon-oro"
 
-bucket_espejo         = "mi-proyecto-hackathon-espejo"
-bucket_s3_organizador = "bucket-s3-del-organizador"
 
 # region              = "us-central1"
 # presupuesto_monto   = 250     # US$ de credito de prueba (D-29)
 # crear_cloud_sql     = false   # activar en TEC-11.2
 # cloud_sql_encendida = true    # false = demo-off
-# transferencia_activa = false  # true tras cargar el secreto de AWS
 # bigquery_location    = "US"
