@@ -18,5 +18,8 @@ variable "apis" {
     "monitoring.googleapis.com",
     "logging.googleapis.com",
     "aiplatform.googleapis.com",
+    "bigquery.googleapis.com",
+    "storage.googleapis.com",
+    "storagetransfer.googleapis.com",
   ]
 }
