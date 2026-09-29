@@ -16,7 +16,7 @@ _TIPOS: dict[Logico, str] = {
 
 
 class MotorBigQuery:
-    def __init__(self, cliente: Any, proyecto: str, ubicacion: str = "us-central1") -> None:
+    def __init__(self, cliente: Any, proyecto: str, ubicacion: str = "US") -> None:
         self.cliente = cliente
         self.proyecto = proyecto
         self.ubicacion = ubicacion

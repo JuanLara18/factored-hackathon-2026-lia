@@ -1,7 +1,7 @@
 """Punto de entrada de la validación de bronce, pensado para un Cloud Run Job (configuración por entorno).
 
     LATAM_GCP_PROJECT   proyecto de Google Cloud
-    LATAM_GCP_LOCATION  ubicación de BigQuery (por defecto us-central1)
+    LATAM_GCP_LOCATION  ubicación de BigQuery (por defecto US)
 
 `python -m latam_datos validar` evalúa las reglas Q-BRZ sobre `latam_bank.bronce_*` y escribe el reporte en
 `latam_bank.platino_reporte_calidad_corrida`. Sale con 1 si hay un hallazgo bloqueante, para que el Job falle.
@@ -39,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     from google.cloud import bigquery  # type: ignore[attr-defined]  # importación tardía
 
-    ubicacion = os.environ.get("LATAM_GCP_LOCATION", "us-central1")
+    ubicacion = os.environ.get("LATAM_GCP_LOCATION", "US")
     motor = MotorBigQuery(bigquery.Client(project=proyecto, location=ubicacion), proyecto, ubicacion)
     hallazgos = validar(motor, datetime.now(UTC))
     bloqueados = [h for h in hallazgos if h.resultado == "bloqueado"]
