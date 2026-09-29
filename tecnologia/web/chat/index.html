@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat de disputas, LATAM Bank</title>
+<link rel="stylesheet" href="chat.css">
+</head>
+<body>
+<a class="salto" href="#mensaje">Ir al campo de mensaje</a>
+<header class="barra">
+  <div class="marca">
+    <h1 id="titulo">LATAM Bank</h1>
+    <p id="aviso-ia" class="ia" role="note"></p>
+  </div>
+  <fieldset class="registro">
+    <legend id="lbl-registro"></legend>
+    <label><input type="radio" name="registro" value="usted" checked> Usted</label>
+    <label><input type="radio" name="registro" value="vos"> Vos</label>
+  </fieldset>
+  <button id="persona" type="button" class="persona"></button>
+</header>
+
+<main id="principal">
+  <section id="inicio" class="panel" aria-labelledby="inicio-titulo">
+    <h2 id="inicio-titulo">Demostración</h2>
+    <p id="origen" class="nota"></p>
+    <div class="campo">
+      <label for="cliente" id="lbl-cliente"></label>
+      <select id="cliente"></select>
+    </div>
+    <button id="iniciar" type="button" class="primario"></button>
+  </section>
+
+  <section id="conversacion" class="oculto" aria-label="Conversación">
+    <div id="chat" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+    <p id="estado" class="nota" role="status"></p>
+    <form id="formulario" autocomplete="off">
+      <label for="mensaje" id="lbl-mensaje" class="visualmente-oculto"></label>
+      <input id="mensaje" type="text" maxlength="500" required>
+      <button id="enviar" type="submit" class="primario"></button>
+    </form>
+  </section>
+</main>
+
+<dialog id="aprobacion" aria-labelledby="ap-texto" aria-describedby="ap-vence">
+  <p id="ap-texto"></p>
+  <p id="ap-vence" class="nota"></p>
+  <div class="acciones">
+    <button id="ap-si" type="button" class="primario"></button>
+    <button id="ap-no" type="button"></button>
+    <button id="ap-renovar" type="button" class="oculto"></button>
+  </div>
+</dialog>
+<p id="anuncio" class="visualmente-oculto" role="status" aria-live="assertive"></p>
+<script src="chat.js" defer></script>
+</body>
+</html>
