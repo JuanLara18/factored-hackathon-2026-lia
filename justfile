@@ -21,13 +21,7 @@ up:
 down:
     docker compose down
 
-# Datos (Cloud Run Job): necesitan LATAM_GCP_PROJECT y LATAM_GCS_ESPEJO; la identidad la da gcloud o el servicio
-espejo:
-    uv run python -m latam_datos espejo
-
-bronce:
-    uv run python -m latam_datos bronce
-
-# Espejo, bronce y reglas Q-BRZ en una corrida (lo que ejecuta el Job)
-data:
-    uv run python -m latam_datos todo
+# Datos: valida latam_bronce (reglas Q-BRZ) y escribe latam_platino.reporte_calidad_corrida
+# Necesita LATAM_GCP_PROJECT y, opcional, LATAM_GCP_LOCATION; la identidad la da gcloud o el servicio
+validar:
+    uv run python -m latam_datos validar

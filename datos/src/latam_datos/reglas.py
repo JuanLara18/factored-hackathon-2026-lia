@@ -1,43 +1,39 @@
-"""DAT-1.3: reglas de bronce Q-BRZ-01 a Q-BRZ-11 (definición, sección 2.4) y su reporte en `latam_platino`.
+"""Reglas Q-BRZ sobre las tablas crudas de `latam_bronce` (definición, sección 2.4, ajustadas por D-30).
 
-Las comprobaciones sobre un archivo (BOM, codificación, encabezado) son funciones puras que corren antes de
-la carga; las que miran el conjunto (01, 06, 07, 08, 09, 10) son SQL de BigQuery generado con el dialecto
-del motor.
+Todo es SQL generado con el dialecto del motor (BigQuery en producción). Las reglas que hablaban de objetos,
+etag, BOM, codificación o lotes quedaron fuera porque la carga es de un proceso externo (ver README).
 """
 
 from __future__ import annotations
 
-import codecs
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
 
-from latam_datos.config import GENERACION_ACTUAL, INVENTARIO, LOTES, REPORTE
+from latam_datos.contrato import (
+    BRONCE,
+    CONTRATO,
+    FIN_PARTICIONES,
+    INICIO_PARTICIONES,
+    REPORTE,
+    TablaCruda,
+)
 from latam_datos.motor import Logico, Motor
 
-BOM = codecs.BOM_UTF8
-BOM_CARACTER = "﻿"
-INICIO_PARTICIONES = date(2023, 6, 17)
-FIN_PARTICIONES = date(2026, 6, 17)
-UMBRAL_MALFORMADAS = 0.01
-UMBRAL_SOLAPAMIENTO = 0.5
+UMBRAL_VACIOS = 0.005
 MUESTRA_MINIMA_PERCENTILES = 20
 
-Resultado = Literal["ok", "aviso", "bloqueado", "cuarentena", "control"]
+Resultado = Literal["ok", "aviso", "bloqueado"]
 
-# regla -> (dimension, severidad declarada en la definicion)
+# regla -> (dimension, severidad declarada)
 REGLAS: dict[str, tuple[str, str]] = {
     "Q-BRZ-01": ("completitud", "aviso"),
-    "Q-BRZ-02": ("conformidad", "bloqueante"),
-    "Q-BRZ-03": ("conformidad", "segun caso"),
-    "Q-BRZ-04": ("conformidad", "bloqueante"),
-    "Q-BRZ-05": ("validez", "cuarentena o bloqueante"),
+    "Q-BRZ-03": ("conformidad", "bloqueante si falta tabla o columna requerida; aviso si sobran columnas"),
+    "Q-BRZ-05": ("validez", "aviso"),
     "Q-BRZ-06": ("completitud", "aviso"),
-    "Q-BRZ-07": ("consistencia", "bloqueante"),
-    "Q-BRZ-08": ("consistencia", "bloqueante"),
-    "Q-BRZ-09": ("conformidad", "aviso"),
-    "Q-BRZ-10": ("unicidad", "control de idempotencia"),
     "Q-BRZ-11": ("completitud", "aviso"),
+    "Q-BRZ-12": ("unicidad", "aviso"),
+    "Q-BRZ-13": ("completitud", "aviso"),
 }
 
 
@@ -47,136 +43,162 @@ class Hallazgo:
     resultado: Resultado
     detalle: str
     tabla: str | None = None
-    lote_id: str | None = None
-    source_key: str | None = None
     filas_afectadas: int = 0
 
 
-# ---------------------------------------------------------------- comprobaciones puras
+def _t(motor: Motor, tabla: str) -> str:
+    return motor.t(f"{BRONCE}.{tabla}")
 
 
-def quitar_bom(datos: bytes) -> tuple[bytes, bool]:
-    """Q-BRZ-02: si los tres primeros bytes son EF BB BF se quitan y se registra."""
-    if datos.startswith(BOM):
-        return datos[len(BOM) :], True
-    return datos, False
+def _vacio(motor: Motor, columna: str) -> str:
+    c = motor.ident(columna)
+    return f"({c} IS NULL OR TRIM({c}) = '')"
 
 
-def decodificar_utf8(datos: bytes) -> str | None:
-    """Q-BRZ-04: None si el archivo no es UTF-8 válido."""
-    try:
-        return datos.decode("utf-8")
-    except UnicodeDecodeError:
-        return None
+# ---------------------------------------------------------------- SQL de cada regla
 
 
-def bom_residual(columnas: list[str]) -> bool:
-    """Q-BRZ-02: algún nombre de columna decodificado empieza con U+FEFF."""
-    return any(c.startswith(BOM_CARACTER) for c in columnas)
-
-
-def comparar_encabezado(
-    esperado: list[str] | None, real: list[str]
-) -> Literal["identico", "aditivo", "bloqueado"]:
-    """Q-BRZ-03. Sin referencia (primera vez) el encabezado se acepta como idéntico."""
-    if len(set(real)) != len(real) or any(c == "" for c in real):
-        return "bloqueado"
-    if esperado is None or esperado == real:
-        return "identico"
-    if set(esperado) <= set(real):
-        return "aditivo"
-    return "bloqueado"
-
-
-# ---------------------------------------------------------------- reglas SQL sobre el conjunto
-
-
-def sql_solapamiento(motor: Motor, staging: str, destino: str, llave: str, lote_vigente: str) -> str:
-    """Q-BRZ-08: (llaves distintas de la reentrega, cuántas ya estaban en la versión vigente)."""
-    k = motor.ident(llave)
+def sql_dias_faltantes(motor: Motor, t: TablaCruda) -> str:
+    """Q-BRZ-01: días de la ventana sin ninguna fila en la tabla."""
+    assert t.fecha
+    f = motor.fecha_segura(motor.ident(t.fecha))
     return (
-        f"SELECT COUNT(DISTINCT n.{k}), COUNT(DISTINCT CASE WHEN v.k IS NOT NULL THEN n.{k} END) "
-        f"FROM {motor.t(staging)} AS n LEFT JOIN "
-        f"(SELECT DISTINCT {k} AS k FROM {motor.t(destino)} WHERE _lote_id = {motor.lit(lote_vigente)}) AS v "
-        f"ON n.{k} = v.k"
-    )
-
-
-def sql_dias_faltantes(motor: Motor) -> str:
-    """Q-BRZ-01: (tabla, día) del rango sin archivo, solo para tablas con particiones diarias."""
-    fecha = motor.fecha_segura("process_date")
-    return (
-        f"WITH presentes AS (SELECT DISTINCT tabla, {fecha} AS dia FROM {motor.t(LOTES)} "
-        f"WHERE estado = 'aplicado' AND {fecha} IS NOT NULL), "
-        f"tablas AS (SELECT DISTINCT tabla FROM presentes), "
+        f"WITH presentes AS (SELECT DISTINCT {f} AS dia FROM {_t(motor, t.nombre)} WHERE {f} IS NOT NULL), "
         f"rango AS ({motor.serie_de_dias(INICIO_PARTICIONES, FIN_PARTICIONES)}) "
-        f"SELECT t.tabla, r.dia FROM tablas AS t CROSS JOIN rango AS r "
-        f"LEFT JOIN presentes AS p ON p.tabla = t.tabla AND p.dia = r.dia "
-        f"WHERE p.dia IS NULL ORDER BY t.tabla, r.dia"
+        "SELECT r.dia FROM rango AS r LEFT JOIN presentes AS p ON p.dia = r.dia "
+        "WHERE p.dia IS NULL ORDER BY r.dia"
     )
 
 
-def sql_conteos_atipicos(motor: Motor) -> str:
-    """Q-BRZ-06: lotes con filas fuera de los percentiles 1 y 99 de su tabla y día de la semana."""
-    fecha = motor.fecha_segura("process_date")
-    part = "tabla, dow"
+def sql_conteos_atipicos(motor: Motor, t: TablaCruda) -> str:
+    """Q-BRZ-06: días cuyo conteo cae fuera de los percentiles 1 y 99 de su día de la semana."""
+    assert t.fecha
+    f = motor.fecha_segura(motor.ident(t.fecha))
     return (
-        f"SELECT tabla, lote_id, source_key, filas, p1, p99 FROM ("
-        f"SELECT tabla, lote_id, source_key, filas, "
-        f"{motor.percentil('filas', 0.01, part)} AS p1, {motor.percentil('filas', 0.99, part)} AS p99, "
-        f"COUNT(*) OVER (PARTITION BY {part}) AS n FROM ("
-        f"SELECT tabla, lote_id, source_key, filas, {motor.dia_semana(fecha)} AS dow "
-        f"FROM {motor.t(LOTES)} WHERE estado = 'aplicado' AND {fecha} IS NOT NULL)) "
-        f"WHERE n >= {MUESTRA_MINIMA_PERCENTILES} AND (filas < p1 OR filas > p99) ORDER BY source_key"
+        f"SELECT dia, n, p1, p99 FROM ("
+        f"SELECT dia, n, {motor.percentil('n', 0.01, 'dow')} AS p1, "
+        f"{motor.percentil('n', 0.99, 'dow')} AS p99, "
+        f"COUNT(*) OVER (PARTITION BY dow) AS m FROM ("
+        f"SELECT {f} AS dia, {motor.dia_semana(f)} AS dow, COUNT(*) AS n FROM {_t(motor, t.nombre)} "
+        f"WHERE {f} IS NOT NULL GROUP BY dia, dow)) "
+        f"WHERE m >= {MUESTRA_MINIMA_PERCENTILES} AND (n < p1 OR n > p99) ORDER BY dia"
     )
 
 
-def sql_generacion_ajena(motor: Motor) -> str:
-    """Q-BRZ-07: lotes aplicados que no son de la generación `data/`."""
+def sql_fechas_ilegibles(motor: Motor, t: TablaCruda) -> str:
+    assert t.fecha
+    c = motor.ident(t.fecha)
     return (
-        f"SELECT tabla, lote_id, source_key, filas FROM {motor.t(LOTES)} "
-        f"WHERE estado = 'aplicado' AND generacion <> {motor.lit(GENERACION_ACTUAL)} ORDER BY source_key"
+        f"SELECT COUNT(*) FROM {_t(motor, t.nombre)} "
+        f"WHERE NOT {_vacio(motor, t.fecha)} AND {motor.fecha_segura(c)} IS NULL"
     )
 
 
-def sql_no_autorizados(motor: Motor) -> str:
-    """Q-BRZ-09: objetos fuera de la fuente autorizada en la última instantánea del inventario."""
-    inv = motor.t(INVENTARIO)
+def sql_filas(motor: Motor, t: TablaCruda) -> str:
+    return f"SELECT COUNT(*) FROM {_t(motor, t.nombre)}"
+
+
+def sql_llave_vacia(motor: Motor, t: TablaCruda) -> str:
+    assert t.llave
+    return f"SELECT COUNT(*) FROM {_t(motor, t.nombre)} WHERE {_vacio(motor, t.llave)}"
+
+
+def sql_llave_duplicada(motor: Motor, t: TablaCruda) -> str:
+    """Q-BRZ-12: (llaves repetidas, filas sobrantes). Plata decide el ganador; aquí solo se mide."""
+    assert t.llave
+    k = motor.ident(t.llave)
     return (
-        f"SELECT source_key FROM {inv} WHERE NOT autorizado "
-        f"AND corrida_id = (SELECT MAX(corrida_id) FROM {inv}) ORDER BY source_key"
+        f"SELECT COUNT(*), COALESCE(SUM(n - 1), 0) FROM "
+        f"(SELECT {k}, COUNT(*) AS n FROM {_t(motor, t.nombre)} "
+        f"WHERE NOT {_vacio(motor, t.llave)} GROUP BY {k} HAVING COUNT(*) > 1)"
     )
 
 
-def evaluar_globales(motor: Motor) -> list[Hallazgo]:
-    """Q-BRZ-01, 06, 07 y 09 sobre el estado acumulado de `latam_bronce._lotes` y el inventario."""
+def sql_vacios_requeridas(motor: Motor, t: TablaCruda) -> str:
+    """Q-BRZ-13: una columna con la cantidad de filas vacías por cada columna requerida, en una pasada."""
+    sumas = ", ".join(f"SUM(CASE WHEN {_vacio(motor, c)} THEN 1 ELSE 0 END)" for c in t.requeridas)
+    return f"SELECT COUNT(*), {sumas} FROM {_t(motor, t.nombre)}"
+
+
+# ---------------------------------------------------------------- evaluación
+
+
+def evaluar(motor: Motor, contrato: tuple[TablaCruda, ...] = CONTRATO) -> list[Hallazgo]:
+    """Corre las reglas sobre cada tabla del contrato y devuelve los hallazgos."""
     hallazgos: list[Hallazgo] = []
-    faltan: dict[str, list[date]] = {}
-    for tabla, dia in motor.consultar(sql_dias_faltantes(motor)):
-        faltan.setdefault(str(tabla), []).append(dia)
-    for tabla, dias in sorted(faltan.items()):
-        muestra = ", ".join(d.isoformat() for d in dias[:10])
-        resto = f" y {len(dias) - 10} más" if len(dias) > 10 else ""
-        detalle = f"faltan {len(dias)} días: {muestra}{resto}"
-        hallazgos.append(Hallazgo("Q-BRZ-01", "aviso", detalle, tabla, None, None, len(dias)))
-    for tabla, lote, key, filas, p1, p99 in motor.consultar(sql_conteos_atipicos(motor)):
-        detalle = f"{filas} filas fuera de [{float(p1):.1f}, {float(p99):.1f}]"
-        hallazgos.append(Hallazgo("Q-BRZ-06", "aviso", detalle, str(tabla), str(lote), str(key), int(filas)))
-    for tabla, lote, key, filas in motor.consultar(sql_generacion_ajena(motor)):
-        hallazgos.append(
-            Hallazgo(
-                "Q-BRZ-07",
-                "bloqueado",
-                "lote de otra generación",
-                str(tabla),
-                str(lote),
-                str(key),
-                int(filas),
+    columnas: dict[str, dict[str, str]] = {}
+    for tabla, col, tipo in motor.consultar(motor.columnas_de(BRONCE)):
+        columnas.setdefault(str(tabla), {})[str(col)] = str(tipo)
+
+    for t in contrato:
+        if t.nombre not in columnas:
+            hallazgos.append(
+                Hallazgo("Q-BRZ-03", "bloqueado", "tabla esperada ausente en latam_bronce", t.nombre)
             )
-        )
-    for (key,) in motor.consultar(sql_no_autorizados(motor)):
-        detalle = "objeto fuera de la fuente autorizada; no se ingiere"
-        hallazgos.append(Hallazgo("Q-BRZ-09", "aviso", detalle, None, None, str(key)))
+            continue
+        presentes = columnas[t.nombre]
+        # Q-BRZ-03: columnas requeridas presentes y de tipo texto
+        faltan = [c for c in (*t.requeridas, *([t.llave] if t.llave else [])) if c not in presentes]
+        if faltan:
+            hallazgos.append(
+                Hallazgo(
+                    "Q-BRZ-03",
+                    "bloqueado",
+                    f"faltan columnas requeridas: {', '.join(sorted(set(faltan)))}",
+                    t.nombre,
+                )
+            )
+            continue
+        no_texto = sorted(c for c, tp in presentes.items() if tp.upper() not in ("STRING", "VARCHAR"))
+        if no_texto:
+            hallazgos.append(
+                Hallazgo(
+                    "Q-BRZ-03",
+                    "aviso",
+                    f"columnas que no son texto: {', '.join(no_texto)}",
+                    t.nombre,
+                    len(no_texto),
+                )
+            )
+
+        # Q-BRZ-11: tabla vacía
+        total = int(motor.consultar(sql_filas(motor, t))[0][0])
+        if total == 0:
+            hallazgos.append(Hallazgo("Q-BRZ-11", "aviso", "tabla vacía", t.nombre))
+            continue
+
+        if t.llave:
+            vacias = int(motor.consultar(sql_llave_vacia(motor, t))[0][0])
+            if vacias:
+                hallazgos.append(
+                    Hallazgo("Q-BRZ-05", "aviso", f"{vacias} filas con llave vacía", t.nombre, vacias)
+                )
+            repetidas, sobrantes = motor.consultar(sql_llave_duplicada(motor, t))[0]
+            if int(repetidas):
+                detalle = f"{int(repetidas)} llaves repetidas, {int(sobrantes)} filas sobrantes"
+                hallazgos.append(Hallazgo("Q-BRZ-12", "aviso", detalle, t.nombre, int(sobrantes)))
+
+        if t.requeridas:
+            fila = motor.consultar(sql_vacios_requeridas(motor, t))[0]
+            for col, n in zip(t.requeridas, fila[1:], strict=True):
+                if n and int(n) / total > UMBRAL_VACIOS:
+                    detalle = f"{col}: {int(n)} de {total} vacías"
+                    hallazgos.append(Hallazgo("Q-BRZ-13", "aviso", detalle, t.nombre, int(n)))
+
+        if t.fecha and t.de_hechos:
+            ilegibles = int(motor.consultar(sql_fechas_ilegibles(motor, t))[0][0])
+            if ilegibles:
+                detalle = f"{ilegibles} filas con {t.fecha} no interpretable como fecha"
+                hallazgos.append(Hallazgo("Q-BRZ-05", "aviso", detalle, t.nombre, ilegibles))
+            dias: list[date] = [d for (d,) in motor.consultar(sql_dias_faltantes(motor, t))]
+            if dias:
+                muestra = ", ".join(d.isoformat() for d in dias[:10])
+                resto = f" y {len(dias) - 10} más" if len(dias) > 10 else ""
+                detalle = f"faltan {len(dias)} días: {muestra}{resto}"
+                hallazgos.append(Hallazgo("Q-BRZ-01", "aviso", detalle, t.nombre, len(dias)))
+            for dia, n, p1, p99 in motor.consultar(sql_conteos_atipicos(motor, t)):
+                detalle = f"{dia}: {int(n)} filas fuera de [{float(p1):.1f}, {float(p99):.1f}]"
+                hallazgos.append(Hallazgo("Q-BRZ-06", "aviso", detalle, t.nombre, int(n)))
     return hallazgos
 
 
@@ -190,8 +212,6 @@ _COLUMNAS_REPORTE: tuple[tuple[str, Logico], ...] = (
     ("severidad", "texto"),
     ("resultado", "texto"),
     ("tabla", "texto"),
-    ("lote_id", "texto"),
-    ("source_key", "texto"),
     ("filas_afectadas", "entero"),
     ("detalle", "texto"),
     ("evaluado_en", "fecha_hora"),
@@ -199,7 +219,7 @@ _COLUMNAS_REPORTE: tuple[tuple[str, Logico], ...] = (
 
 
 def reportar(motor: Motor, corrida_id: str, hallazgos: list[Hallazgo], ahora: datetime) -> int:
-    """Una fila por hallazgo y, para toda regla sin hallazgos, una fila `ok`: el reporte cubre las 11."""
+    """Una fila por hallazgo y, para toda regla sin hallazgos, una fila `ok`."""
     cols = ", ".join(f"{c} {motor.tipo(t)}" for c, t in _COLUMNAS_REPORTE)
     motor.ejecutar(f"CREATE TABLE IF NOT EXISTS {motor.t(REPORTE)} ({cols})")
     con_hallazgo = {h.regla_id for h in hallazgos}
@@ -219,8 +239,6 @@ def reportar(motor: Motor, corrida_id: str, hallazgos: list[Hallazgo], ahora: da
                 REGLAS[h.regla_id][1],
                 h.resultado,
                 h.tabla,
-                h.lote_id,
-                h.source_key,
                 h.filas_afectadas,
                 h.detalle,
                 ahora,

@@ -1,12 +1,11 @@
 """Interfaz del motor SQL. La implementación real es BigQuery (`motor_bigquery`); las pruebas usan un doble
-DuckDB con CSV sintéticos. El SQL de bronce se escribe una vez; las diferencias de dialecto viven aquí."""
+DuckDB con tablas sintéticas. El SQL se escribe una vez; las diferencias de dialecto viven aquí."""
 
 from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Any, Literal, Protocol
 
-NULO_CSV = "@@sin_nulos@@"
 Logico = Literal["texto", "entero", "fecha_hora", "booleano"]
 Valor = str | int | bool | datetime | date | None
 
@@ -26,15 +25,9 @@ class Motor(Protocol):
 
     def consultar(self, sql: str) -> list[tuple[Any, ...]]: ...
 
-    def cargar_csv(self, uri: str, tabla: str, columnas: list[str]) -> None:
-        """Carga un CSV con encabezado, todas las columnas STRING, reemplazando `tabla`."""
+    def columnas_de(self, dataset: str) -> str:
+        """Consulta (tabla, columna, tipo) de todas las columnas de un dataset."""
         ...
-
-    def sha256(self, expr: str) -> str:
-        """Huella hexadecimal en minúsculas."""
-        ...
-
-    def agregar_texto(self, expr: str, separador: str, orden: str) -> str: ...
 
     def fecha_segura(self, expr: str) -> str: ...
 
@@ -45,6 +38,3 @@ class Motor(Protocol):
     def serie_de_dias(self, inicio: date, fin: date) -> str:
         """Subconsulta con una columna `dia` DATE por cada día del rango."""
         ...
-
-
-SEPARADOR = "\x1f"
