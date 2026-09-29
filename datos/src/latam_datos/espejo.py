@@ -1,39 +1,30 @@
-"""DAT-1.1: espejo local del bucket. Sincroniza por etag y deja el listado completo en platino.
+"""DAT-1.1: lector del bucket de aterrizaje en Cloud Storage y su inventario en `latam_platino`.
 
-El cliente S3 se inyecta: en producción es `crear_cliente()` con el perfil `latam-organizador` (la llave
-vive solo en la máquina de ingesta); en las pruebas es moto. Cada objeto se descarga una sola vez por etag.
+La copia de S3 a Cloud Storage la hace Storage Transfer Service (Terraform, D-30); aquí solo se lista y
+se lee.
+La identidad de un lote es el contenido (`md5`), no la `generation`, que cambia si la transferencia reescribe
+el objeto sin cambiar su contenido.
 """
 
 from __future__ import annotations
 
-import json
-import os
+import base64
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any, cast
+from typing import Any, Protocol
 
-import boto3
-import duckdb
-
-from latam_datos.config import PERFIL_AWS, PREFIJO_AUTORIZADO
-
-INDICE = "_indice_etags.json"
-
-_DDL_INVENTARIO = """
-CREATE TABLE IF NOT EXISTS platino.inventario_bucket (
-    corrida_id VARCHAR, source_key VARCHAR, etag VARCHAR, tamano BIGINT,
-    last_modified TIMESTAMP, autorizado BOOLEAN, listado_en TIMESTAMP
-)
-"""
+from latam_datos.config import INVENTARIO, PREFIJO_AUTORIZADO, PREFIJO_STAGING
+from latam_datos.motor import Logico, Motor
 
 
 @dataclass(frozen=True)
-class ObjetoS3:
+class ObjetoGCS:
     key: str
+    generation: int
+    md5: str  # hexadecimal
     etag: str
     tamano: int
-    last_modified: datetime
+    actualizado: datetime
 
     @property
     def autorizado(self) -> bool:
@@ -41,100 +32,104 @@ class ObjetoS3:
         return self.key.startswith(PREFIJO_AUTORIZADO) and self.key.count("/") >= 2
 
 
-@dataclass(frozen=True)
-class ResultadoSync:
-    descargados: tuple[str, ...]
-    sin_cambio: tuple[str, ...]
+class Almacen(Protocol):
+    def listar(self) -> list[ObjetoGCS]: ...
+
+    def leer(self, key: str) -> bytes: ...
+
+    def escribir(self, key: str, datos: bytes) -> str:
+        """Devuelve el URI del objeto escrito."""
+        ...
+
+    def borrar(self, key: str) -> None: ...
 
 
-def crear_cliente(perfil: str = PERFIL_AWS) -> Any:
-    """Cliente S3 con el perfil del organizador. Las credenciales las resuelve boto3, nunca este código."""
-    return cast(Any, boto3.Session(profile_name=perfil)).client("s3")
+def md5_hex(md5_base64: str | None) -> str:
+    return base64.b64decode(md5_base64).hex() if md5_base64 else ""
 
 
-def listar_bucket(cliente: Any, bucket: str, prefijo: str = "") -> list[ObjetoS3]:
-    """Listado completo y paginado, ordenado por llave."""
-    objetos: list[ObjetoS3] = []
-    for pagina in cliente.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefijo):
-        for o in pagina.get("Contents", []):
-            if o["Key"].endswith("/"):
-                continue
-            objetos.append(
-                ObjetoS3(
-                    key=o["Key"],
-                    etag=str(o["ETag"]).strip('"'),
-                    tamano=int(o["Size"]),
-                    last_modified=o["LastModified"],
-                )
+class AlmacenGCS:
+    """Bucket de aterrizaje. `cliente` es `google.cloud.storage.Client`."""
+
+    def __init__(self, cliente: Any, bucket: str) -> None:
+        self.cliente = cliente
+        self.nombre = bucket
+
+    def listar(self) -> list[ObjetoGCS]:
+        objetos = [
+            ObjetoGCS(
+                key=str(b.name),
+                generation=int(b.generation),
+                md5=md5_hex(b.md5_hash),
+                etag=str(b.etag),
+                tamano=int(b.size),
+                actualizado=b.updated,
             )
-    return sorted(objetos, key=lambda o: o.key)
+            for b in self.cliente.list_blobs(self.nombre)  # la paginación es transparente
+            if not str(b.name).endswith("/") and not str(b.name).startswith(PREFIJO_STAGING)
+        ]
+        return sorted(objetos, key=lambda o: o.key)
+
+    def leer(self, key: str) -> bytes:
+        return self.cliente.bucket(self.nombre).blob(key).download_as_bytes()
+
+    def escribir(self, key: str, datos: bytes) -> str:
+        self.cliente.bucket(self.nombre).blob(key).upload_from_string(datos, content_type="text/csv")
+        return f"gs://{self.nombre}/{key}"
+
+    def borrar(self, key: str) -> None:
+        self.cliente.bucket(self.nombre).blob(key).delete()
 
 
-def leer_indice(espejo: Path) -> dict[str, dict[str, Any]]:
-    ruta = espejo / INDICE
-    if not ruta.exists():
-        return {}
-    return json.loads(ruta.read_text(encoding="utf-8"))
+_COLUMNAS_INVENTARIO: tuple[tuple[str, Logico], ...] = (
+    ("corrida_id", "texto"),
+    ("source_key", "texto"),
+    ("generation", "entero"),
+    ("md5", "texto"),
+    ("etag", "texto"),
+    ("tamano", "entero"),
+    ("actualizado", "fecha_hora"),
+    ("autorizado", "booleano"),
+    ("listado_en", "fecha_hora"),
+)
 
 
-def sincronizar(cliente: Any, bucket: str, espejo: Path, objetos: list[ObjetoS3]) -> ResultadoSync:
-    """Descarga solo los objetos autorizados cuyo etag local no coincide. Escritura atómica por objeto."""
-    espejo.mkdir(parents=True, exist_ok=True)
-    indice = leer_indice(espejo)
-    bajados: list[str] = []
-    iguales: list[str] = []
-    for o in objetos:
-        if not o.autorizado:
-            continue
-        destino = espejo / o.key
-        if indice.get(o.key, {}).get("etag") == o.etag and destino.exists():
-            iguales.append(o.key)
-            continue
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        temporal = destino.with_suffix(destino.suffix + ".parte")
-        cliente.download_file(bucket, o.key, str(temporal))
-        os.replace(temporal, destino)
-        indice[o.key] = {
-            "etag": o.etag,
-            "tamano": o.tamano,
-            "last_modified": o.last_modified.astimezone(UTC).isoformat(),
-        }
-        bajados.append(o.key)
-    (espejo / INDICE).write_text(json.dumps(indice, indent=1, sort_keys=True), encoding="utf-8")
-    return ResultadoSync(tuple(bajados), tuple(iguales))
+def crear_inventario(motor: Motor) -> None:
+    cols = ", ".join(f"{c} {motor.tipo(t)}" for c, t in _COLUMNAS_INVENTARIO)
+    motor.ejecutar(f"CREATE TABLE IF NOT EXISTS {motor.t(INVENTARIO)} ({cols})")
 
 
 def registrar_inventario(
-    platino: duckdb.DuckDBPyConnection, corrida_id: str, objetos: list[ObjetoS3], listado_en: datetime
+    motor: Motor, corrida_id: str, objetos: list[ObjetoGCS], listado_en: datetime, lote: int = 500
 ) -> int:
-    """Agrega una instantánea completa del listado (autorizados y no) a `platino.inventario_bucket`."""
-    platino.execute(_DDL_INVENTARIO)
+    """Agrega una instantánea completa del listado (autorizados y no) a `latam_platino.inventario_bucket`."""
+    crear_inventario(motor)
     filas = [
-        (
-            corrida_id,
-            o.key,
-            o.etag,
-            o.tamano,
-            o.last_modified.astimezone(UTC).replace(tzinfo=None),
-            o.autorizado,
-            listado_en.astimezone(UTC).replace(tzinfo=None),
+        "("
+        + ", ".join(
+            motor.lit(v)
+            for v in (
+                corrida_id,
+                o.key,
+                o.generation,
+                o.md5,
+                o.etag,
+                o.tamano,
+                o.actualizado.astimezone(UTC),
+                o.autorizado,
+                listado_en.astimezone(UTC),
+            )
         )
+        + ")"
         for o in objetos
     ]
-    platino.executemany("INSERT INTO platino.inventario_bucket VALUES (?, ?, ?, ?, ?, ?, ?)", filas)
+    for i in range(0, len(filas), lote):
+        motor.ejecutar(f"INSERT INTO {motor.t(INVENTARIO)} VALUES " + ", ".join(filas[i : i + lote]))
     return len(filas)
 
 
-def espejar(
-    cliente: Any,
-    bucket: str,
-    espejo: Path,
-    platino: duckdb.DuckDBPyConnection,
-    corrida_id: str,
-    ahora: datetime,
-) -> tuple[list[ObjetoS3], ResultadoSync]:
-    """Lista todo el bucket, sincroniza lo autorizado y registra el inventario."""
-    objetos = listar_bucket(cliente, bucket)
-    resultado = sincronizar(cliente, bucket, espejo, objetos)
-    registrar_inventario(platino, corrida_id, objetos, ahora)
-    return objetos, resultado
+def espejar(almacen: Almacen, motor: Motor, corrida_id: str, ahora: datetime) -> list[ObjetoGCS]:
+    """Lista todo el bucket de aterrizaje y registra el inventario."""
+    objetos = almacen.listar()
+    registrar_inventario(motor, corrida_id, objetos, ahora)
+    return objetos

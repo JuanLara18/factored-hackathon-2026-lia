@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from latam_datos.config import Rutas
-
-AHORA = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
+from doble_duckdb import AlmacenLocal, MotorDuckDB
 
 
 @pytest.fixture
-def rutas(tmp_path: Path) -> Rutas:
-    return Rutas(tmp_path / "data")
+def almacen(tmp_path: Path) -> AlmacenLocal:
+    return AlmacenLocal(tmp_path / "bucket")
+
+
+@pytest.fixture
+def motor() -> MotorDuckDB:
+    return MotorDuckDB()

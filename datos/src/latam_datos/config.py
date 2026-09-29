@@ -1,45 +1,36 @@
-"""Rutas y constantes de la ingesta. Nada de credenciales: el perfil de AWS vive fuera del repositorio."""
+"""Configuración de la ingesta desde el entorno (Cloud Run Job). Nada de credenciales: las da la identidad
+del servicio (D-30)."""
 
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
-from pathlib import Path
 
-PERFIL_AWS = "latam-organizador"
 PREFIJO_AUTORIZADO = "data/"
+PREFIJO_RESPALDO = "data_backup_20260831/"
+PREFIJO_STAGING = "_staging/"
 GENERACION_ACTUAL = "data"
 GENERACION_RESPALDO = "respaldo"
-PREFIJO_RESPALDO = "data_backup_20260831/"
+
+BRONCE = "latam_bronce"
+PLATINO = "latam_platino"
+LOTES = f"{BRONCE}._lotes"
+CUARENTENA = f"{BRONCE}._cuarentena"
+INVENTARIO = f"{PLATINO}.inventario_bucket"
+REPORTE = f"{PLATINO}.reporte_calidad_corrida"
 
 
 @dataclass(frozen=True)
-class Rutas:
-    """Distribución de `data/` (definición, sección 2.2). Todo cuelga de una sola raíz ignorada por git."""
+class Configuracion:
+    proyecto: str
+    bucket: str
+    ubicacion: str = "us-central1"
 
-    raiz: Path
-
-    @property
-    def espejo(self) -> Path:
-        return self.raiz / "espejo"
-
-    @property
-    def bronce(self) -> Path:
-        return self.raiz / "bronce"
-
-    @property
-    def zonas(self) -> Path:
-        return self.raiz / "zonas"
-
-    @property
-    def bronce_db(self) -> Path:
-        return self.zonas / "bronce.duckdb"
-
-    @property
-    def platino_db(self) -> Path:
-        return self.zonas / "platino.duckdb"
-
-
-def rutas_por_defecto() -> Rutas:
-    """La raíz sale de `LATAM_DATA_DIR` y, si no existe, de `./data`."""
-    return Rutas(Path(os.environ.get("LATAM_DATA_DIR", "data")))
+    @classmethod
+    def desde_entorno(cls, env: Mapping[str, str] | None = None) -> Configuracion:
+        e = os.environ if env is None else env
+        faltan = [v for v in ("LATAM_GCP_PROJECT", "LATAM_GCS_ESPEJO") if not e.get(v)]
+        if faltan:
+            raise ValueError(f"Faltan variables de entorno: {', '.join(faltan)}")
+        return cls(e["LATAM_GCP_PROJECT"], e["LATAM_GCS_ESPEJO"], e.get("LATAM_GCP_LOCATION", "us-central1"))

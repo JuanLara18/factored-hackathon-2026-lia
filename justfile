@@ -21,13 +21,13 @@ up:
 down:
     docker compose down
 
-# Datos: espejo del bucket (necesita LATAM_BUCKET y el perfil AWS latam-organizador fuera del repo)
+# Datos (Cloud Run Job): necesitan LATAM_GCP_PROJECT y LATAM_GCS_ESPEJO; la identidad la da gcloud o el servicio
 espejo:
     uv run python -m latam_datos espejo
 
-# Datos: bronce (Parquet por lote, bronce._lotes) y reglas Q-BRZ con reporte en platino
 bronce:
     uv run python -m latam_datos bronce
 
-# Datos: espejo y bronce en una corrida
-data: espejo bronce
+# Espejo, bronce y reglas Q-BRZ en una corrida (lo que ejecuta el Job)
+data:
+    uv run python -m latam_datos todo
