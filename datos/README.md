@@ -80,3 +80,8 @@ y acceso a `latam_seguridad` solo para la cuenta del pipeline.
 
 **Recortes.** Solo 3 de las fichas de oro operacional (faltan `ficha_transaccion`, `riesgo_transaccion`, `reclamos_cliente`, `directorio_comercios`);
 sin cuarentena por fila ni lotes (bronce sin `_lote_id`); dominios canónicos solo para país y moneda; `plata_digital_events` sin conteos de plata.
+
+## Dataset de pruebas
+
+`latam_pruebas` guarda los fallos de las pruebas de dbt (`store_failures`) y las tablas temporales de las
+pruebas unitarias, con vencimiento de 7 días, para que `latam_bank` solo muestre las capas.
