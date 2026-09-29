@@ -1,0 +1,161 @@
+{
+  "comparado_en": "2026-09-29T02:51:23+00:00",
+  "tablas": [
+    {
+      "tabla": "branches",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 1,
+      "distintos": 0,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 0,
+      "filas_respaldo_distintos": 0,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "call_center_interactions",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 1097,
+      "identicos": 0,
+      "distintos": 1097,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 686296,
+      "filas_respaldo_distintos": 684107,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "call_transcripts",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 0,
+      "identicos": 0,
+      "distintos": 0,
+      "solo_espejo": 1097,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 0,
+      "filas_respaldo_distintos": 0,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "campaign_sends",
+      "archivos_espejo": 1083,
+      "archivos_respaldo": 1083,
+      "identicos": 0,
+      "distintos": 1083,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 1746801,
+      "filas_respaldo_distintos": 1735997,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "complaints",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 1097,
+      "identicos": 0,
+      "distintos": 1097,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 67095,
+      "filas_respaldo_distintos": 67095,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "customers",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 0,
+      "distintos": 1,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 150000,
+      "filas_respaldo_distintos": 150000,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "daily_exchange_rates",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 1,
+      "distintos": 0,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 0,
+      "filas_respaldo_distintos": 0,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "digital_events",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 1097,
+      "identicos": 0,
+      "distintos": 1097,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 15620994,
+      "filas_respaldo_distintos": 15913650,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "marketing_campaigns",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 1,
+      "distintos": 0,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 0,
+      "filas_respaldo_distintos": 0,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "products",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 0,
+      "distintos": 1,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 400000,
+      "filas_respaldo_distintos": 400000,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "satisfaction_surveys",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 0,
+      "identicos": 0,
+      "distintos": 0,
+      "solo_espejo": 1097,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 0,
+      "filas_respaldo_distintos": 0,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "service_agents",
+      "archivos_espejo": 1,
+      "archivos_respaldo": 1,
+      "identicos": 0,
+      "distintos": 1,
+      "solo_espejo": 0,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 1200,
+      "filas_respaldo_distintos": 1200,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    },
+    {
+      "tabla": "transactions",
+      "archivos_espejo": 1097,
+      "archivos_respaldo": 453,
+      "identicos": 0,
+      "distintos": 453,
+      "solo_espejo": 644,
+      "solo_respaldo": 0,
+      "filas_espejo_distintos": 1825482,
+      "filas_respaldo_distintos": 1839229,
+      "comparado_en": "2026-09-29T02:51:23+00:00"
+    }
+  ]
+}

@@ -51,3 +51,27 @@ Q-BRZ-02 (BOM), Q-BRZ-04 (codificación UTF-8), Q-BRZ-07 (generación única de 
 (mismo etag). Q-BRZ-05 (filas malformadas) se reinterpreta como llave vacía y fecha ilegible, y
 Q-BRZ-03 (encabezado) como columnas requeridas presentes. Q-BRZ-12 y Q-BRZ-13 son nuevas. Tampoco hay
 `_lotes` ni `_linea`: sin lotes, la detección de regeneración y la idempotencia por etag son del proceso de carga.
+
+## Trazabilidad, respaldo y vencimiento
+
+`just manifiesto` recorre el espejo local y escribe `platino_manifiesto_carga` (un registro por archivo:
+ruta relativa a `s3://<bucket>/data/`, bytes, sha256, filas de datos, tabla destino) y `platino_manifiesto_tablas`
+(por tabla: archivos, suma de filas de CSV, filas en BigQuery, bandera `coincide`, `job_id` y huella encadenada
+`sha256(huella previa + registro)`). El resumen por tabla, sin PII, queda en `manifiestos/`. `just verificar-cadena`
+recomputa la cadena y sale con 1 si alguien editó un manifiesto viejo. La primera corrida (13 de 13 tablas con
+`coincide = true`) se calculó sobre la carga ya hecha: su `job_id` es `null` porque esa carga se hizo antes de que el cargador lo
+registrara. El cargador ahora escribe a `bronce_<t>_nuevo`, compara con las filas de los CSV y solo entonces
+reemplaza la tabla vigente (si no cuadra, la borra y no toca la vigente). Límite del sandbox: recargar `digital_events` (3,9 GB) necesita
+espacio para `_nuevo` y la vigente a la vez, y el tope de 10 GB no lo permite hoy; habría que borrar tablas que no se usan.
+
+`just comparar-respaldo` compara `respaldo_20260831` con el espejo por ruta relativa y sha256 (y filas donde difieren) y
+guarda solo el resumen en `platino_comparacion_respaldo` y `manifiestos/comparacion_respaldo.json`. El respaldo no se carga.
+Hallazgo: solo `branches`, `daily_exchange_rates` y `marketing_campaigns` son idénticos; el respaldo no trae `call_transcripts` ni
+`satisfaction_surveys`; `transactions` del respaldo llega hasta 2024-09-25 (453 de 1.097 archivos), lo que puede ser una descarga incompleta
+y hay que confirmarlo; el resto difiere en contenido con conteos de filas distintos en `call_center_interactions`, `campaign_sends`,
+`digital_events` y `transactions`.
+
+**Vencimiento.** Las tablas del sandbox vencen el 2026-11-28. Fuente reproducible: el espejo local
+(`aws s3 sync`) más el manifiesto, que dice qué archivos y qué huellas produjeron cada tabla; con eso se recarga y se verifica.
+`just inventario` deja `platino_inventario_insumos` (clase de procedencia, origen, `AS_OF`); la política de
+actualización está en `POLITICA_ACTUALIZACION.md`.
