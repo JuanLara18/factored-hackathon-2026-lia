@@ -10,13 +10,8 @@ from pydantic_ai import Agent, DeferredToolRequests, RunContext
 from pydantic_ai.models import Model
 
 from latam_tecnologia.herramientas.catalogo import Herramientas
+from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
-
-INSTRUCCIONES = (
-    "Eres el asistente de disputas de un banco. Consulta con las herramientas, nunca inventes cifras "
-    "y pide aprobación del cliente antes de cualquier acción."
-)
-
 
 AVISO_ESCALAR = " Siguiente paso obligatorio: llamar a escalar con motivo {motivo}."
 
@@ -29,6 +24,7 @@ class ContextoAgente:
     sesion: SesionAutenticada
     conversacion_id: str
     canal: Canal
+    registro: str = "usted"
 
 
 def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
@@ -37,12 +33,16 @@ def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
     )
 
 
+def _instrucciones(ctx: RunContext[ContextoAgente]) -> str:
+    return instrucciones_disputas(ctx.deps.registro)
+
+
 def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | DeferredToolRequests]:
     agente: Agent[ContextoAgente, str | DeferredToolRequests] = Agent(
         modelo,
         deps_type=ContextoAgente,
         output_type=[str, DeferredToolRequests],
-        instructions=INSTRUCCIONES,
+        instructions=_instrucciones,
     )
 
     @agente.tool

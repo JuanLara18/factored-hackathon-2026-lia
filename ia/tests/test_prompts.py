@@ -33,7 +33,9 @@ PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----B
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
 REF_REDACCION = "redaccion/borrador_deslexicalizado@1.0.0"
+REF_DISPUTAS = "disputas/agente@1.0.0"
 VALORES: dict[str, dict[str, str]] = {
+    REF_DISPUTAS: {},
     REF_COMPRENSION: {
         "mensaje_cliente": "[COMERCIO_1] me cobró algo que no hice",
         "motivos_permitidos": "fraude, error_procesamiento, disputa_comercial",
@@ -140,3 +142,14 @@ def test_ningun_prompt_como_cadena_en_el_codigo() -> None:
     """R-IA-50: el código no embebe prompts; solo la biblioteca los tiene."""
     for ruta in (RAIZ_IA / "src").rglob("*.py"):
         assert "Toda cifra, fecha o dato" not in ruta.read_text(encoding="utf-8")
+
+
+def test_agente_disputas_carga_el_mismo_texto_que_la_biblioteca() -> None:
+    from latam_tecnologia.herramientas.instrucciones import huella_prompt, instrucciones_disputas
+
+    p = BIB.obtener(REF_DISPUTAS)
+    assert huella_prompt() == p.huella
+    for registro in ("usted", "vos"):
+        assert instrucciones_disputas(registro) == p.plantillas["es"][registro]
+    assert instrucciones_disputas("voce") == p.plantillas["pt"]["voce"]
+    assert "casos_abiertos" in instrucciones_disputas("usted")

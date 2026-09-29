@@ -297,12 +297,12 @@ def crear_app(
                 media_type="text/event-stream",
             )
         assert agente is not None
-        ctx = ContextoAgente(herramientas, s.autenticada, s.conversacion_id, Canal.CHAT)
+        ctx = ContextoAgente(herramientas, s.autenticada, s.conversacion_id, Canal.CHAT, reg)
         return await AdaptadorChat.dispatch_request(
             request,
             agent=agente,
             deps=ctx,
-            instructions=f"Registro: {reg}. Responde en español, en frases cortas y sin inventar cifras.",
+            instructions=f"Registro: {reg}.",
             traza=traza,
             enriquecer=enriquecedor(s, reg),
         )
