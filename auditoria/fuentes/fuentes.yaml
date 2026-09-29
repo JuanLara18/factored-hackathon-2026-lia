@@ -1,0 +1,662 @@
+# Estado de fuentes que sostienen decisiones (AUD-1.1, R-AUD-32 a R-AUD-36).
+# Estados: verificada, verificada_con_precision, pendiente, en_conflicto, secundaria.
+# Ninguna se da por verificada sin pasaje transcrito (R-AUD-34); AUD-1.2 la verifica en lote.
+fuentes:
+  - id: arxiv:1508.01745
+    tipo: arxiv
+    titulo: "Wen y otros, 2015"
+    url: https://arxiv.org/abs/1508.01745
+    anio: 2015
+    estado: pendiente
+    sostiene: "dialogo orientado a tareas"
+    citada_en:
+      - ia/definicion.md
+  - id: arxiv:1610.06545
+    tipo: arxiv
+    titulo: "Lopez-Paz y Oquab, 2017"
+    url: https://arxiv.org/abs/1610.06545
+    anio: 2016
+    estado: pendiente
+    sostiene: "prueba de dos muestras con clasificador"
+    citada_en:
+      - ia/definicion.md
+  - id: arxiv:1705.08500
+    tipo: arxiv
+    titulo: "Geifman y El-Yaniv, 2017"
+    url: https://arxiv.org/abs/1705.08500
+    anio: 2017
+    estado: pendiente
+    sostiene: "clasificacion selectiva con riesgo garantizado"
+    citada_en:
+      - ia/definicion.md
+  - id: arxiv:1706.04599
+    tipo: arxiv
+    titulo: "Guo y otros, 2017 (calibracion)"
+    url: https://arxiv.org/abs/1706.04599
+    anio: 2017
+    estado: pendiente
+    sostiene: "diagrama de confiabilidad"
+    citada_en:
+      - ia/definicion.md
+  - id: arxiv:2209.11055
+    tipo: arxiv
+    titulo: "SetFit (Tunstall y otros, 2022)"
+    url: https://arxiv.org/abs/2209.11055
+    anio: 2022
+    estado: pendiente
+    sostiene: "frontera con pocos ejemplos"
+    citada_en:
+      - ia/definicion.md
+  - id: arxiv:2212.08364
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2212.08364
+    anio: 2022
+    estado: pendiente
+    sostiene: "referencia de la investigacion 12"
+    citada_en:
+      - docs/investigacion/12_Organizacion_de_un_banco.md
+  - id: arxiv:2305.04388
+    tipo: arxiv
+    titulo: "Turpin y otros, 2023"
+    url: https://arxiv.org/abs/2305.04388
+    anio: 2023
+    estado: pendiente
+    sostiene: "el razonamiento no es fiel"
+    citada_en:
+      - auditoria/definicion.md
+  - id: arxiv:2307.13702
+    tipo: arxiv
+    titulo: "Lanham y otros, 2023"
+    url: https://arxiv.org/abs/2307.13702
+    anio: 2023
+    estado: pendiente
+    sostiene: "el razonamiento no es fiel"
+    citada_en:
+      - auditoria/definicion.md
+  - id: arxiv:2308.00352
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2308.00352
+    anio: 2023
+    estado: pendiente
+    sostiene: "referencia de la investigacion 12"
+    citada_en:
+      - docs/investigacion/12_Organizacion_de_un_banco.md
+  - id: arxiv:2406.18665
+    tipo: arxiv
+    titulo: "RouteLLM"
+    url: https://arxiv.org/abs/2406.18665
+    anio: 2024
+    estado: pendiente
+    sostiene: "fuente primaria probable de la cifra de enrutamiento"
+    citada_en:
+      - auditoria/definicion.md
+      - presidencia/definiciones/09_auditoria_de_definiciones.md
+  - id: arxiv:2408.02442
+    tipo: arxiv
+    titulo: "Let Me Speak Freely?"
+    url: https://arxiv.org/abs/2408.02442
+    anio: 2024
+    estado: pendiente
+    sostiene: "restricciones de formato y calidad"
+    citada_en:
+      - docs/investigacion/08_IA_con_tipos_seguros.md
+  - id: arxiv:2410.10991
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2410.10991
+    anio: 2024
+    estado: pendiente
+    sostiene: "referencia de la investigacion 3"
+    citada_en:
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+  - id: arxiv:2411.05815
+    tipo: arxiv
+    titulo: "Revision de redes neuronales de grafos"
+    url: https://arxiv.org/abs/2411.05815
+    anio: 2024
+    estado: pendiente
+    sostiene: "GraphSAGE, GAT y grafos"
+    citada_en:
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2501.11786
+    tipo: arxiv
+    titulo: "Synthetic Data Can Mislead Evaluations"
+    url: https://arxiv.org/abs/2501.11786
+    anio: 2025
+    estado: pendiente
+    sostiene: "datos sinteticos"
+    citada_en:
+      - docs/investigacion/05_Datos_ML_y_operacion.md
+  - id: arxiv:2502.01534
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2502.01534
+    anio: 2025
+    estado: pendiente
+    sostiene: "generador y juez de familias distintas"
+    citada_en:
+      - docs/investigacion/05_Datos_ML_y_operacion.md
+      - ia/definicion.md
+  - id: arxiv:2502.11371
+    tipo: arxiv
+    titulo: "RAG vs. GraphRAG"
+    url: https://arxiv.org/abs/2502.11371
+    anio: 2025
+    estado: pendiente
+    sostiene: "comparacion de recuperacion"
+    citada_en:
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2503.18813
+    tipo: arxiv
+    titulo: "Defeating Prompt Injections by Design"
+    url: https://arxiv.org/abs/2503.18813
+    anio: 2025
+    estado: pendiente
+    sostiene: "inyeccion de texto"
+    citada_en:
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+      - docs/investigacion/08_IA_con_tipos_seguros.md
+      - gobierno/definicion.md
+  - id: arxiv:2503.24191
+    tipo: arxiv
+    titulo: "Constrained Decoding Attack"
+    url: https://arxiv.org/abs/2503.24191
+    anio: 2025
+    estado: pendiente
+    sostiene: "ataque por decodificacion restringida"
+    citada_en:
+      - docs/investigacion/08_IA_con_tipos_seguros.md
+  - id: arxiv:2504.11168
+    tipo: arxiv
+    titulo: "Bypassing LLM Guardrails"
+    url: https://arxiv.org/abs/2504.11168
+    anio: 2025
+    estado: pendiente
+    sostiene: "evasion de barreras de proteccion"
+    citada_en:
+      - docs/investigacion/10_Gobernanza_y_gateway.md
+      - gobierno/definicion.md
+  - id: arxiv:2504.19956
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2504.19956
+    anio: 2025
+    estado: pendiente
+    sostiene: "referencia de la investigacion 18"
+    citada_en:
+      - docs/investigacion/18_VP_Gobierno.md
+  - id: arxiv:2505.06120
+    tipo: arxiv
+    titulo: "LLMs Get Lost in Multi-Turn Conversation"
+    url: https://arxiv.org/abs/2505.06120
+    anio: 2025
+    estado: pendiente
+    sostiene: "conversaciones de varios turnos"
+    citada_en:
+      - docs/investigacion/02_Arquitectura_y_control.md
+  - id: arxiv:2505.18878
+    tipo: arxiv
+    titulo: "CRMArena-Pro"
+    url: https://arxiv.org/abs/2505.18878
+    anio: 2025
+    estado: pendiente
+    sostiene: "los agentes de CRM no guardan secretos"
+    citada_en:
+      - docs/investigacion/02_Arquitectura_y_control.md
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+      - docs/investigacion/04_Evaluacion.md
+  - id: arxiv:2506.02404
+    tipo: arxiv
+    titulo: "GraphRAG-Bench"
+    url: https://arxiv.org/abs/2506.02404
+    anio: 2025
+    estado: pendiente
+    sostiene: "grafos y recuperacion"
+    citada_en:
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2506.05690
+    tipo: arxiv
+    titulo: "When to use Graphs in RAG"
+    url: https://arxiv.org/abs/2506.05690
+    anio: 2025
+    estado: pendiente
+    sostiene: "grafos y recuperacion"
+    citada_en:
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2506.07982
+    tipo: arxiv
+    titulo: "tau2-bench"
+    url: https://arxiv.org/abs/2506.07982
+    anio: 2025
+    estado: pendiente
+    sostiene: "control dual del usuario"
+    citada_en:
+      - docs/investigacion/04_Evaluacion.md
+  - id: arxiv:2506.08837
+    tipo: arxiv
+    titulo: "Design Patterns for Securing LLM Agents against Prompt Injections"
+    url: https://arxiv.org/abs/2506.08837
+    anio: 2025
+    estado: pendiente
+    sostiene: "patrones de seguridad"
+    citada_en:
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+      - gobierno/definicion.md
+  - id: arxiv:2506.10301
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2506.10301
+    anio: 2025
+    estado: pendiente
+    sostiene: "referencia de la investigacion 15"
+    citada_en:
+      - docs/investigacion/15_VP_Inteligencia_Artificial.md
+  - id: arxiv:2512.04852
+    tipo: arxiv
+    titulo: "Ask Safely"
+    url: https://arxiv.org/abs/2512.04852
+    anio: 2025
+    estado: pendiente
+    sostiene: "consultas a grafos con privacidad"
+    citada_en:
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2512.08290
+    tipo: arxiv
+    titulo: "SoK citado en la investigacion 17"
+    url: https://arxiv.org/abs/2512.08290
+    anio: 2025
+    estado: pendiente
+    sostiene: "referencia de Tecnologia"
+    citada_en:
+      - docs/investigacion/17_VP_Tecnologia.md
+  - id: arxiv:2601.00596
+    tipo: arxiv
+    titulo: "Journey-Bench, Beyond IVR"
+    url: https://arxiv.org/abs/2601.00596
+    anio: 2026
+    estado: pendiente
+    sostiene: "adherencia a procedimientos"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/04_Evaluacion.md
+  - id: arxiv:2602.09346
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2602.09346
+    anio: 2026
+    estado: pendiente
+    sostiene: "contexto de regulacion regional citado en la investigacion 3"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+  - id: arxiv:2603.04445
+    tipo: arxiv
+    titulo: "Encuesta de enrutamiento de modelos"
+    url: https://arxiv.org/abs/2603.04445
+    anio: 2026
+    estado: secundaria
+    sostiene: "RouteLLM: 85% menos costo con 95% de la calidad (secundaria; la primaria probable es 2406.18665)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/11_Latencia_y_costo.md
+      - presidencia/definiciones/09_auditoria_de_definiciones.md
+  - id: arxiv:2603.06632
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2603.06632
+    anio: 2026
+    estado: pendiente
+    sostiene: "referencia de la investigacion 15 (VP Inteligencia Artificial)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/15_VP_Inteligencia_Artificial.md
+  - id: arxiv:2603.13686
+    tipo: arxiv
+    titulo: "tau-voice"
+    url: https://arxiv.org/abs/2603.13686
+    anio: 2026
+    estado: en_conflicto
+    sostiene: "D-18: la voz conserva cerca del 79% de la capacidad de texto"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/20_Canales_voz_y_chat.md
+      - ia/definicion.md
+      - presidencia/definiciones/09_auditoria_de_definiciones.md
+  - id: arxiv:2604.04847
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2604.04847
+    anio: 2026
+    estado: pendiente
+    sostiene: "referencia de voz y chat (investigacion 20)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/20_Canales_voz_y_chat.md
+  - id: arxiv:2604.09666
+    tipo: arxiv
+    titulo: "Do We Still Need GraphRAG?"
+    url: https://arxiv.org/abs/2604.09666
+    anio: 2026
+    estado: pendiente
+    sostiene: "grafos frente a recuperacion simple"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2604.12596
+    tipo: arxiv
+    titulo: "KumoRFM-2"
+    url: https://arxiv.org/abs/2604.12596
+    anio: 2026
+    estado: pendiente
+    sostiene: "modelos fundacionales sobre grafos relacionales"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2605.26999
+    tipo: arxiv
+    titulo: "Prompt Injection Detection is Regime-Dependent"
+    url: https://arxiv.org/abs/2605.26999
+    anio: 2026
+    estado: pendiente
+    sostiene: "el desempeno del detector depende del regimen de despliegue"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/10_Gobernanza_y_gateway.md
+  - id: arxiv:2606.04990
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2606.04990
+    anio: 2026
+    estado: pendiente
+    sostiene: "trazas de agentes; regla R-AUD-14"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/19_Auditoria.md
+  - id: arxiv:2606.08867
+    tipo: arxiv
+    titulo: "Nubank, evaluacion de agentes (KDD 2026)"
+    url: https://arxiv.org/abs/2606.08867
+    anio: 2026
+    estado: verificada
+    sostiene: "metodo de evaluacion; brecha contra humanos"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/01_Industria_y_casos.md
+      - docs/investigacion/02_Arquitectura_y_control.md
+      - docs/investigacion/04_Evaluacion.md
+      - docs/investigacion/19_Auditoria.md
+  - id: arxiv:2606.19544
+    tipo: arxiv
+    titulo: "Reliability without Validity"
+    url: https://arxiv.org/abs/2606.19544
+    anio: 2026
+    estado: pendiente
+    sostiene: "validar el juez"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/04_Evaluacion.md
+  - id: arxiv:2606.19595
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2606.19595
+    anio: 2026
+    estado: pendiente
+    sostiene: "agentes de voz sin brecha entre audio y texto (investigacion 20)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/20_Canales_voz_y_chat.md
+  - id: arxiv:2606.25605
+    tipo: arxiv
+    titulo: "Constraint Tax"
+    url: https://arxiv.org/abs/2606.25605
+    anio: 2026
+    estado: pendiente
+    sostiene: "dos pasadas: herramientas y luego esquema"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/08_IA_con_tipos_seguros.md
+  - id: arxiv:2606.28679
+    tipo: arxiv
+    titulo: "Capability Gates Are Not Authorization"
+    url: https://arxiv.org/abs/2606.28679
+    anio: 2026
+    estado: verificada
+    sostiene: "autorizacion por llamada (D-05)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/02_Arquitectura_y_control.md
+      - docs/investigacion/03_Seguridad_privacidad_regulacion.md
+      - docs/investigacion/19_Auditoria.md
+      - gobierno/definicion.md
+  - id: arxiv:2606.29142
+    tipo: arxiv
+    titulo: "Agent Security Meets Regulatory Reality"
+    url: https://arxiv.org/abs/2606.29142
+    anio: 2026
+    estado: pendiente
+    sostiene: "agentes de seguridad frente a regulacion (sistema KYC)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/10_Gobernanza_y_gateway.md
+  - id: arxiv:2607.00345
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2607.00345
+    anio: 2026
+    estado: pendiente
+    sostiene: "un agente no sube de version sin pasar su evaluacion"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/15_VP_Inteligencia_Artificial.md
+      - ia/definicion.md
+  - id: arxiv:2607.04103
+    tipo: arxiv
+    titulo: "GAICF"
+    url: https://arxiv.org/abs/2607.04103
+    anio: 2026
+    estado: pendiente
+    sostiene: "marco de validacion de Gobierno"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/12_Organizacion_de_un_banco.md
+      - docs/investigacion/18_VP_Gobierno.md
+      - gobierno/definicion.md
+  - id: arxiv:2607.27421
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2607.27421
+    anio: 2026
+    estado: pendiente
+    sostiene: "escoger el LLM de un componente (investigacion 5)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/05_Datos_ML_y_operacion.md
+  - id: arxiv:2607.28840
+    tipo: arxiv
+    titulo: "Benchmarks Are Not Validation"
+    url: https://arxiv.org/abs/2607.28840
+    anio: 2026
+    estado: pendiente
+    sostiene: "lista de pruebas de aceptacion"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/04_Evaluacion.md
+  - id: arxiv:2608.07515
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2608.07515
+    anio: 2026
+    estado: pendiente
+    sostiene: "unificacion de taxonomias (investigacion 10)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/10_Gobernanza_y_gateway.md
+  - id: arxiv:2608.15177
+    tipo: arxiv
+    titulo: "FinFraudBench"
+    url: https://arxiv.org/abs/2608.15177
+    anio: 2026
+    estado: pendiente
+    sostiene: "fraude en grafos heterogeneos"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/09_Grafos.md
+  - id: arxiv:2608.18136
+    tipo: arxiv
+    titulo: "FraudBench"
+    url: https://arxiv.org/abs/2608.18136
+    anio: 2026
+    estado: verificada_con_precision
+    sostiene: "casos adversariales: 107 publicas de 150"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/04_Evaluacion.md
+      - docs/investigacion/19_Auditoria.md
+      - gobierno/definicion.md
+      - ia/definicion.md
+  - id: arxiv:2608.20371
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2608.20371
+    anio: 2026
+    estado: pendiente
+    sostiene: "marco de decision para NLU (investigacion 5)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/05_Datos_ML_y_operacion.md
+      - ia/definicion.md
+  - id: arxiv:2608.28907
+    tipo: arxiv
+    titulo: "Structured State Reconciliation for Human-AI Task Handover"
+    url: https://arxiv.org/abs/2608.28907
+    anio: 2026
+    estado: pendiente
+    sostiene: "traspaso a humano con estado estructurado"
+    citada_en:
+      - auditoria/definicion.md
+      - clientes/definicion.md
+      - docs/investigacion/14_VP_Clientes.md
+      - ia/definicion.md
+  - id: arxiv:2609.01931
+    tipo: arxiv
+    titulo: null
+    url: https://arxiv.org/abs/2609.01931
+    anio: 2026
+    estado: pendiente
+    sostiene: "registro de agentes a prueba de manipulacion; regla R-AUD-19"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/19_Auditoria.md
+  - id: arxiv:2609.07786
+    tipo: arxiv
+    titulo: "Signed Rescue Routing"
+    url: https://arxiv.org/abs/2609.07786
+    anio: 2026
+    estado: pendiente
+    sostiene: "enrutar por dano, no solo por confianza"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/11_Latencia_y_costo.md
+  - id: arxiv:2609.13148
+    tipo: arxiv
+    titulo: "When Can You Trust Your Synthetic Users?"
+    url: https://arxiv.org/abs/2609.13148
+    anio: 2026
+    estado: pendiente
+    sostiene: "limites del usuario simulado"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/15_VP_Inteligencia_Artificial.md
+      - ia/definicion.md
+  - id: arxiv:2609.14400
+    tipo: arxiv
+    titulo: "Policy Loopholes in Agent Evaluation"
+    url: https://arxiv.org/abs/2609.14400
+    anio: 2026
+    estado: pendiente
+    sostiene: "politica versionada antes de etiquetar (P1)"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/04_Evaluacion.md
+      - gobierno/definicion.md
+  - id: arxiv:2609.19334
+    tipo: arxiv
+    titulo: "Frontend y backend de voz separados"
+    url: https://arxiv.org/abs/2609.19334
+    anio: 2026
+    estado: pendiente
+    sostiene: "D-18"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/20_Canales_voz_y_chat.md
+      - ia/definicion.md
+  - id: arxiv:2609.30137
+    tipo: arxiv
+    titulo: "Screen Before You Serve (Nubank)"
+    url: https://arxiv.org/abs/2609.30137
+    anio: 2026
+    estado: pendiente
+    sostiene: "usuario simulado con personas; simulacion ordena versiones"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/01_Industria_y_casos.md
+      - presidencia/definiciones/09_auditoria_de_definiciones.md
+  - id: occ:sr-26-2
+    tipo: norma
+    titulo: "SR 26-2 (boletin de la OCC)"
+    url: https://www.occ.gov/news-issuances/bulletins/2026/bulletin-2026-13.html
+    anio: 2026
+    estado: verificada
+    sostiene: "marco de riesgo de modelo"
+    citada_en:
+      - auditoria/definicion.md
+      - docs/investigacion/10_Gobernanza_y_gateway.md
+      - docs/investigacion/12_Organizacion_de_un_banco.md
+      - docs/investigacion/18_VP_Gobierno.md
+  - id: rfc:8785
+    tipo: norma
+    titulo: "RFC 8785, JSON canonico"
+    url: https://www.rfc-editor.org/rfc/rfc8785
+    anio: null
+    estado: pendiente
+    sostiene: "huella estable del informe sellado"
+    citada_en:
+      - auditoria/definicion.md
+  - id: rfc:9162
+    tipo: norma
+    titulo: "RFC 9162, Certificate Transparency 2.0"
+    url: https://www.rfc-editor.org/rfc/rfc9162
+    anio: null
+    estado: pendiente
+    sostiene: "encadenamiento de registros"
+    citada_en:
+      - auditoria/definicion.md
+  - id: rfc:3161
+    tipo: norma
+    titulo: "RFC 3161, sello de tiempo"
+    url: https://www.rfc-editor.org/rfc/rfc3161
+    anio: null
+    estado: pendiente
+    sostiene: "sello de tiempo del informe"
+    citada_en:
+      - auditoria/definicion.md
+  - id: otel:gen-ai
+    tipo: norma
+    titulo: "Convenciones GenAI de OpenTelemetry"
+    url: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+    anio: null
+    estado: pendiente
+    sostiene: "trazas de agentes"
+    citada_en:
+      - auditoria/definicion.md
+  - id: bcbs:239
+    tipo: norma
+    titulo: "BCBS 239"
+    url: https://www.bis.org/publ/bcbs239.pdf
+    anio: null
+    estado: pendiente
+    sostiene: "linaje y trazabilidad de datos"
+    citada_en:
+      - datos/definicion.md
