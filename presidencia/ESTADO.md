@@ -13,7 +13,8 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 | Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado | `gobierno/src/latam_gobierno/guardas.py` |
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
 | Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; Terraform escrito y **sin validar ni aplicar** | `tecnologia/adr/`, `tecnologia/infra/` |
-| IA, Clientes | Sin empezar | |
+| IA | IA-7.1 (registro de agentes y config del gateway) e IA-9.1 (biblioteca de prompts) sobre Gemini gratuito; fábrica de modelos con `TestModel` sin llave | [ia/README.md](../ia/README.md) |
+| Clientes | Sin empezar | |
 
 ## BigQuery
 
@@ -39,9 +40,11 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 4. Las llaves del organizador quedaron en el perfil `default` de AWS; revisar si había credenciales propias ahí.
 5. Meta (WhatsApp) y Twilio en modo de prueba; preguntas a los organizadores.
 
+6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
+
 ## Siguientes historias, en orden
 
-1. **IA-7.1 e IA-9.1:** registro de agentes y biblioteca de prompts sobre Gemini (nivel gratuito) en lugar de Vertex.
+1. **IA-3.1 e IA-7.2:** redacción y renderizador por locale; hojas de vida generadas.
 2. **Datos:** las cuatro fichas de oro operacional que faltan (`ficha_transaccion`, `riesgo_transaccion`,
    `reclamos_cliente`, `directorio_comercios`) y dominios canónicos más allá de país y moneda.
 3. **Tecnología:** motor del caso sobre el spike S4 leyendo `oro_operacional_*`; herramientas del agente.

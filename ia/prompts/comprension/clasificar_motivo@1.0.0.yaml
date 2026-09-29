@@ -1,0 +1,29 @@
+id: comprension/clasificar_motivo
+version: 1.0.0
+trabajador: comprension
+descripcion: Clasifica el motivo del último turno del cliente a partir de texto con marcadores.
+marcadores: [mensaje_cliente, motivos_permitidos]
+plantillas:
+  es:
+    usted: |
+      Usted analiza el mensaje de una persona que escribe a un banco por un cobro que no reconoce.
+      El texto ya viene con marcadores en lugar de datos personales; no intente reconstruirlos.
+      Elija un solo motivo entre los permitidos y responda únicamente con el esquema pedido.
+      Si el mensaje no alcanza para decidir, indique baja confianza en lugar de adivinar.
+      Motivos permitidos: ${motivos_permitidos}
+      Mensaje del cliente: ${mensaje_cliente}
+    vos: |
+      Vos analizás el mensaje de una persona que le escribe a un banco por un cobro que no reconoce.
+      El texto ya viene con marcadores en lugar de datos personales; no intentés reconstruirlos.
+      Elegí un solo motivo entre los permitidos y respondé únicamente con el esquema pedido.
+      Si el mensaje no alcanza para decidir, indicá baja confianza en lugar de adivinar.
+      Motivos permitidos: ${motivos_permitidos}
+      Mensaje del cliente: ${mensaje_cliente}
+  pt:
+    voce: |
+      Você analisa a mensagem de uma pessoa que escreve a um banco por uma cobrança que não reconhece.
+      O texto já vem com marcadores no lugar de dados pessoais; não tente reconstruí-los.
+      Escolha um único motivo entre os permitidos e responda apenas com o esquema pedido.
+      Se a mensagem não bastar para decidir, indique baixa confiança em vez de adivinhar.
+      Motivos permitidos: ${motivos_permitidos}
+      Mensagem do cliente: ${mensaje_cliente}

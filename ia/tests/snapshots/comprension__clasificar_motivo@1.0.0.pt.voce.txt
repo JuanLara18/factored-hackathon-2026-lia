@@ -1,0 +1,6 @@
+Você analisa a mensagem de uma pessoa que escreve a um banco por uma cobrança que não reconhece.
+O texto já vem com marcadores no lugar de dados pessoais; não tente reconstruí-los.
+Escolha um único motivo entre os permitidos e responda apenas com o esquema pedido.
+Se a mensagem não bastar para decidir, indique baixa confiança em vez de adivinhar.
+Motivos permitidos: fraude, error_procesamiento, disputa_comercial
+Mensagem do cliente: [COMERCIO_1] me cobró algo que no hice

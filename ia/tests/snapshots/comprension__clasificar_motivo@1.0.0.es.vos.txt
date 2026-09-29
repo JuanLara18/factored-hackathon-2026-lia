@@ -1,0 +1,6 @@
+Vos analizás el mensaje de una persona que le escribe a un banco por un cobro que no reconoce.
+El texto ya viene con marcadores en lugar de datos personales; no intentés reconstruirlos.
+Elegí un solo motivo entre los permitidos y respondé únicamente con el esquema pedido.
+Si el mensaje no alcanza para decidir, indicá baja confianza en lugar de adivinar.
+Motivos permitidos: fraude, error_procesamiento, disputa_comercial
+Mensaje del cliente: [COMERCIO_1] me cobró algo que no hice

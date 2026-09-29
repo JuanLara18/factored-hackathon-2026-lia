@@ -1,0 +1,22 @@
+id: redaccion
+version: 0.1.0
+estado: en_desarrollo
+tipo: lenguaje_preentrenado
+rol: sistema
+proposito: >
+  Redactar el borrador deslexicalizado que el renderizador convierte en la respuesta tipada al cliente.
+usos_prohibidos:
+  - afirmar acciones sin verificar, prometer resultados o escribir cifras fuera de un marcador
+supervisor: {cara: VP IA, gerencia: Comprensión y redacción}
+duenio_tecnico: {cara: VP IA}
+riesgo: alto
+herramientas: []
+prompt: redaccion/borrador_deslexicalizado@1.0.0
+modelo:
+  proveedor: gemini_api
+  familia: google
+  id: gemini-2.5-flash-lite
+  temperatura: 0.0
+  max_salida: 300
+presupuestos: {max_entrada: 1500, max_salida: 300, llamadas_por_conversacion: 3, usd_diario: 0}
+entornos: [local, ci, dev]
