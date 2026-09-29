@@ -5,6 +5,7 @@ description = "VP Tecnología: núcleo, canales, plataforma"
 requires-python = ">=3.12"
 dependencies = [
     "latam-comun",
+    "psycopg[binary]>=3.3.6",
 ]
 
 [build-system]
