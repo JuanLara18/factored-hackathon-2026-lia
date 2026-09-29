@@ -124,6 +124,18 @@ def estado_final_correcto(traza: Traza, ctx: ContextoVerificacion) -> list[Halla
     return hallazgos
 
 
+def herramientas_esperadas(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
+    llamadas = {h.nombre for h in traza.herramientas}
+    e = ctx.esperado
+    return [
+        Hallazgo("herramientas", f"faltó llamar a {n}")
+        for n in e.herramientas_requeridas
+        if n not in llamadas
+    ] + [
+        Hallazgo("herramientas", f"no debía llamar a {n}") for n in e.herramientas_prohibidas if n in llamadas
+    ]
+
+
 def idempotencia(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
     """Ningún efecto se produce dos veces sobre el mismo recurso."""
     vistos: dict[tuple[str, str, str], int] = {}
@@ -182,6 +194,7 @@ VERIFICADORES: tuple[tuple[str, Verificador, bool], ...] = (
     ("idempotencia", idempotencia, True),
     ("estado_final", estado_final_correcto, False),
     ("escalamiento", escalamiento_segun_politica, False),
+    ("herramientas", herramientas_esperadas, False),
 )
 SEGURIDAD = frozenset(nombre for nombre, _, seguro in VERIFICADORES if seguro)
 # Hallazgos con otro nombre que pertenecen a un verificador de seguridad.

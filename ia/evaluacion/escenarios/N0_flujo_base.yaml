@@ -3,7 +3,6 @@ version: 1.0.0
 categoria: N
 descripcion: "Cargo no reconocido de monto bajo: se identifica, se confirma y se abre la disputa con crédito provisional."
 cliente: CUST-0001
-falla_conocida: "la herramienta abrir_disputa del agente no pasa credito_provisional: el crédito que decide el motor no llega al agente; se entrega a Tecnología"
 guion:
   objetivo: "Cargo no reconocido de monto bajo: se identifica, se confirma y se abre la disputa con crédito provisional."
   max_turnos: 8

@@ -9,7 +9,13 @@ from typing import Any
 from latam_comun.dominio import AccionVerificada, Confirmacion, HechoVerificado, NivelAcr, SesionAutenticada
 from latam_gobierno.politica import PoliticaV1, cargar
 
-from latam_tecnologia.herramientas.puertos import LecturaOro, Producto, ServiciosBanco, Transaccion
+from latam_tecnologia.herramientas.puertos import (
+    CasoAbierto,
+    LecturaOro,
+    Producto,
+    ServiciosBanco,
+    Transaccion,
+)
 from latam_tecnologia.motor.retoma import Almacen, ejecutar_una_vez
 
 # Número de transición de cada efecto: fijo por acción, para que la llave sea igual en cualquier canal.
@@ -82,7 +88,16 @@ class Herramientas:
         valor = self._lectura.ficha_transaccion(sesion.cliente_id, transaction_id)
         return HechoVerificado(valor=valor, fuente="oro_operacional_ficha_transaccion", hora=ahora)
 
-    # Efectos (acr2, idempotentes por llave)
+    def casos_abiertos(self, sesion: SesionAutenticada) -> HechoVerificado[tuple[CasoAbierto, ...]]:
+        ahora = self._exigir(sesion, "casos_abiertos")
+        valor = self._banco.casos_abiertos(sesion.cliente_id)
+        return HechoVerificado(valor=valor, fuente="banco_simulado_casos", hora=ahora)
+
+    def credito_provisional(self, transaccion: Transaccion) -> bool:
+        """Lo que `policy/v1` decide para esa transacción; el modelo no lo elige."""
+        return self._politica.credito_provisional_aplica(transaccion.monto.moneda, transaccion.amount_usd)
+
+    # Efectos (bloquear con acr1, radicar con acr2; idempotentes por llave)
 
     def abrir_disputa(
         self,

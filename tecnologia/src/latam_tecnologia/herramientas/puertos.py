@@ -39,6 +39,13 @@ class Producto(_Inmutable):
     moneda: str | None
 
 
+class CasoAbierto(_Inmutable):
+    """Caso de disputa abierto del cliente sobre una transacción."""
+
+    transaction_id: str
+    caso: str
+
+
 class LecturaOro(Protocol):
     """Solo lectura. Toda consulta exige `cliente_id`; lo ajeno no existe para quien pregunta."""
 
@@ -65,6 +72,10 @@ class ServiciosBanco(Protocol):
         motivo: str,
         credito_provisional: bool,
     ) -> str: ...
+
+    def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
+        """Solo lectura: los casos abiertos del cliente."""
+        ...
 
     def bloquear_tarjeta(self, llave: str, cliente_id: str, producto_id: str) -> str: ...
 

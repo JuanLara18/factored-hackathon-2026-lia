@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from latam_gobierno.politica import cargar as cargar_politica
-from latam_tecnologia.herramientas.puertos import Producto, Transaccion
+from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 from latam_tecnologia.motor.caso import decidir
 from pydantic import TypeAdapter
 from pydantic_ai.messages import (
@@ -32,6 +32,7 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 _TXS = TypeAdapter(tuple[Transaccion, ...])
 _POLITICA = cargar_politica()
 _PRODS = TypeAdapter(tuple[Producto, ...])
+_CASOS = TypeAdapter(tuple[CasoAbierto, ...])
 
 
 def norm(texto: str) -> str:
@@ -54,6 +55,8 @@ TEXTOS: dict[str, dict[str, str]] = {
         "aclarar": "No encuentro ese cobro entre sus transacciones recientes. "
         "¿Me indica el monto, la fecha o el comercio?",
         "opciones": "Encontré varios cobros que podrían ser: {lista}. ¿Cuál es el que no reconoce?",
+        "ya_abierto": "Ya tiene un reclamo abierto por ese cobro ({ret}). No abro otro; una persona del "
+        "equipo lo está revisando.",
         "abrir_ok": "Su reclamo quedó radicado. Resultado: {ret}. Una persona del equipo lo revisará.",
         "bloqueo_ok": "Su tarjeta quedó bloqueada. ",
         "ya_bloqueada": "Su tarjeta ya estaba bloqueada, no hace falta bloquearla de nuevo. ",
@@ -72,6 +75,8 @@ TEXTOS: dict[str, dict[str, str]] = {
         "aclarar": "Não encontro essa cobrança entre as transações recentes. "
         "Pode informar o valor, a data ou o comércio?",
         "opciones": "Encontrei várias cobranças possíveis: {lista}. Qual delas você não reconhece?",
+        "ya_abierto": "Você já tem uma contestação aberta para essa cobrança ({ret}). Não abro outra; uma "
+        "pessoa da equipe está analisando.",
         "abrir_ok": "Sua contestação foi registrada. Resultado: {ret}. Uma pessoa da equipe vai analisar.",
         "bloqueo_ok": "Seu cartão foi bloqueado. ",
         "ya_bloqueada": "Seu cartão já estava bloqueado, não precisa bloquear de novo. ",
@@ -232,6 +237,35 @@ def _prefijo(llamadas: list[Llamada], t: dict[str, str], robo: bool) -> str:
     return ""
 
 
+def _resolver(
+    llamadas: list[Llamada], usuarios: list[str], urgente: bool, t: dict[str, str]
+) -> ModelResponse:
+    """Con la transacción y los productos leídos: escalar, o abrir la disputa si no hay ya un caso abierto."""
+    productos = _PRODS.validate_python(
+        json.loads(next(x for x in reversed(llamadas) if x.nombre == "estado_productos").retorno or "[]")
+    )
+    consultada = next(x for x in llamadas if x.nombre == "consultar_transaccion")
+    tx = Transaccion.model_validate_json(consultada.retorno or "")
+    listada = next((x for x in llamadas if x.nombre == "listar_transacciones"), None)
+    historial = _TXS.validate_json(listada.retorno or "[]") if listada else ()
+    propuesta = decidir(tx, productos, urgente, _POLITICA)
+    alega_fraude = "fraud" in norm(" ".join(usuarios))
+    if propuesta.accion == "abrir_disputa" and alega_fraude and _historial_con_comercio(tx, historial):
+        return _llamar("escalar", motivo="historial_con_el_comercio", urgente=False)
+    if propuesta.accion == "escalar":
+        return _llamar("escalar", motivo=propuesta.motivo, urgente=urgente)
+    previos = next((x for x in llamadas if x.nombre == "casos_abiertos"), None)
+    if previos is None:
+        return _llamar("casos_abiertos")
+    abierto = next(
+        (c for c in _CASOS.validate_json(previos.retorno or "[]") if c.transaction_id == tx.transaction_id),
+        None,
+    )
+    if abierto is not None:
+        return _decir(t, "ya_abierto", ret=abierto.caso)
+    return _llamar("abrir_disputa", transaction_id=tx.transaction_id, motivo=propuesta.motivo)
+
+
 def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
     t = TEXTOS[idioma]
     usuarios = _textos_usuario(mensajes)
@@ -262,21 +296,9 @@ def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
                 if urgente:
                     return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
                 return _llamar("listar_transacciones", limite=50)
-            consultada = next(x for x in llamadas if x.nombre == "consultar_transaccion")
-            tx = Transaccion.model_validate_json(consultada.retorno or "")
-            listada = next((x for x in llamadas if x.nombre == "listar_transacciones"), None)
-            historial = _TXS.validate_json(listada.retorno or "[]") if listada else ()
-            propuesta = decidir(tx, productos, urgente, _POLITICA)
-            alega_fraude = "fraud" in norm(" ".join(usuarios))
-            if (
-                propuesta.accion == "abrir_disputa"
-                and alega_fraude
-                and _historial_con_comercio(tx, historial)
-            ):
-                return _llamar("escalar", motivo="historial_con_el_comercio", urgente=False)
-            if propuesta.accion == "escalar":
-                return _llamar("escalar", motivo=propuesta.motivo, urgente=urgente)
-            return _llamar("abrir_disputa", transaction_id=tx.transaction_id, motivo=propuesta.motivo)
+            return _resolver(llamadas, usuarios, urgente, t)
+        case "casos_abiertos":
+            return _resolver(llamadas, usuarios, urgente, t)
         case "bloquear_tarjeta":
             if urgente:
                 return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
