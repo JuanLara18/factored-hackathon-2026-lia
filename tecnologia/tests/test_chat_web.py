@@ -301,3 +301,11 @@ def test_cors_permite_el_sitio_y_no_otros_origenes(entorno: Entorno) -> None:
     assert r.headers.get("access-control-allow-origin") == sitio
     r = cliente.get("/api/estado", headers={"Origin": "https://otro.example"})
     assert "access-control-allow-origin" not in r.headers
+
+
+def test_sin_comercio_se_describe_por_el_tipo_y_el_estado_va_en_espanol() -> None:
+    assert textos.describir_comercio(None, "Transfer") == "Transferencia"
+    assert textos.describir_comercio("", "Withdrawal") == "Retiro"
+    assert textos.describir_comercio("Tienda Uno", "Purchase") == "Tienda Uno"
+    assert textos.describir_comercio(None, "Desconocido") == "Movimiento sin comercio"
+    assert textos.estado_transaccion("Approved") == "Aprobada"

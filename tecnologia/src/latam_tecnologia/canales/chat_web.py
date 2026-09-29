@@ -224,7 +224,7 @@ def crear_app(
                 if herramienta == "abrir_disputa":
                     tx = herramientas.transaccion(s.autenticada, str(args.get("transaction_id"))).valor
                     if tx is not None:
-                        objeto = f"sobre el cargo de {tx.comercio}"
+                        objeto = f"sobre el cargo de {textos.describir_comercio(tx.comercio, tx.tipo)}"
                         monto, moneda = _dinero(tx.monto.monto), tx.monto.moneda
                 elif herramienta == "bloquear_tarjeta":
                     objeto = f"la tarjeta terminada en {_final(str(args.get('product_id')))}"

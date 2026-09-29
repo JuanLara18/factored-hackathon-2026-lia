@@ -102,6 +102,34 @@ def _plantillas() -> dict[str, dict[str, str]]:
     return {str(f["id"]): cast(dict[str, str], f["textos"]) for f in filas}
 
 
+# Etiquetas de los dominios canónicos (datos/dominios/dominios_canonicos.csv) que el chat muestra al cliente.
+TIPOS_TRANSACCION = {
+    "Purchase": "Compra",
+    "Withdrawal": "Retiro",
+    "Transfer": "Transferencia",
+    "Payment": "Pago",
+    "Deposit": "Depósito",
+    "Adjustment": "Ajuste",
+}
+ESTADOS_TRANSACCION = {
+    "Approved": "Aprobada",
+    "Declined": "Rechazada",
+    "Pending": "Pendiente",
+    "Reversed": "Revertida",
+}
+
+
+def describir_comercio(comercio: object, tipo: object) -> str:
+    """El comercio si existe; si no (transferencias, retiros), el tipo de transacción en español."""
+    if comercio:
+        return str(comercio)
+    return TIPOS_TRANSACCION.get(str(tipo), "Movimiento sin comercio")
+
+
+def estado_transaccion(estado: object) -> str:
+    return ESTADOS_TRANSACCION.get(str(estado), str(estado))
+
+
 def plantilla(plantilla_id: str, registro: str, **valores: str) -> str:
     """Rellena una plantilla; falla si faltan o sobran marcadores."""
     texto = " ".join(_plantillas()[plantilla_id][registro].split())

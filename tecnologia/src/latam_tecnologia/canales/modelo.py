@@ -14,7 +14,7 @@ from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-from latam_tecnologia.canales.textos import plantilla
+from latam_tecnologia.canales.textos import describir_comercio, estado_transaccion, plantilla
 
 VARIABLE_LLAVE = "GEMINI_API_KEY"
 URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta/openai/"
@@ -94,7 +94,7 @@ def crear_modelo_guionado() -> FunctionModel:
                 "identificando.chat",
                 reg,
                 cargo="cargo",
-                comercio=str(tx["comercio"]),
+                comercio=describir_comercio(tx["comercio"], tx.get("tipo")),
                 fecha=str(tx["event_ts"])[:10],
                 monto=_dinero(monto),
                 moneda=str(tx["monto"]["moneda"]),
@@ -103,11 +103,11 @@ def crear_modelo_guionado() -> FunctionModel:
                 yield t
             digitos = re.sub(r"\D", "", str(tx["product_id"])).rjust(4, "0")[-4:]
             ficha = {
-                "comercio": tx["comercio"],
+                "comercio": describir_comercio(tx["comercio"], tx.get("tipo")),
                 "monto": _dinero(monto),
                 "moneda": tx["monto"]["moneda"],
                 "fecha": str(tx["event_ts"])[:10],
-                "estado": tx["estado"],
+                "estado": estado_transaccion(tx["estado"]),
                 "tarjeta_final": digitos,
             }
             yield {
