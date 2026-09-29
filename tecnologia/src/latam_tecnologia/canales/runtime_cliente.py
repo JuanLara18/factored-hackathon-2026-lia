@@ -91,8 +91,7 @@ class ClienteAgentRuntime:
         sesiones.create(
             name=self.recurso,
             user_id=user_id,
-            session_id=session_id,
-            config={"session_state": estado, "ttl": "3600s"},
+            config={"session_id": session_id, "session_state": estado, "ttl": "3600s"},
         )
 
     async def turno(

@@ -92,7 +92,10 @@ class SesionesAgentPlatform:
         return f"{self._raiz}/sessions/{session_id}"
 
     def estado(self, session_id: str, user_id: str) -> dict[str, Any]:
-        s = self._sesiones().get(name=self._nombre(session_id), user_id=user_id)
+        s = self._sesiones().get(name=self._nombre(session_id))
+        # La sesión debe ser del usuario que la pide; si no, no hay estado (el turno se rechaza).
+        if getattr(s, "user_id", None) != user_id:
+            return {}
         return dict(getattr(s, "session_state", None) or {})
 
     def eventos(self, session_id: str, user_id: str) -> list[str]:

@@ -208,7 +208,14 @@ def main(argv: list[str] | None = None) -> int:
         if a.dry_run:
             print("dry-run correcto: paquete y configuración válidos; no se llamó a la API")
             return 0
-        recurso = desplegar(config, a.proyecto, a.ubicacion)
+        # El SDK conserva la ruta dada en el tar: con una ruta absoluta (y en Windows) el paquete no queda en
+        # /code/latam_paquete. Se despliega desde la carpeta padre con la ruta relativa.
+        anterior = Path.cwd()
+        os.chdir(paquete.parent)
+        try:
+            recurso = desplegar({**config, "extra_packages": [NOMBRE_PAQUETE]}, a.proyecto, a.ubicacion)
+        finally:
+            os.chdir(anterior)
     print(recurso)
     print("Agent Registry: el registro es automático con el SDK; verifíquelo en la consola.")
     return 0
