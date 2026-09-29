@@ -2,7 +2,10 @@
 
 Uso:
   uv run python tecnologia/infra/agent_runtime/desplegar.py --dry-run   # arma y valida, sin llamar a la API
-  uv run python tecnologia/infra/agent_runtime/desplegar.py             # despliega (requiere el SDK y ADC)
+  uv run python tecnologia/infra/agent_runtime/desplegar.py             # crea un recurso nuevo (SDK y ADC)
+  uv run python tecnologia/infra/agent_runtime/desplegar.py --recurso <recurso>
+      # actualiza ese recurso (projects/<p>/locations/<l>/reasoningEngines/<id>); también con
+      # LATAM_AGENT_RUNTIME_RECURSO
 
 Empaqueta solo lo que el agente necesita (comun, gobierno con su política y tecnologia, sin pruebas ni
 web) en una carpeta `latam_paquete` que viaja como `extra_packages`. El agente queda con Agent Identity y
@@ -54,6 +57,8 @@ DISTRIBUCIONES = (
     "pyyaml",
 )
 EXTRAS = {"pydantic-ai-slim": "[openai]", "psycopg": "[binary]"}
+VARIABLE_RECURSO = "LATAM_AGENT_RUNTIME_RECURSO"
+RECURSO_VALIDO = re.compile(r"^projects/[^/]+/locations/[^/]+/reasoningEngines/[^/]+$")
 CLAVE_VALIDA = re.compile(r"^[a-z][a-z0-9_-]{0,62}$")
 VALOR_VALIDO = re.compile(r"^[a-z0-9][a-z0-9_-]{0,62}$")
 
@@ -162,7 +167,8 @@ def _cliente(proyecto: str, ubicacion: str) -> tuple[Any, Any]:
         ), vertexai
 
 
-def desplegar(config: dict[str, Any], proyecto: str, ubicacion: str) -> str:
+def desplegar(config: dict[str, Any], proyecto: str, ubicacion: str, recurso: str | None = None) -> str:
+    """Crea el recurso, o actualiza `recurso` si se da (conserva el id y lo que el canal ya apunta)."""
     cliente, sdk = _cliente(proyecto, ubicacion)
     try:
         import cloudpickle  # pyright: ignore[reportMissingImports]
@@ -177,8 +183,11 @@ def desplegar(config: dict[str, Any], proyecto: str, ubicacion: str) -> str:
     if tipos is not None and hasattr(tipos, "IdentityType"):
         config = {**config, "identity_type": tipos.IdentityType.SERVICE_ACCOUNT}
     agente = AgenteDisputasRuntime(config["env_vars"]["LATAM_GCP_PROJECT"], "global", "latam_bank")
-    crear = (getattr(cliente, "runtimes", None) or cliente.agent_engines).create
-    remoto = crear(agent=agente, config=config)
+    api = getattr(cliente, "runtimes", None) or cliente.agent_engines
+    if recurso:
+        remoto = api.update(name=recurso, agent=agente, config=config)
+    else:
+        remoto = api.create(agent=agente, config=config)
     return str(remoto.api_resource.name)
 
 
@@ -189,9 +198,21 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--ubicacion", default="us-central1", help="región de Agent Runtime (los modelos van a global)"
     )
+    ap.add_argument(
+        "--recurso",
+        default=os.environ.get(VARIABLE_RECURSO),
+        help="recurso existente a actualizar (projects/<p>/locations/<l>/reasoningEngines/<id>)",
+    )
     ap.add_argument("--bucket", help="bucket de preparación, si el SDK lo pide")
     ap.add_argument("--salida", type=Path, help="carpeta del paquete (por defecto, una temporal)")
     a = ap.parse_args(argv)
+    if a.recurso and not RECURSO_VALIDO.match(a.recurso):
+        print(
+            f"--recurso debe tener la forma projects/<p>/locations/<l>/reasoningEngines/<id>: {a.recurso}",
+            file=sys.stderr,
+        )
+        return 1
+    accion = f"actualizar {a.recurso}" if a.recurso else "crear un recurso nuevo"
     version = version_del_registro()
     with tempfile.TemporaryDirectory() as tmp:
         base = a.salida or Path(tmp)
@@ -204,19 +225,22 @@ def main(argv: list[str] | None = None) -> int:
                 f"{NOMBRE_PAQUETE}/ ({sum(1 for _ in paquete.rglob('*') if _.is_file())} archivos)"
             ],
         }
+        print(f"accion: {accion}")
         print(json.dumps(resumen, indent=2, ensure_ascii=False, default=str))
         if problemas:
             print("PROBLEMAS:", *problemas, sep="\n  - ", file=sys.stderr)
             return 1
         if a.dry_run:
-            print("dry-run correcto: paquete y configuración válidos; no se llamó a la API")
+            print(f"dry-run correcto ({accion}): paquete y configuración válidos; no se llamó a la API")
             return 0
         # El SDK conserva la ruta dada en el tar: con una ruta absoluta (y en Windows) el paquete no queda en
         # /code/latam_paquete. Se despliega desde la carpeta padre con la ruta relativa.
         anterior = Path.cwd()
         os.chdir(paquete.parent)
         try:
-            recurso = desplegar({**config, "extra_packages": [NOMBRE_PAQUETE]}, a.proyecto, a.ubicacion)
+            recurso = desplegar(
+                {**config, "extra_packages": [NOMBRE_PAQUETE]}, a.proyecto, a.ubicacion, a.recurso
+            )
         finally:
             os.chdir(anterior)
     print(recurso)
