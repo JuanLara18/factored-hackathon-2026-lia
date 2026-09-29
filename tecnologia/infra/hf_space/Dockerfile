@@ -1,7 +1,7 @@
-# Backend del chat de disputas para un Space de Hugging Face (Docker, CPU gratuita).
+# Backend del chat de disputas: imagen para Cloud Run (just desplegar-chat-run) o un Space de Hugging Face.
 FROM python:3.12-slim
 COPY --from=ghcr.io/astral-sh/uv:0.8 /uv /bin/uv
-RUN useradd -m -u 1000 user
+RUN useradd -m -u 1000 user && mkdir -p /home/user/app && chown user:user /home/user/app
 USER user
 WORKDIR /home/user/app
 COPY --chown=user . .
