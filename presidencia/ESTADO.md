@@ -52,6 +52,13 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 7. Redeplegar el chat en Cloud Run (`just desplegar-chat-run`) para que hable con Gemini en GEAP y envíe trazas (D-32). Los permisos `roles/aiplatform.user` y `roles/cloudtrace.agent` ya están dados a la cuenta de Compute; `LATAM_MODELO=guionado` lo devuelve al guion.
+8. **GEAP fase 2 (agente en Agent Runtime), listo para desplegar; nada de esto se ha ejecutado.** Rama `feature/tecnologia-geap-2-agent-runtime`. Pasos en orden, con `gcloud auth login` y ADC del dueño del proyecto:
+   1. `bash tecnologia/infra/agent_runtime/iam.sh cuenta` (crea `latam-chat@` con mínimo privilegio).
+   2. `uv run --with "google-cloud-aiplatform[agent_engines]" --with cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --dry-run`, luego sin `--dry-run` (o `just desplegar-agente`, pasa por `uv run`). Imprime `projects/<numero>/locations/us-central1/reasoningEngines/<id>`; si el SDK pide bucket, `--bucket <bucket>`.
+   3. `bash tecnologia/infra/agent_runtime/iam.sh agente <ORG_ID> <id>` (`gcloud organizations list` da el ORG_ID; da al Agent Identity BigQuery, modelos y trazas).
+   4. `just desplegar-chat-run-agente projects/<numero>/locations/us-central1/reasoningEngines/<id>`.
+   5. Probar el chat; si sirve, `bash tecnologia/infra/agent_runtime/iam.sh quitar-editor` (retira `roles/editor` de la cuenta de Compute). Volver atrás: `just desplegar-chat-run`.
+   Sin verificar contra la API real: nombre de `session_state` al crear la sesión, lectura de eventos de Sessions, `GOOGLE_CLOUD_AGENT_ENGINE_ID` en el runtime (si falta, `LATAM_MOTOR_ID` en `env_vars`) y si el SDK nuevo es `agentplatform` (el código prueba ese y luego `vertexai`).
 
 ## Siguientes historias, en orden
 
