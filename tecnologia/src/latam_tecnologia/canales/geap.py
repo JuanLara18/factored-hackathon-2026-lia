@@ -21,7 +21,9 @@ VARIABLE_UBICACION = "LATAM_GEAP_LOCATION"
 VARIABLE_PROVEEDOR = "LATAM_MODELO_PROVEEDOR"
 VARIABLE_MODELO = "LATAM_MODELO"
 UBICACION_DEFECTO = "global"
-MODELO_DEFECTO = "gemini-3.1-flash-lite"
+# Gemini 3 por el punto OpenAI de Vertex falla con 400 (falta thought_signature tras cada herramienta): se usa 2.5
+# hasta pasar al proveedor nativo `google`, que sí devuelve las firmas.
+MODELO_DEFECTO = "gemini-2.5-flash-lite"
 ALCANCE = "https://www.googleapis.com/auth/cloud-platform"
 
 

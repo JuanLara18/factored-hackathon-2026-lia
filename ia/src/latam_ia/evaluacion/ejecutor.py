@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from latam_comun.dominio import Canal
+from latam_tecnologia.canales.geap import VARIABLE_PROVEEDOR, crear_modelo_geap
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
 from latam_tecnologia.motor.caso import MotorCaso
 from pydantic_ai import DeferredToolRequests, DeferredToolResults, ToolDenied
@@ -78,8 +79,10 @@ class Corrida:
 
 
 def elegir_modelo_agente(escenario: Escenario, entorno: Mapping[str, str] | None = None) -> tuple[Model, str]:
-    """Gemini con llave; la política de referencia sin ella. Devuelve también la etiqueta para el reporte."""
+    """GEAP si se pide (`LATAM_MODELO_PROVEEDOR=geap`), Gemini con llave, o la política de referencia."""
     env = os.environ if entorno is None else entorno
+    if env.get(VARIABLE_PROVEEDOR, "").lower() == "geap":
+        return crear_modelo_geap(env)
     if env.get(VARIABLE_LLAVE):
         return crear_modelo(SPEC_AGENTE, env), f"gemini:{SPEC_AGENTE.id}"
     return crear_modelo_referencia(escenario.idioma), "referencia-guionada"
@@ -148,7 +151,7 @@ def _correr(
     pares: list[tuple[str | None, str]] = []
     MotorCaso(mv.almacen, mv.herramientas, reloj=lambda: AHORA).abrir(CONVERSACION_ID, mv.sesion, Canal.CHAT)
     agente = crear_agente_disputas(modelo)
-    deps = ContextoAgente(mv.herramientas, mv.sesion, CONVERSACION_ID, Canal.CHAT)
+    deps = ContextoAgente(mv.herramientas, mv.sesion, CONVERSACION_ID, Canal.CHAT, escenario.registro)
     historial: list[ModelMessage] = []
     aprobaciones: dict[str, Aprobacion] = {}
     ultimo: str | None = None

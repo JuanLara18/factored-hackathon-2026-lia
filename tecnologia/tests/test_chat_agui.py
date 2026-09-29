@@ -237,6 +237,7 @@ def test_la_web_minima_se_sirve_y_declara_el_contrato() -> None:
         ("La tarjeta tarjeta-4001 y la compra.", "La tarjeta terminada en 4001 y la compra."),
         ("Cobro de Tienda Uno (TX-1001) por 120.000.", "Cobro de Tienda Uno por 120.000."),
         ("La transacción tx-1-1, del 3 de junio.", "La transacción, del 3 de junio."),
+        ("Corresponde al ID de transacción TX-1004. Confirma.", "Corresponde. Confirma."),
         ("Cobro de Café Norte por 48,90.", "Cobro de Café Norte por 48,90."),
     ],
 )

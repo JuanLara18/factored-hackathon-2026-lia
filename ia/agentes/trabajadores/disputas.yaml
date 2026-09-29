@@ -16,7 +16,7 @@ prompt: disputas/agente@1.0.0
 modelo:
   proveedor: vertex_ai
   familia: google
-  id: gemini-3.1-flash-lite
+  id: gemini-2.5-flash-lite
   temperatura: 0.0
   max_salida: 600
 presupuestos: {max_entrada: 4000, max_salida: 600, llamadas_por_conversacion: 12, usd_diario: 1}

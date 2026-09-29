@@ -84,7 +84,9 @@ _PRODUCTO = re.compile(
     r"(?P<pre>\btarjeta\s+)?\b(?:PRD|tarjeta)-(?P<id>[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)", re.IGNORECASE
 )
 _TRANSACCION = re.compile(
-    r"[ \t]*[(\[]?\b(?:TXN?|transaction)[-_][A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\b[)\]]?", re.IGNORECASE
+    r"[ \t]*[(\[]?(?:\b(?:el |al |del )?ids? (?:de (?:la )?transacci[oó]n )?)?"
+    r"\b(?:TXN?|transaction)[-_][A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*\b[)\]]?",
+    re.IGNORECASE,
 )
 
 
