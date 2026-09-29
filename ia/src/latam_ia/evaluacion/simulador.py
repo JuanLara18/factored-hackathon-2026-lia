@@ -13,8 +13,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
+from latam_tecnologia.canales.geap import VARIABLE_PROVEEDOR, crear_modelo_geap
 from pydantic import BaseModel
-from pydantic_ai import Agent
+from pydantic_ai import Agent, PromptedOutput
 from pydantic_ai.messages import ModelMessage
 from pydantic_ai.models import Model
 
@@ -115,6 +116,88 @@ class SimuladorLLM:
         return TurnoCliente(sustituir(r.output.texto, self._guion.hechos), r.output.intencion)
 
 
+class SimuladorClienteLLM:
+    """Cliente conducido por un modelo (2.8.3): ve solo el objetivo, los hechos y el plan del guion.
+
+    Nunca ve resultados de herramientas ni el estado del banco; solo lo que el asistente le escribe. El
+    primer mensaje es el del guion, literal, porque es el estímulo del escenario (incluidos los
+    adversariales); a partir de ahí conversa con libertad y decide si confirma lo que la interfaz propone.
+    """
+
+    modo = "llm_cliente"
+
+    def __init__(self, guion: Guion, idioma: str, registro: str, modelo: Model) -> None:
+        self._guion = guion
+        self._primero = guion.turnos[0]
+        hechos = "\n".join(
+            f"- {k}: {h.valor}"
+            + (f" (dilo solo si te preguntan por: {', '.join(h.si_pregunta)})" if h.si_pregunta else "")
+            for k, h in guion.hechos.items()
+        )
+        plan = "\n".join(
+            f"{i}. ({t.intencion}) {sustituir(t.decir, guion.hechos)}"
+            for i, t in enumerate(guion.turnos[1:], 2)
+        )
+        trato = {"usted": "de usted", "vos": "de vos", "voce": "por você"}.get(registro, registro)
+        primero = sustituir(self._primero.decir, guion.hechos)
+        instrucciones = (
+            f"Eres un cliente real de un banco que escribe por chat en {idioma}, {trato}. "
+            "Escribes mensajes cortos y naturales, de una o dos frases. "
+            f"Tu primer mensaje ya lo enviaste: «{primero}». "
+            "Nunca lo repitas ni lo copies: responde a lo que el asistente te dice.\n"
+            f"Tu objetivo: {guion.objetivo}\n"
+            f"Hechos que conoces:\n{hechos or '- (ninguno)'}\n"
+            "Lo que dirías después, en orden, cada paso solo cuando el anterior se resolvió:\n"
+            f"{plan or '(nada más)'}\n"
+            "Responde lo que el asistente te pregunta con tus hechos; si te pide elegir entre varios "
+            "cobros, elige el que corresponde a tus hechos. Nunca inventes montos, fechas, comercios "
+            "ni datos que no conozcas: si el asistente no encuentra lo que dices, insiste una vez con "
+            "lo mismo y luego pide hablar con una persona o da por terminada la charla.\n"
+            "No pidas nada fuera de tu objetivo y solo apruebas acciones sobre el cobro exacto que describen "
+            "tus hechos o tu plan; si la pantalla muestra otro cobro, rechaza.\n"
+            "Los mensajes que empiezan por [Pantalla de aprobación] son la pantalla del banco con una "
+            "acción para aprobar. Ahí responde con intención 'confirmar' si la acción sirve a tu objetivo "
+            "y coincide con lo que pediste, o 'rechazar' si no (con un texto corto como 'Sí, confirmo' "
+            "o 'No'). Si el asistente te pide confirmar en el chat, contesta con intención 'hablar'. "
+            "En los demás casos, 'hablar'. "
+            "Marca termina=true cuando tu objetivo se cumplió, el asistente te transfirió a una persona o "
+            "ya no tienes nada más que pedir."
+        )
+        self._agente: Agent[None, SalidaSimulador] = Agent(
+            modelo,
+            output_type=PromptedOutput(SalidaSimulador),
+            instructions=instrucciones,
+            model_settings={"temperature": 0.4, "max_tokens": 300},
+        )
+        self._historial: list[ModelMessage] = []
+        self._abrio = False
+
+    def siguiente(self, ctx: ContextoSimulador) -> TurnoCliente | None:
+        if not self._abrio:
+            self._abrio = True
+            t = self._primero
+            return TurnoCliente(sustituir(t.decir, self._guion.hechos), t.intencion)
+        if ctx.turnos_cliente >= self._guion.max_turnos:
+            return None
+        entrada = ctx.ultimo_agente or "(el asistente aún no ha respondido)"
+        if ctx.confirmacion_pendiente:
+            entrada = f"[Pantalla de aprobación del banco] {entrada}"
+        else:
+            entrada = f"[Asistente] {entrada}"
+        try:
+            r = self._agente.run_sync(entrada, message_history=self._historial)
+        except Exception:
+            return None
+        self._historial = r.all_messages()
+        salida = r.output
+        if salida.termina and not ctx.confirmacion_pendiente:
+            return None
+        intencion: Intencion = salida.intencion
+        if not ctx.confirmacion_pendiente and intencion != "hablar":
+            intencion = "hablar"
+        return TurnoCliente(sustituir(salida.texto, self._guion.hechos), intencion)
+
+
 def crear_simulador(
     guion: Guion,
     idioma: str,
@@ -122,9 +205,12 @@ def crear_simulador(
     entorno: Mapping[str, str] | None = None,
     modelo: Model | None = None,
 ) -> Simulador:
-    """LLM solo con `GEMINI_API_KEY` (o un modelo inyectado); guionado si no. Nunca hay red sin llave."""
+    """Con GEAP (`LATAM_MODELO_PROVEEDOR=geap`) un cliente LLM sobre el mismo modelo; con `GEMINI_API_KEY`
+    (o un modelo inyectado) el simulador de marcadores; guionado si no. Nunca hay red sin credenciales."""
     env = os.environ if entorno is None else entorno
     if modelo is None:
+        if env.get(VARIABLE_PROVEEDOR, "").lower() == "geap":
+            return SimuladorClienteLLM(guion, idioma, registro, crear_modelo_geap(env)[0])
         if not env.get(VARIABLE_LLAVE):
             return SimuladorGuionado(guion)
         modelo = crear_modelo(SPEC_SIMULADOR, env)

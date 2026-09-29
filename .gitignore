@@ -52,5 +52,6 @@ datos/dbt/dbt_packages/
 datos/dbt/.user.yml
 
 # Reportes del arnés de evaluación (se regeneran con `just evaluar`)
-ia/evaluacion/reportes/
+ia/evaluacion/reportes/*
+!ia/evaluacion/reportes/geap_*.md
 .hf_space/

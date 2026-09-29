@@ -242,7 +242,8 @@ def ejecutar_corrida(
             escenario.guion, escenario.idioma, escenario.registro, entorno, modelo_simulador
         )
         traza, pares = _correr(escenario, mv, modelo, sim)
-        fallas = verificar_fidelidad(escenario.guion, pares)
+        # El cliente LLM no sigue un guion turno a turno: se juzgan los resultados, no la fidelidad al guion.
+        fallas = [] if sim.modo == "llm_cliente" else verificar_fidelidad(escenario.guion, pares)
         if not fallas or reintentos >= 1:
             break
         reintentos += 1

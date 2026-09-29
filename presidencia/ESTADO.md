@@ -46,7 +46,10 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 - **Pendiente:** Gemini 3 falla con herramientas por el endpoint compatible con OpenAI (pierde la `thought_signature`);
   volver a Gemini 3 exige el proveedor nativo de Google (hoy choca con dbt-bigquery en el lock). Agent Identity exige
   que el proyecto esté en una organización (hoy "sin organización"). En modo runtime el chat no dibuja la ficha visual.
-  El despliegue crea un recurso nuevo en vez de actualizar. Fase 3: GenAI Evaluation Service con los 23 escenarios.
+  El despliegue crea un recurso nuevo en vez de actualizar. Fase 3 hecha en parte (29 sep): arnés con cliente simulado por LLM, prompt de disputas 1.1.0 y GenAI Evaluation Service
+  con trayectoria y rúbrica de tono (`ia/evaluacion/reportes/geap_2026-09-29.md`): 12 de 21 escenarios pasan, 0 inseguros;
+  falla sobre todo la llamada malformada que persiste tras el reintento y la ruta (escalar, bloquear). Quedan E8 y E9 sin
+  correr en la corrida final y `abrir_disputa` sobre un caso ya abierto todavía da crédito provisional.
   `roles/editor` sigue en la cuenta de Compute (la usa Cloud Build); retirarlo tras mover los builds a su propia cuenta.
 
 ## Desplegar el sitio
