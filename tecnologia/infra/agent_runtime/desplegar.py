@@ -106,7 +106,10 @@ def configuracion(proyecto: str, version: str, paquete: Path, *, bucket: str | N
         "min_instances": 0,
         "max_instances": 1,
         "labels": etiquetas,
-        "identity_type": "AGENT_IDENTITY",
+        # Agent Identity exige que el proyecto esté en una organización (el principal lleva org-<id>);
+        # este no está, y con esa identidad el runtime recibía 401. Se usa la cuenta de mínimo privilegio.
+        "identity_type": "SERVICE_ACCOUNT",
+        "service_account": f"latam-chat@{proyecto}.iam.gserviceaccount.com",
     }
     if bucket:
         config["staging_bucket"] = f"gs://{bucket}"
@@ -172,7 +175,7 @@ def desplegar(config: dict[str, Any], proyecto: str, ubicacion: str) -> str:
 
     tipos = getattr(sdk, "types", None)
     if tipos is not None and hasattr(tipos, "IdentityType"):
-        config = {**config, "identity_type": tipos.IdentityType.AGENT_IDENTITY}
+        config = {**config, "identity_type": tipos.IdentityType.SERVICE_ACCOUNT}
     agente = AgenteDisputasRuntime(config["env_vars"]["LATAM_GCP_PROJECT"], "global", "latam_bank")
     crear = (getattr(cliente, "runtimes", None) or cliente.agent_engines).create
     remoto = crear(agent=agente, config=config)
