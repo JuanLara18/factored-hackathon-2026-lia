@@ -17,8 +17,12 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 - Tarde: policy/v1, Clientes (matriz, estilo, 50 plantillas), arnés de evaluación (23 de 23), D-31
   (bloquear tarjeta con acr1), escalamiento por monto ESC-04 y chat web de disputas.
 
+- Noche: sitio en Firebase Hosting; facturación reabierta con presupuesto de COP 20.000; chat en Cloud Run;
+  D-32: agente en Gemini Enterprise Agent Platform (Agent Runtime, Gemini 2.5 Flash-Lite, Cloud Trace,
+  cuenta `latam-chat@` de mínimo privilegio), probado de punta a punta desde el sitio.
+
 **Bloquea**
-- Facturación cerrada: sin Cloud Run ni Vertex AI hasta que la Presidencia decida reabrirla.
+- Facturación cerrada (resuelto en la noche): sin Cloud Run ni Vertex AI hasta que la Presidencia decida reabrirla.
 
 **Recortado**
 - Cuatro fichas de oro operacional, cuarentena por fila y lotes en bronce.

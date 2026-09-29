@@ -2,7 +2,7 @@
 
 Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está en [bitacora.md](bitacora.md).
 
-**Actualizado:** 29 de septiembre de 2026.
+**Actualizado:** 29 de septiembre de 2026, noche.
 
 ## Dónde estamos
 
@@ -69,15 +69,33 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 
+## En curso (ramas sin fusionar)
+
+Dos subagentes quedaron trabajando al cerrar la sesión. Si la rama ya está en `origin`, revisarla, correr
+`just check` y fusionarla a `develop`; si no, retomarla desde su worktree.
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/ia-ia-5-3-calidad-geap` | `../fh-calidad` | simulador de cliente con Gemini, reintento ante `malformed_function_call`, prompt 1.1.0 (trabajador 0.2.0), evaluación real de los 23 escenarios en GEAP (tope 400 llamadas) y GenAI Evaluation Service |
+| `feature/tecnologia-tec-5-ficha-runtime` | `../fh-ficha` | ficha visual y eventos de herramientas en modo Agent Runtime; el despliegue actualiza el recurso con `--recurso` en vez de crear uno nuevo |
+
+Tras fusionarlas: redesplegar el agente (`desplegar.py --recurso <actual>`) y el chat (`just desplegar-chat-run`,
+con `LATAM_AGENT_RUNTIME_RECURSO`), y probar una disputa en el sitio.
+
 ## Siguientes historias, en orden
 
-1. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
-2. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
-3. **Tecnología:** backend público del chat (Cloud Run si se reabre la facturación, o un Space gratuito de Hugging Face) y apuntar `config.js`; voz (spike S1) y WhatsApp de prueba.
-4. **IA:** IA-3.1 (redacción por locale), IA-7.2 (hojas de vida) y correr el arnés con Gemini cuando haya llave.
+1. **IA:** volver a Gemini 3 con el proveedor nativo de Google (sacar dbt-bigquery del lock del workspace, por
+   ejemplo con `uvx`, para destrabar `pydantic-ai-slim[google]`); IA-3.1 e IA-7.2.
+2. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
+3. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
+4. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
+   voz (spike S1) y WhatsApp de prueba.
 5. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
 
 ## Cómo se trabaja
+
+Worktrees vivos: `../fh-datos` (guarda la copia local del bucket en `data/`, fuera de git) y los dos de la tabla
+"En curso". La carpeta `../fh-tec` quedó huérfana (git ya no la registra; se puede borrar a mano).
 
 Ramas `feature/<cara>-<historia>-<tema>` desde `develop`, una por subagente en su propio worktree (`../fh-<tema>`);
 se fusionan a `develop` con `just check` en verde. Commits de una línea.
