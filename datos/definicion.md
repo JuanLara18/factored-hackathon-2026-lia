@@ -1,5 +1,26 @@
 # VP Datos: la verdad del banco (definición v1)
 
+> **Reemplazada parcialmente por D-30** (`presidencia/decisiones.md`). Todo corre en Google Cloud; la carga
+> queda fuera de alcance y un proceso externo deja el bucket como tablas crudas. Hay un solo dataset,
+> `latam_bank`, con la capa como prefijo del nombre de tabla, y `latam_seguridad` para la llave. Las secciones
+> de abajo siguen como referencia de diseño; donde chocan con esta tabla, manda la tabla. Sandbox sin
+> facturación: 10 GB de tope y las tablas vencen el 2026-11-28.
+>
+> | Antes (zona o dataset) | Ahora | Estado |
+> |---|---|---|
+> | `bronce` / `latam_bronce` | `latam_bank.bronce_<archivo>`, todo `STRING` | vigente, sin lotes ni metadatos por fila |
+> | `bronce_respaldo` / `latam_bronce_respaldo` | comparación local en `latam_bank.platino_comparacion_respaldo`; el respaldo no se carga | vigente como resumen |
+> | `plata`, `plata_restringida` | `latam_bank.plata_*` | vigente |
+> | `oro_analitico`, `oro_aprendizaje`, `oro_operacional` | `latam_bank.oro_*` | vigente |
+> | `platino` / `latam_platino` | `latam_bank.platino_*` (manifiesto, calidad, inventario, comparación) | vigente |
+> | `seguridad` | `latam_seguridad` | vigente |
+> | R-DAT-01 (ruta local completa y referencia) | el espejo local más el manifiesto son la fuente reproducible; no hay corrida local completa | abandonada |
+> | R-DAT-02 (un código, dos perfiles) | un solo perfil, BigQuery | abandonada |
+> | R-DAT-03 (paridad local y nube) | reemplazada por el manifiesto: filas de CSV contra filas de BigQuery por tabla | abandonada |
+> | R-DAT-05, R-DAT-06 (lotes, `_lote_id`, `_linea`) | sin lotes; trazabilidad por archivo en `platino_manifiesto_carga` | parcial |
+> | Q-BRZ-02, 04, 07, 08, 09, 10 | descartadas: hablan de objetos y lotes que ya no vemos | abandonadas, no borradas |
+> | Q-BRZ-01, 03, 05, 06, 11 | reinterpretadas en `reglas.py`; Q-BRZ-12 y 13 son nuevas | vigentes |
+
 **Cara:** VP Datos. **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión, pendiente del
 desafío de Gobierno y de la auditoría de completitud ([modelo operativo](00_Presidencia_Modelo_operativo.md),
 sección 7).

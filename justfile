@@ -30,3 +30,19 @@ validar:
 cargar-bronce bucket:
     aws s3 sync s3://{{bucket}}/data/ data/espejo/
     uv run python -m latam_datos.carga_externa
+
+# Datos: manifiesto de carga por tabla (archivos, filas CSV contra BigQuery, huella encadenada)
+manifiesto:
+    uv run python -m latam_datos.evidencia manifiesto
+
+# Datos: recomputa la cadena de datos/manifiestos/; sale con 1 si un manifiesto viejo fue editado
+verificar-cadena:
+    uv run python -m latam_datos.evidencia verificar-cadena
+
+# Datos: compara el respaldo del organizador con el espejo (ruta y sha256); solo guarda el resumen
+comparar-respaldo:
+    uv run python -m latam_datos.evidencia comparar-respaldo
+
+# Datos: inventario de insumos por clase de procedencia, con AS_OF
+inventario:
+    uv run python -m latam_datos.evidencia inventario
