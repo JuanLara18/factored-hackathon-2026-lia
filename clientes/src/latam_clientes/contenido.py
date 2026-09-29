@@ -1,7 +1,7 @@
 """Carga y validación de la matriz (CLI-1.1), la guía de estilo (CLI-1.2) y las plantillas (CLI-1.3).
 
 Los tres son YAML bajo `clientes/`. La guía de estilo también la consume la biblioteca de prompts de IA:
-`frases_prohibidas(estilo, "prompt")` es la única lista de frases prohibidas del repositorio.
+`frases_prohibidas(estilo, alcance)` es la única lista de frases prohibidas del repositorio.
 """
 
 from __future__ import annotations
@@ -84,7 +84,8 @@ class Regla(_Estricto):
     patron: str
     motivo: str | None = None
     alternativa: str | None = None
-    alcance: list[Literal["plantilla", "prompt"]] = ["plantilla"]
+    clase: str | None = None
+    alcance: list[Literal["plantilla", "prompt", "respuesta"]] = ["plantilla"]
 
 
 class AplicaA(_Estricto):
@@ -159,8 +160,10 @@ def cargar_plantillas(ruta: Path = RUTA_PLANTILLAS) -> Plantillas:
     return _cargar(ruta, Plantillas)
 
 
-def frases_prohibidas(estilo: Estilo, alcance: Literal["plantilla", "prompt"]) -> list[re.Pattern[str]]:
-    """Patrones prohibidos del alcance dado; es la lista que comparte la biblioteca de prompts de IA."""
+def frases_prohibidas(
+    estilo: Estilo, alcance: Literal["plantilla", "prompt", "respuesta"]
+) -> list[re.Pattern[str]]:
+    """Patrones prohibidos del alcance dado; es la lista de linter, prompts y arnés."""
     return [re.compile(r.patron, re.IGNORECASE) for r in estilo.frases_prohibidas if alcance in r.alcance]
 
 

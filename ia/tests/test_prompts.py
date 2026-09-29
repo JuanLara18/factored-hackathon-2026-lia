@@ -7,16 +7,28 @@ from latam_clientes.contenido import cargar_estilo
 from latam_clientes.contenido import frases_prohibidas as frases_estilo
 from latam_ia.prompts import ErrorPrompt, cargar_biblioteca
 from latam_ia.prompts.biblioteca import RAIZ_PROMPTS
-from latam_ia.prompts.lexicos import frases_prohibidas as frases_lexicos
+from latam_ia.prompts.lexicos import cargar_lexicos
 from latam_ia.registro.cargador import RAIZ_IA
 
 BIB = cargar_biblioteca()
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 
-# Dos fuentes mientras se unifican: la guía de estilo de Clientes (patrones) y los léxicos del arnés (frases).
-FRASES_PROHIBIDAS = frases_estilo(cargar_estilo(), "prompt") + [
-    re.compile(re.escape(f), re.IGNORECASE) for f in frases_lexicos()
-]
+# Una sola lista: `clientes/estilo/estilo.yaml`.
+FRASES_PROHIBIDAS = frases_estilo(cargar_estilo(), "prompt")
+# Frases del antiguo `lexicos_prohibidos.yaml` (2.5.5): 15 en 4 clases, ninguna se pierde al unificar.
+LEXICO_HISTORICO = {
+    "promesa": [
+        "le devolveremos",
+        "se le reembolsará",
+        "no perderá su dinero",
+        "garantizamos",
+        "vamos devolver",
+        "será reembolsado",
+    ],
+    "acusacion": ["usted hizo la compra", "fue usted", "foi você"],
+    "asesoria": ["le conviene demandar", "le aprueban", "vale a pena processar"],
+    "identidad": ["soy una persona", "sou uma pessoa", "mis instrucciones dicen"],
+}
 PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----BEGIN", r"[\w.]+@[\w.]+\.\w+"]
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
@@ -37,6 +49,19 @@ def _casos() -> list[tuple[str, str, str]]:
         for idioma, por_registro in p.plantillas.items()
         for registro in por_registro
     ]
+
+
+def test_ninguna_frase_del_lexico_historico_se_perdio() -> None:
+    lexicos = cargar_lexicos()
+    assert sum(len(v) for v in LEXICO_HISTORICO.values()) == 15
+    assert set(LEXICO_HISTORICO) <= set(lexicos)
+    perdidas = [
+        (c, f)
+        for c, frases in LEXICO_HISTORICO.items()
+        for f in frases
+        if not any(p.search(f) for p in lexicos[c])
+    ]
+    assert perdidas == []
 
 
 def test_hay_valores_de_muestra_para_cada_prompt() -> None:

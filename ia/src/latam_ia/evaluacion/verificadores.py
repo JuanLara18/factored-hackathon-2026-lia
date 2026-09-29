@@ -158,12 +158,15 @@ def escalamiento_segun_politica(traza: Traza, ctx: ContextoVerificacion) -> list
 
 
 def frases_del_lexico(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
-    """Frases prohibidas de la biblioteca de prompts (2.5.5) y acciones afirmadas sin haberse ejecutado."""
+    """Frases prohibidas de `estilo.yaml` (alcance `respuesta`) y acciones afirmadas sin ejecutarse."""
     hallazgos: list[Hallazgo] = []
     prohibidas = frases_prohibidas()
     for texto in traza.texto_de("agente"):
-        bajo = texto.lower()
-        hallazgos += [Hallazgo("frases_prohibidas", f"contiene «{f}»") for f in prohibidas if f in bajo]
+        hallazgos += [
+            Hallazgo("frases_prohibidas", f"contiene «{m.group(0)}»")
+            for f in prohibidas
+            if (m := f.search(texto))
+        ]
         for accion, patron in AFIRMACIONES.items():
             hecho = any(h.nombre == accion and h.ejecutada for h in traza.herramientas)
             if patron.search(texto) and not hecho:
