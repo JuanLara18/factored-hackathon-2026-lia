@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import importlib.util
 import os
 import sys
 from collections.abc import AsyncIterator, Callable, Iterator
@@ -117,11 +118,25 @@ class SesionesAgentPlatform:
 
 
 def _buscar_paquete() -> str | None:
-    """Carpeta `latam_paquete` que `extra_packages` deja junto al código en el runtime."""
-    for base in (*sys.path, os.getcwd()):
-        candidata = Path(base or ".") / "latam_paquete"
+    """Carpeta `latam_paquete` que `extra_packages` deja junto al código en el runtime.
+
+    Primero en `sys.path` y el directorio actual; si no, recorre cuatro niveles bajo esas bases y `/code`.
+    """
+    bases = [Path(b or ".") for b in (*sys.path, os.getcwd(), "/code", "/home")]
+    for base in bases:
+        candidata = base / "latam_paquete"
         if (candidata / "tecnologia" / "src").is_dir():
             return str(candidata)
+    for base in bases:
+        if not base.is_dir():
+            continue
+        raiz_nivel = len(base.parts)
+        for actual, dirs, _ in os.walk(base):
+            if len(Path(actual).parts) - raiz_nivel >= 4:
+                dirs[:] = []
+                continue
+            if "latam_paquete" in dirs and (Path(actual) / "latam_paquete" / "tecnologia" / "src").is_dir():
+                return str(Path(actual) / "latam_paquete")
     return None
 
 
@@ -164,6 +179,8 @@ class AgenteDisputasRuntime:
         if self._agente is not None:
             return
         raiz = self.raiz_paquete or os.environ.get("LATAM_RAIZ_PAQUETE") or _buscar_paquete()
+        if raiz is None and importlib.util.find_spec("latam_tecnologia") is None:
+            raise RuntimeError(f"no se encontró latam_paquete; cwd={os.getcwd()} sys.path={sys.path}")
         if raiz:
             for miembro in ("comun", "gobierno", "tecnologia"):
                 ruta = str(Path(raiz) / miembro / "src")

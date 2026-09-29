@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -81,6 +82,9 @@ def entorno(proyecto: str, version: str) -> dict[str, str]:
         "LATAM_GCP_PROJECT": proyecto,
         "LATAM_GEAP_LOCATION": "global",
         "LATAM_TRABAJADOR_VERSION": version,
+        # Gemini 3 por el endpoint compatible con OpenAI pierde la thought_signature de las herramientas;
+        # hasta pasar al proveedor nativo de Google, el agente usa 2.5 Flash-Lite.
+        "LATAM_MODELO": os.environ.get("LATAM_MODELO", "gemini-2.5-flash-lite"),
     }
 
 
