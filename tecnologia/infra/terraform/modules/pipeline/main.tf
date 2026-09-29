@@ -17,6 +17,18 @@ resource "google_storage_bucket_iam_member" "lee_espejo" {
   member = "serviceAccount:${google_service_account.pipeline.email}"
 }
 
+# Bronce normaliza cada CSV en _staging/ antes de cargarlo a BigQuery y lo borra despues.
+resource "google_storage_bucket_iam_member" "escribe_staging" {
+  bucket = var.bucket_espejo
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.pipeline.email}"
+
+  condition {
+    title      = "solo-staging"
+    expression = "resource.name.startsWith(\"projects/_/buckets/${var.bucket_espejo}/objects/_staging/\")"
+  }
+}
+
 resource "google_cloud_run_v2_job" "pipeline" {
   project             = var.project_id
   name                = "pipeline-datos"
