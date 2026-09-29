@@ -32,6 +32,23 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
 `AS_OF` = 2026-06-17. Copia local del bucket (fuera de git) en `C:\Users\LaraJ\Projects\fh-datos\data\`
 (`espejo/` 5,0 GB y `respaldo_20260831/` 4,5 GB; el respaldo del organizador está incompleto de origen).
 
+## GEAP (D-32), en producción
+
+- **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
+  privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
+  (Agent Runtime, escala a cero, Sessions de 24 h, cuenta `latam-chat@`). Modelo: `gemini-2.5-flash-lite` en GEAP
+  (región `global`). Trazas en Cloud Trace con `latam.trabajador.id` y versión. Probado de punta a punta: ficha,
+  aprobación con datos de la base y caso creado.
+- **Redesplegar el agente:** `uv run --with "google-cloud-aiplatform[agent_engines]" --with cloudpickle python
+  tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging` (crea un recurso nuevo:
+  apuntar Cloud Run con `LATAM_AGENT_RUNTIME_RECURSO` y borrar el anterior). **Chat:** `just desplegar-chat-run`
+  con esa variable. Volver al agente en proceso: quitar la variable; al guion: `LATAM_MODELO=guionado`.
+- **Pendiente:** Gemini 3 falla con herramientas por el endpoint compatible con OpenAI (pierde la `thought_signature`);
+  volver a Gemini 3 exige el proveedor nativo de Google (hoy choca con dbt-bigquery en el lock). Agent Identity exige
+  que el proyecto esté en una organización (hoy "sin organización"). En modo runtime el chat no dibuja la ficha visual.
+  El despliegue crea un recurso nuevo en vez de actualizar. Fase 3: GenAI Evaluation Service con los 23 escenarios.
+  `roles/editor` sigue en la cuenta de Compute (la usa Cloud Build); retirarlo tras mover los builds a su propia cuenta.
+
 ## Desplegar el sitio
 
 La CLI de Firebase de esta máquina tiene otra cuenta; se despliega con una configuración aislada y las
@@ -51,14 +68,6 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 5. Meta (WhatsApp) y Twilio en modo de prueba; preguntas a los organizadores.
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
-7. Redeplegar el chat en Cloud Run (`just desplegar-chat-run`) para que hable con Gemini en GEAP y envíe trazas (D-32). Los permisos `roles/aiplatform.user` y `roles/cloudtrace.agent` ya están dados a la cuenta de Compute; `LATAM_MODELO=guionado` lo devuelve al guion.
-8. **GEAP fase 2 (agente en Agent Runtime), listo para desplegar; nada de esto se ha ejecutado.** Rama `feature/tecnologia-geap-2-agent-runtime`. Pasos en orden, con `gcloud auth login` y ADC del dueño del proyecto:
-   1. `bash tecnologia/infra/agent_runtime/iam.sh cuenta` (crea `latam-chat@` con mínimo privilegio).
-   2. `uv run --with "google-cloud-aiplatform[agent_engines]" --with cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --dry-run`, luego sin `--dry-run` (o `just desplegar-agente`, pasa por `uv run`). Imprime `projects/<numero>/locations/us-central1/reasoningEngines/<id>`; si el SDK pide bucket, `--bucket <bucket>`.
-   3. `bash tecnologia/infra/agent_runtime/iam.sh agente <ORG_ID> <id>` (`gcloud organizations list` da el ORG_ID; da al Agent Identity BigQuery, modelos y trazas).
-   4. `just desplegar-chat-run-agente projects/<numero>/locations/us-central1/reasoningEngines/<id>`.
-   5. Probar el chat; si sirve, `bash tecnologia/infra/agent_runtime/iam.sh quitar-editor` (retira `roles/editor` de la cuenta de Compute). Volver atrás: `just desplegar-chat-run`.
-   Sin verificar contra la API real: nombre de `session_state` al crear la sesión, lectura de eventos de Sessions, `GOOGLE_CLOUD_AGENT_ENGINE_ID` en el runtime (si falta, `LATAM_MOTOR_ID` en `env_vars`) y si el SDK nuevo es `agentplatform` (el código prueba ese y luego `vertexai`).
 
 ## Siguientes historias, en orden
 
