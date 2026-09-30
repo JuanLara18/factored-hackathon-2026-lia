@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+import unicodedata
 from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
@@ -18,10 +19,10 @@ _CORREO = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)+")
 _NUMERO_LARGO = re.compile(r"(?<![\w])(?:\d[ -]?){6,}\d(?![\w])")
 
 
-def monto(valor: Decimal | float | str, moneda: str | None = None) -> str:
-    """`128482.28` como `128.482,28` (es-CO y es-AR); en pesos mexicanos, `128,482.28` (es-MX)."""
+def monto(valor: Decimal | float | str, moneda: str | None = None, pais: str | None = None) -> str:
+    """`128482.28` como `128.482,28` (es-CO y es-AR); en México, `128,482.28` (es-MX), también en USD."""
     entero, _, dec = f"{Decimal(str(valor)):,.2f}".partition(".")
-    if moneda == "MXN":
+    if moneda == "MXN" or pais == "MX":
         return f"{entero}.{dec}"
     return f"{entero.replace(',', '.')},{dec}"
 
@@ -140,3 +141,9 @@ def _traza_url(traza_id: str) -> str | None:
     if not proyecto or not re.fullmatch(r"[0-9a-f]{32}", traza_id):
         return None
     return f"https://console.cloud.google.com/traces/list?project={proyecto}&tid={traza_id}"
+
+
+def es_tarjeta(tipo: str | None) -> bool:
+    """El oro trae el tipo en español ("Tarjeta Crédito"); la siembra, como código (`credit_card`)."""
+    plano = unicodedata.normalize("NFKD", (tipo or "").lower()).encode("ascii", "ignore").decode()
+    return "tarjeta" in plano or "card" in plano

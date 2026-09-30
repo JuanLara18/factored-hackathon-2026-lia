@@ -378,3 +378,27 @@ def test_vencimientos_no_crecen_sin_limite() -> None:
     for i in range(chat_web.MAX_VIVAS + 500):
         v.emitir("s", f"int-{i}")
     assert len(v._vivas) <= chat_web.MAX_VIVAS + 1  # pyright: ignore[reportPrivateUsage]
+
+
+def test_turno_vacio_del_agente_se_informa_como_falla() -> None:
+    class Mudo(RuntimeEnProceso):
+        async def _nada(self) -> Any:
+            if False:
+                yield {}
+
+        def turno(self, **kw: Any) -> Any:
+            return self._nada()
+
+    c = _cliente_web(Mudo())
+    r = c.post("/api/sesion", json={"cliente": 0}).json()
+    evs = _correr(c, {"X-Sesion": r["sesion"]}, r["conversacion"], "hola")
+    assert evs[-1]["type"] == "RUN_ERROR" and evs[-1]["code"] == "vacio"
+
+
+def test_tarjeta_en_espanol_y_montos_de_mexico() -> None:
+    from latam_tecnologia.banca.vista import es_tarjeta, monto
+
+    assert es_tarjeta("Tarjeta Crédito") and es_tarjeta("Tarjeta Débito") and es_tarjeta("credit_card")
+    assert not es_tarjeta("Cuenta Ahorro") and not es_tarjeta(None)
+    assert monto("1250", "USD", "MX") == "1,250.00"
+    assert monto("1250", "COP", "CO") == "1.250,00"

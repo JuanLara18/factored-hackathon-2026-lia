@@ -19,3 +19,11 @@ Para el agente que tiene `tecnologia/src`. Probado contra https://latam-chat-478
 
 - Visto 1 de 5 corridas de la ficha inicial; además una vez respondió "No pude completar la acción" en el primer turno (llamada malformada de Gemini 2.5, ya conocida).
 - El widget ahora muestra el aviso de falla en ese caso, pero conviene que el servidor emita siempre un `RUN_ERROR` o un texto.
+
+## Estado (30 sep, tarde)
+
+1. Resuelto: `es_tarjeta` acepta "Tarjeta Crédito" y `credit_card` (prueba en `test_revision_backend.py`).
+2. Resuelto: nueva tabla `oro_operacional_saldos_productos` (solo la lee la banca, no el agente) y `resumen` trae
+   `saldo` y `limite` con el formato del país.
+3. Resuelto: un turno del agente sin texto, ficha ni aprobación termina en `RUN_ERROR` con código `vacio`; además el
+   proveedor nativo de Google eliminó las llamadas malformadas.

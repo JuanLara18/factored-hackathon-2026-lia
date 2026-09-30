@@ -1,0 +1,75 @@
+apiVersion: v3.0.2
+kind: DataContract
+id: urn:latam-bank:oro_operacional_saldos_productos
+name: oro_operacional_saldos_productos
+version: 1.0.0
+status: active
+domain: datos
+dataProduct: oro_operacional
+tenant: latam-bank
+description:
+  purpose: "Saldo y cupo de los productos del cliente para la banca en línea; no lo leen las herramientas del agente"
+  limitations: "Fuente sintética del organizador; sin PII; sin is_fraud ni fraud_score. Corte a AS_OF (fecha_corte)."
+  usage: "Solo lectura desde la instantánea publicada de oro operacional, nunca desde plata ni bronce."
+team:
+  name: VP Datos
+servers:
+  - server: produccion
+    type: bigquery
+    project: latam-bank-hackaton-2026
+    dataset: latam_bank
+schema:
+  - name: oro_operacional_saldos_productos
+    physicalName: oro_operacional_saldos_productos
+    physicalType: table
+    description: "product_id|Una fila por producto con cliente existente"
+    properties:
+      - name: product_id
+        logicalType: string
+        description: "Llave del producto"
+        required: true
+        primaryKey: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"
+      - name: customer_id
+        logicalType: string
+        description: "Solo para filtrar por la sesión"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"
+      - name: currency
+        logicalType: string
+        description: "Moneda ISO 4217"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"
+      - name: saldo
+        logicalType: number
+        description: "Saldo actual del producto"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"
+      - name: limite
+        logicalType: number
+        description: "Cupo; solo tarjetas de crédito"
+        required: false
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"
+      - name: fecha_corte
+        logicalType: date
+        description: "Corte AS_OF"
+        required: true
+        classification: confidencial
+        customProperties:
+          - property: consumido_por
+            value: "banca"

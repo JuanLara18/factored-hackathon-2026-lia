@@ -48,6 +48,13 @@ models:
           - dominio_canonico:
               dominio: estado_producto
               config: {severity: warn}
+  - name: oro_operacional_saldos_productos
+    description: "Saldo y cupo por producto; solo lo lee la banca en línea, no las herramientas del agente"
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
   - name: oro_operacional_vista_cliente_segura
     description: "Cliente sin segmento, acento ni contacto"
     columns:

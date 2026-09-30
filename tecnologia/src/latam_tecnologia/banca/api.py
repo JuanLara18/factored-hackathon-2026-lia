@@ -28,6 +28,7 @@ from latam_tecnologia.banca.vista import (
     PAISES,
     en_utc,
     enmascarar,
+    es_tarjeta,
     fecha,
     final,
     hora,
@@ -170,7 +171,7 @@ def crear_router(
             "categoria": tx.categoria,
             "tipo": tx.tipo,
             "canal": tx.canal,
-            "monto": monto(tx.monto.monto, tx.monto.moneda),
+            "monto": monto(tx.monto.monto, tx.monto.moneda, demo.pais_de(cliente)),
             "moneda": tx.monto.moneda,
             "estado": tx.estado,
             "pais": tx.pais,
@@ -232,6 +233,13 @@ def crear_router(
             return s
         cliente = s.autenticada.cliente_id
         pais = demo.pais_de(cliente)
+        leer_saldos = getattr(demo.lectura, "saldos", None)
+        leidos: object = leer_saldos(cliente) if callable(leer_saldos) else {}
+        saldos = cast(dict[str, tuple[Any, Any]], leidos) if isinstance(leidos, dict) else {}
+
+        def _dinero(valor: Any, moneda: str | None) -> str | None:
+            return None if valor is None else monto(valor, moneda, pais)
+
         productos = [
             {
                 "producto_ref": pref,
@@ -240,8 +248,8 @@ def crear_router(
                 "final": final(p.product_id),
                 "estado": _estado_producto(cliente, p),
                 "moneda": p.moneda,
-                "saldo": None,
-                "limite": None,
+                "saldo": _dinero(saldos.get(p.product_id, (None, None))[0], p.moneda),
+                "limite": _dinero(saldos.get(p.product_id, (None, None))[1], p.moneda),
             }
             for pref, p in _productos(s).items()
         ]
@@ -381,7 +389,7 @@ def crear_router(
                     "caso_ref": c.caso_ref,
                     "tx_ref": ref("tx", cliente, c.transaccion_id),
                     "descripcion": textos.describir_comercio(tx.comercio, tx.tipo) if tx else "Movimiento",
-                    "monto": monto(c.monto, c.moneda),
+                    "monto": monto(c.monto, c.moneda, demo.pais_de(cliente)),
                     "moneda": c.moneda,
                     "estado": c.estado,
                     "abierto_en": c.abierto_en.isoformat(),
@@ -407,7 +415,7 @@ def crear_router(
         producto = _productos(s).get(producto_ref)
         if producto is None:
             return _error("producto_desconocido", 404)
-        if "card" not in (producto.tipo or "").lower():
+        if not es_tarjeta(producto.tipo):
             return _error("no_es_tarjeta", 400)
         ya = _estado_producto(cliente, producto) == "bloqueada"
         try:

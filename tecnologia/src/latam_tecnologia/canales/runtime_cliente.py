@@ -255,6 +255,12 @@ async def flujo_agui(
             abierto = True
             yield _evento(TextMessageStartEvent(message_id=mensaje_id))
         yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
+    if not abierto and not interrupciones and not herramientas:
+        # Sin texto, ficha ni aprobación: el cliente no puede quedar frente a un turno vacío.
+        traza.append("runtime_turno_vacio")
+        fallo()
+        yield _evento(RunErrorEvent(message=MENSAJE_FALLA, code="vacio"))
+        return
     if abierto:
         yield _evento(TextMessageEndEvent(message_id=mensaje_id))
     for e in herramientas:

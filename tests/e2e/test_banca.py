@@ -162,10 +162,6 @@ def test_bloqueo_tarjeta_confirmado(abrir):
                 boton.click()
                 page.click("#confirmar-si")
                 page.wait_for_selector("#confirmar:not([open])", state="attached")
-                if "No pudimos bloquear" in page.text_content("#detalle-resultado"):
-                    pytest.xfail(
-                        "backend: bloqueo responde 400 no_es_tarjeta (tecnologia/web/HALLAZGOS_BACKEND.md, punto 1)"
-                    )
                 assert "Bloqueamos la tarjeta" in page.text_content("#detalle-resultado")
                 assert page.locator("#productos .bn-bloqueado").count() >= 1
                 assert vigia.limpio() == []

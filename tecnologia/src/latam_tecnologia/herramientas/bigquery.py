@@ -102,6 +102,21 @@ class LecturaBigQuery:
             for f in filas
         )
 
+    def saldos(self, cliente_id: str) -> dict[str, tuple[Decimal | None, Decimal | None]]:
+        """Saldo y cupo por producto para la banca en línea; no es una herramienta del agente."""
+        filas = self._consultar(
+            f"select product_id, saldo, limite from {self._prefijo}.oro_operacional_saldos_productos"
+            " where customer_id = @cliente",
+            cliente=cliente_id,
+        )
+        return {
+            str(f["product_id"]): (
+                None if f["saldo"] is None else _decimal(f["saldo"]),
+                None if f["limite"] is None else _decimal(f["limite"]),
+            )
+            for f in filas
+        }
+
     def pais_cuenta(self, cliente_id: str) -> str | None:
         """País de la cuenta (vista segura, sin PII). No sale de la moneda: en México se opera en USD."""
         filas = self._consultar(
