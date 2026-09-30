@@ -1,1 +1,1 @@
-output "datasets" { value = keys(google_bigquery_dataset.d) }
+output "datasets" { value = [for d in google_bigquery_dataset.d : d.dataset_id] }

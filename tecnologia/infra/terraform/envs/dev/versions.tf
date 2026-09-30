@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9"
 
   required_providers {
     google = {
@@ -8,11 +8,9 @@ terraform {
     }
   }
 
-  # Bucket creado en el arranque manual (ARRANQUE.md). Se pasa con:
-  #   terraform init -backend-config="bucket=<bucket>"
-  backend "gcs" {
-    prefix = "dev"
-  }
+  # Sin backend remoto: no existe un bucket de estado. El estado es local (ignorado por git) y
+  # importar.tf adopta lo desplegado a mano. Para un equipo, crear un bucket con versionado y
+  # añadir backend "gcs".
 }
 
 provider "google" {

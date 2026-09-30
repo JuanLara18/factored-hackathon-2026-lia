@@ -1,40 +1,51 @@
-# Arranque manual de Google Cloud (TEC-0.6)
+# Infraestructura de Google Cloud
 
-Lo único manual es esto (R-TEC-15). Todo lo demás lo declara Terraform en `terraform/`. Regla de la decisión
-D-29: crédito de prueba de Google Cloud, sin activar la cuenta completa, gasto real menor a US$20.
+Proyecto `latam-bank-hackaton-2026` (número `47808508188`), facturación abierta con presupuesto de COP 20.000
+al mes (D-29, D-32). Lo que hay desplegado se creó a mano y con `gcloud`; `terraform/envs/dev` lo declara y lo
+adopta con `importar.tf`. **Terraform no se ha aplicado nunca**: `terraform validate` pasa (1.16, proveedor
+`google ~> 6.0`), pero el `plan` contra el proyecto real está pendiente de que lo corra el dueño.
 
-1. `gcloud auth login` y `gcloud auth application-default login` con la cuenta del equipo.
-2. Crear el proyecto y vincularlo a la cuenta de facturación de prueba (consola o `gcloud projects create`
-   y `gcloud billing projects link`). Anotar el id, el número del proyecto y el id de la cuenta de facturación.
-3. Crear el bucket de estado con versionado (nombre único global), por ejemplo
-   `gcloud storage buckets create gs://<bucket> --location=us-central1 --uniform-bucket-level-access`
-   y `gcloud storage buckets update gs://<bucket> --versioning`. El módulo `modules/estado` documenta la
-   misma configuración por si se quiere importarlo.
-4. Habilitar a mano solo lo necesario para que Terraform arranque:
-   `gcloud services enable serviceusage.googleapis.com cloudresourcemanager.googleapis.com cloudbilling.googleapis.com billingbudgets.googleapis.com`.
-5. `cd terraform/envs/dev`, copiar `terraform.tfvars.example` a `terraform.tfvars` y completar los valores.
-6. `terraform init -backend-config="bucket=<bucket>"`, `terraform plan` y `terraform apply`. El presupuesto
-   con alertas al 50, 80 y 100% se crea antes que cualquier recurso con costo (R-TEC-18).
-7. Comprobar que llegó la alerta de prueba al correo y anotarlo en la bitácora.
-8. Con la salida `wif_proveedor` y `cuenta_cd`, configurar los secretos de repositorio de GitHub que usa la
-   acción de autenticación (sin llaves, R-TEC-21). La condición limita el acceso a este repositorio y a `main`.
+## Qué declara Terraform
 
-Los valores de los secretos (Twilio, Meta, LiteLLM) se cargan con `gcloud secrets versions add`, nunca en
-Terraform ni en git.
+| Módulo | Recursos |
+|---|---|
+| `presupuesto` | presupuesto mensual `latam-bank-hackaton-2026 tope` en COP 20.000, con alertas al 25, 50 y 100% del gasto y al 100% del pronóstico |
+| `proyecto` | APIs que usa la plataforma |
+| `firestore` | base `(default)` en `nam5`, modo nativo (D-33: casos, bloqueos, traspasos y mensajes) |
+| `chat` | cuenta `latam-chat@` (`bigquery.jobUser`, `aiplatform.user`, `cloudtrace.agent`, `datastore.user`), bucket `<proyecto>-staging` con borrado a los 7 días, servicio Cloud Run `latam-chat` (1 vCPU, 1 GiB, 0 a 1 instancia, concurrencia 40, 300 s, puerto 7860, acceso público) con sus variables de entorno |
+| `bigquery` | `latam_bank` (capas como prefijo), `latam_seguridad` (llave de seudonimización) y `latam_pruebas` (fallos de dbt); `latam-chat@` lee `latam_bank` con `dataViewer` a nivel de dataset y no ve `latam_seguridad` |
+
+## Qué no declara y por qué
+
+- **Agent Runtime.** El agente de disputas lo despliega el script `agent_runtime/desplegar.py` con el SDK (`just
+  desplegar-agente`), porque el recurso `reasoningEngines` se empaqueta desde el código. El recurso actual se pasa a
+  Cloud Run en `LATAM_AGENT_RUNTIME_RECURSO` (variable `agent_runtime_recurso`).
+- **La imagen de `latam-chat`.** La construye `just desplegar-chat-run-agente` con `gcloud run deploy --source` (Cloud
+  Build); Terraform ignora la imagen. El repositorio `cloud-run-source-deploy` de Artifact Registry y el bucket
+  `run-sources-*` los crea `gcloud` solo.
+- **Sitio.** Firebase Hosting se despliega con la CLI de Firebase (ver `presidencia/ESTADO.md`).
+- **Estado remoto.** No existe bucket de estado: el estado es local. Para trabajar en equipo hay que crear uno con
+  versionado y añadir `backend "gcs"`.
+- **Retirado** por no existir en el proyecto: Cloud SQL, Workload Identity Federation y cuenta de despliegue, Cloud Run
+  Job `pipeline-datos`, Artifact Registry propio y Secret Manager. El pipeline de datos corre desde la máquina del
+  dueño (dbt y la carga usan sus credenciales).
+
+## Adoptar lo desplegado (sin aplicar)
+
+```bash
+cd tecnologia/infra/terraform/envs/dev
+cp terraform.tfvars.example terraform.tfvars      # billing_account y dueno_email
+terraform init
+terraform plan                                    # leer el plan: debe adoptar sin destruir
+```
+
+El presupuesto se importa a mano (ver el final de `importar.tf`). Dos diferencias a tener presentes: los datasets
+tienen vencimiento por defecto de 60 días (7 en `latam_pruebas`) y las tablas vigentes vencen el 28 de noviembre de 2026.
 
 ## Costo
 
-Cloud Run escala a cero. Cloud SQL queda apagado por defecto (`crear_cloud_sql = false`); al activarlo
-(TEC-11.2) usa `db-f1-micro` zonal sin respaldos, y `cloud_sql_encendida = false` lo apaga (demo-off).
-Para desmontar: poner `proteccion_borrado = false` en el módulo `datos` y ejecutar `terraform destroy`
-(R-TEC-20); el bucket de estado no forma parte del desmontaje.
+Cloud Run escala a cero con una instancia como máximo; Agent Runtime escala a cero; Firestore cabe en el nivel
+gratuito a este volumen. La evaluación completa del agente en GEAP costó unos US$0,07.
 
-## Datos en Google Cloud (D-30)
-
-Terraform crea dos datasets de BigQuery: `latam_bank`, con la capa como prefijo en el nombre de cada tabla
-(`bronce_`, `plata_`, `oro_`, `platino_`), y `latam_seguridad`, y el Cloud Run Job `pipeline-datos` (validaciones y dbt sobre
-BigQuery). `latam_seguridad` solo lo lee la cuenta del pipeline. Las tablas crudas deben existir en `latam_bank` con prefijo `bronce_` antes de correr el pipeline (las deja un proceso externo).
-
-Los servicios usan Vertex AI (Gemini y Model Garden como servicio) con el rol `roles/aiplatform.user`; la
-API `aiplatform` se habilita en el módulo `proyecto`. Si un modelo de Model Garden pide aceptar términos,
-se hace una vez en la consola.
+Los modelos se sirven desde Gemini Enterprise Agent Platform (Vertex AI) con `roles/aiplatform.user`; si un modelo de
+Model Garden pide aceptar términos, se hace una vez en la consola.

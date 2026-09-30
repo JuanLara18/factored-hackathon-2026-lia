@@ -1,19 +1,20 @@
-variable "project_id" { type = string }
 variable "project_number" { type = string }
 variable "billing_account" { type = string }
-variable "prefijo" { type = string }
-variable "correos_alerta" { type = list(string) }
+variable "nombre" {
+  type    = string
+  default = "latam-bank-hackaton-2026 tope"
+}
 variable "moneda" {
   type    = string
-  default = "USD"
+  default = "COP"
 }
 variable "monto" {
-  description = "Tope del presupuesto en la moneda (D-29: US$250 de credito de prueba)."
+  description = "Tope mensual en la moneda de la cuenta (D-29: gasto real menor a US$20, unos COP 80.000; el tope es COP 20.000)."
   type        = number
-  default     = 250
+  default     = 20000
 }
 variable "umbrales" {
-  description = "Fracciones del monto que disparan alerta (R-TEC-18)."
+  description = "Umbrales sobre el gasto actual; el pronóstico se alerta al 100% aparte."
   type        = list(number)
-  default     = [0.5, 0.8, 1.0]
+  default     = [0.25, 0.5, 1.0]
 }

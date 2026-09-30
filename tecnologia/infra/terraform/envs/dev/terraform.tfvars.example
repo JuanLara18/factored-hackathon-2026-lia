@@ -1,13 +1,11 @@
 # Copiar a terraform.tfvars (ignorado por git). Valores de ejemplo, no reales.
-project_id      = "mi-proyecto-hackathon"
-project_number  = "123456789012"
 billing_account = "XXXXXX-XXXXXX-XXXXXX"
-correos_alerta  = ["equipo@example.com"]
-bucket_oro      = "mi-proyecto-hackathon-oro"
+dueno_email     = "dueno@example.com"
 
-
-# region              = "us-central1"
-# presupuesto_monto   = 250     # US$ de credito de prueba (D-29)
-# crear_cloud_sql     = false   # activar en TEC-11.2
-# cloud_sql_encendida = true    # false = demo-off
-# bigquery_location    = "US"
+# Ya tienen el valor desplegado por defecto:
+# project_id            = "latam-bank-hackaton-2026"
+# project_number        = "47808508188"
+# presupuesto_monto     = 20000   # COP por mes (D-29, D-32)
+# trabajador_version    = "0.2.0"
+# agent_runtime_recurso = "projects/<numero>/locations/us-central1/reasoningEngines/<id>"
+# operador_codigo       = "experto-xxxxxx"   # o TF_VAR_operador_codigo

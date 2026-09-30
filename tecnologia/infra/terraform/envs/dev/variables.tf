@@ -1,8 +1,13 @@
-variable "project_id" { type = string }
-variable "project_number" { type = string }
+variable "project_id" {
+  type    = string
+  default = "latam-bank-hackaton-2026"
+}
+variable "project_number" {
+  type    = string
+  default = "47808508188"
+}
 variable "billing_account" { type = string }
-variable "correos_alerta" { type = list(string) }
-variable "bucket_oro" { type = string }
+variable "dueno_email" { type = string }
 variable "region" {
   type    = string
   default = "us-central1"
@@ -11,23 +16,30 @@ variable "entorno" {
   type    = string
   default = "dev"
 }
-variable "repositorio_github" {
-  type    = string
-  default = "JuanLara18/factored-hackathon-2026"
-}
 variable "presupuesto_monto" {
   type    = number
-  default = 250
+  default = 20000
 }
-variable "crear_cloud_sql" {
-  type    = bool
-  default = false
-}
-variable "cloud_sql_encendida" {
-  type    = bool
-  default = true
+variable "presupuesto_moneda" {
+  type    = string
+  default = "COP"
 }
 variable "bigquery_location" {
   type    = string
   default = "US"
+}
+variable "trabajador_version" {
+  description = "Debe coincidir con ia/agentes/trabajadores/disputas.yaml."
+  type        = string
+  default     = "0.2.0"
+}
+variable "agent_runtime_recurso" {
+  description = "projects/<numero>/locations/us-central1/reasoningEngines/<id>, que imprime desplegar.py."
+  type        = string
+  default     = "projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272"
+}
+variable "operador_codigo" {
+  type      = string
+  default   = null
+  sensitive = true
 }
