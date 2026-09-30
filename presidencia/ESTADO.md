@@ -72,6 +72,19 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 
+## En curso: banco de punta a punta (D-33)
+
+Cuatro ramas en paralelo contra el contrato `tecnologia/web/API_BANCA.md`; Firestore nativo (`nam5`) ya existe y
+`latam-chat@` tiene `roles/datastore.user`. Al terminar: fusionar primero la API, luego los tres frentes, correr
+`just check`, redesplegar agente, chat y sitio, y probar el recorrido completo (banca, reclamo, traspaso, consola).
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/tecnologia-tec-6-api-banca` | `../fh-banca-api` | endpoints de banca y consola, banco en Firestore (arregla el crédito provisional duplicado), `PaqueteTraspaso` de 19 campos |
+| `feature/clientes-cli-7-banca-web` | `../fh-banca-web` | banca en línea (productos, movimientos, detalle, reclamar, bloquear, mis reclamos) y widget del asistente |
+| `feature/clientes-cli-8-sitio-publico` | `../fh-sitio2` | sitio público realista por país: marca, productos, ayuda, seguridad, contacto |
+| `feature/clientes-cli-4-consola-experto` | `../fh-operador` | consola del experto: cola por prioridad, paquete de traspaso, mismo hilo, resolución con etiqueta |
+
 ## Pendiente de desplegar
 
 Todo está fusionado en `develop`; producción sigue con el agente anterior hasta redesplegar:
