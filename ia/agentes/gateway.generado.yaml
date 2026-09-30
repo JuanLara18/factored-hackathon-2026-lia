@@ -8,7 +8,7 @@ model_list:
     max_tokens: 200
 - model_name: disputas
   litellm_params:
-    model: vertex_ai/gemini-2.5-flash-lite
+    model: vertex_ai/gemini-3.1-flash-lite
     vertex_project: os.environ/LATAM_GCP_PROJECT
     vertex_location: os.environ/LATAM_GEAP_LOCATION
     temperature: 0.0
@@ -58,7 +58,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.2.0
+    latam.trabajador.version: 0.3.0
     entorno: local
 - key_alias: lb-disputas-ci
   models:
@@ -68,7 +68,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.2.0
+    latam.trabajador.version: 0.3.0
     entorno: ci
 - key_alias: lb-disputas-dev
   models:
@@ -78,7 +78,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.2.0
+    latam.trabajador.version: 0.3.0
     entorno: dev
 - key_alias: lb-disputas-demo
   models:
@@ -88,7 +88,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.2.0
+    latam.trabajador.version: 0.3.0
     entorno: demo
 - key_alias: lb-redaccion-local
   models:

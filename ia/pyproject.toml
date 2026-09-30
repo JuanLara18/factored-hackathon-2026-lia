@@ -7,8 +7,9 @@ dependencies = [
     "latam-clientes",
     "latam-comun",
     "latam-tecnologia",
+    "pandas>=2.2",
     "pydantic>=2.8",
-    "pydantic-ai-slim[openai]>=2.51.0",
+    "pydantic-ai-slim[google,openai]>=2.51.0",
     "pyyaml>=6",
 ]
 

@@ -48,6 +48,7 @@ DISTRIBUCIONES = (
     "pydantic",
     "pydantic-ai-slim",
     "openai",
+    "google-genai",
     "httpx",
     "google-auth",
     "google-cloud-bigquery",
@@ -57,7 +58,7 @@ DISTRIBUCIONES = (
     "psycopg",
     "pyyaml",
 )
-EXTRAS = {"pydantic-ai-slim": "[openai]", "psycopg": "[binary]"}
+EXTRAS = {"pydantic-ai-slim": "[google,openai]", "psycopg": "[binary]"}
 VARIABLE_RECURSO = "LATAM_AGENT_RUNTIME_RECURSO"
 RECURSO_VALIDO = re.compile(r"^projects/[^/]+/locations/[^/]+/reasoningEngines/[^/]+$")
 CLAVE_VALIDA = re.compile(r"^[a-z][a-z0-9_-]{0,62}$")
@@ -97,7 +98,7 @@ def entorno(proyecto: str, version: str) -> dict[str, str]:
         "LATAM_TRABAJADOR_VERSION": version,
         # Gemini 3 por el endpoint compatible con OpenAI pierde la thought_signature de las herramientas;
         # hasta pasar al proveedor nativo de Google, el agente usa 2.5 Flash-Lite.
-        "LATAM_MODELO": os.environ.get("LATAM_MODELO", "gemini-2.5-flash-lite"),
+        "LATAM_MODELO": os.environ.get("LATAM_MODELO", "gemini-3.1-flash-lite"),
     }
 
 
