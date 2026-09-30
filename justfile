@@ -1,3 +1,6 @@
+# dbt corre aislado del lock del workspace (sus pines de google-cloud-aiplatform chocan con pydantic-ai[google])
+dbt := "uvx --from dbt-bigquery==1.12.1 dbt"
+
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # Instala las dependencias de todas las caras
@@ -65,11 +68,11 @@ inventario:
 
 # Datos: crea la llave de seudonimización (una vez), construye plata, oro y platino en BigQuery y corre los tests
 dbt-build:
-    cd datos/dbt; uv run dbt run-operation crear_llave; uv run dbt build
+    cd datos/dbt; {{dbt}} run-operation crear_llave; {{dbt}} build
 
 # Datos: solo los casos del fixture de actualización (unit tests de dbt, sin tocar tablas reales)
 dbt-test-fixture:
-    cd datos/dbt; uv run dbt test --select "test_type:unit"
+    cd datos/dbt; {{dbt}} test --select "test_type:unit"
 
 # IA: arnés de evaluación del agente de disputas; escribe ia/evaluacion/reportes/ultimo.json y ultimo.md
 evaluar *args:
