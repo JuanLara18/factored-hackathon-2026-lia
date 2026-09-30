@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" role="img" aria-label="Tarjeta protegida por un escudo">
+  <title>Tarjeta protegida por un escudo</title>
+  <circle cx="270" cy="215" r="170" fill="#0a5a7a" opacity=".10"/>
+  <circle cx="270" cy="215" r="115" fill="#0a5a7a" opacity=".10"/>
+  <g transform="rotate(-8 230 190)">
+    <rect x="80" y="110" width="290" height="180" rx="20" fill="#0b2a3f"/>
+    <rect x="80" y="110" width="290" height="180" rx="20" fill="none" stroke="#7cc0e6" stroke-opacity=".5" stroke-width="2"/>
+    <rect x="110" y="150" width="46" height="34" rx="6" fill="#7cc0e6" opacity=".85"/>
+    <path d="M110 220h150M110 244h90" stroke="#ffffff" stroke-opacity=".55" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="318" cy="150" r="16" fill="#5eead4"/>
+    <circle cx="336" cy="150" r="16" fill="#7cc0e6" opacity=".8"/>
+  </g>
+  <g transform="translate(300 170)">
+    <path d="M90 0l90 34v80c0 60-40 104-90 128C40 218 0 174 0 114V34z" fill="#0a5a7a"/>
+    <path d="M90 0l90 34v80c0 60-40 104-90 128z" fill="#ffffff" opacity=".10"/>
+    <path d="M90 0l90 34v80c0 60-40 104-90 128C40 218 0 174 0 114V34z" fill="none" stroke="#5eead4" stroke-width="3"/>
+    <path d="M52 118l28 28 52-58" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <circle cx="60" cy="80" r="6" fill="#5eead4"/>
+  <circle cx="470" cy="70" r="9" fill="#7cc0e6" opacity=".7"/>
+  <circle cx="450" cy="380" r="5" fill="#5eead4"/>
+</svg>
