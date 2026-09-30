@@ -28,11 +28,43 @@ es_extranjera, tarjeta_final, reclamable, caso_ref}`. `descripcion` es el comerc
 | Método y ruta | Entrada | Salida |
 |---|---|---|
 | `POST /api/operador/ingresar` | `{codigo}` (código de demostración de `LATAM_OPERADOR_CODIGO`) | `{sesion_operador}` en `X-Operador` |
-| `GET /api/operador/cola` | | `[{id_traspaso, prioridad, motivo, motivo_texto, pais, idioma, registro, canal, creado_en, estado, tomado_por}]`, ordenada por prioridad y antigüedad |
-| `GET /api/operador/traspasos/{id}` | | `PaqueteTraspaso` con los 19 campos de la sección 2.5.2 de `clientes/definicion.md`, cada hecho con fuente y hora, y la `interpretacion` marcada como de la IA |
+| `GET /api/operador/cola` | | `[{id_traspaso, prioridad, motivo, motivo_texto, pais, idioma, registro, canal, creado_hace_s, estado, tomado_por}]`, ordenada por prioridad y antigüedad; solo `en_cola` y `tomado` |
+| `GET /api/operador/traspasos/{id}` | | la vista del `PaqueteTraspaso` (forma final abajo) |
 | `POST /api/operador/traspasos/{id}/tomar` | | `{estado: "tomado"}` |
 | `POST /api/operador/traspasos/{id}/mensaje` | `{texto}` | `{id}` (entra al mismo hilo del cliente) |
-| `POST /api/operador/traspasos/{id}/resolver` | `{resultado, etiqueta_correccion?, nota}` | `{estado: "resuelto"}` |
+| `POST /api/operador/traspasos/{id}/resolver` | `{resultado, etiqueta_correccion?, nota}` (`resultado`: `resuelto`, `radicado`, `escalado` o `sin_accion`; `etiqueta_correccion` es un objeto de etiquetas del equipo) | `{estado: "resuelto"}` |
+
+### Forma de `GET /api/operador/traspasos/{id}`
+
+Es la de `tecnologia/web/sitio/operador/fixtures/traspaso_*.json` (una prueba compara las claves). `estado` es
+`en_cola`, `tomado` o `resuelto`; las horas son `HH:MM` de Bogotá y los plazos vienen como `vence_en_s`.
+Claves: `id_traspaso, hilo_id, caso_id, prioridad (P1 a P4), motivo {codigo, texto, regla {id, version}},
+cola_destino, idioma, registro, pais_cuenta, canal_actual, canales_usados, creado_hace_s, estado, tomado_por,
+identidad {nivel, metodo, hora} o null, que_hacer_primero [{paso, regla}], compromisos_comunicados [{texto, hora}],
+solicitud {cita, idioma}, interpretacion {motivo, urgencia, entidades, confianza}, hechos_verificados
+[{texto, fuente, hora}], acciones_realizadas [{accion, resultado, hora}], acciones_no_realizadas [{accion, motivo}],
+conflictos [{tipo, declarado, registro}], preguntas_abiertas [{pregunta, a_quien, bloquea}], plazos_en_curso
+[{regla, inicio, vence_en_s}], evidencia {traza_url, reglas, plantillas}, transcripcion [{autor, texto, en}],
+mensajes [{id, autor, texto, en}]`.
+
+- `fuente` de un hecho: `transacciones`, `productos`, `casos` o `conversacion` (cuando no hay movimiento); nunca
+  texto del modelo. `interpretacion` es la de la IA: `confianza` es `null` mientras el modelo no la reporte.
+- `prioridad` es la mayor entre la del motivo (lista cerrada de 2.5.1) y la del caso (monto sobre el umbral: P2;
+  urgente: P1). `motivo.regla` sale de `policy/v1` (`TRA-nn` o `ESC-nn`) o es `null` si el motivo no la tiene.
+- `traza_url` es `null` si no hay traza real. Sin nombre, documento, número de tarjeta, segmento ni `fraud_score`.
+- `mensajes` trae el hilo compartido (cliente y persona); la consola lo sondea con este mismo GET.
+- Tomar, escribir y resolver exigen que el traspaso lo haya tomado quien llama (409 si no); `tomado_por` es un alias
+  ("Experto 1"). Errores: `{error}` con 401 (sesión), 404 (no existe o no es suyo), 409 (estado) y 400 (entrada).
+
+### Notas del lado del cliente
+
+- `hora` y `en` de los mensajes van como `HH:MM` de Bogotá; `id` de mensaje es ordenable (sirve de `desde`).
+- `POST /api/traspaso` (botón de persona del chat) acepta `{conversacion}` para la conversación abierta con
+  `reclamar`; sin él usa la de la sesión. `POST /api/agui` acepta ese `threadId`. Otra conversación responde 403.
+- `reclamar` responde 409 `{error: "ya_reclamado", caso_ref}` si el movimiento ya tiene caso y 409
+  `no_reclamable` si su estado no permite disputa; pedirlo dos veces devuelve la misma conversación.
+- `resumen` incluye también `cliente {alias, pais, moneda, registro}`; `producto.tipo` es el código
+  (`credit_card`) y `etiqueta` el texto en español.
 
 ## Almacén
 
