@@ -72,26 +72,23 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
 
 
-## En curso: banco de punta a punta (D-33)
+## Banco de punta a punta (D-33), en producción
 
-Los tres frentes (banca en línea con widget, sitio público por país y consola del experto, todos con modo `?demo=local`) ya están en `develop`; falta la API. Ramas contra el contrato `tecnologia/web/API_BANCA.md`; Firestore nativo (`nam5`) ya existe y
-`latam-chat@` tiene `roles/datastore.user`. Al terminar: fusionar primero la API, luego los tres frentes, correr
-`just check`, redesplegar agente, chat y sitio, y probar el recorrido completo (banca, reclamo, traspaso, consola).
+- **Sitio público** https://latam-bank-hackaton-2026.web.app: marca, selector MX/CO/AR, productos, ayuda, seguridad,
+  contacto, reclamos, transparencia y privacidad.
+- **Banca en línea** `/banca/`: seis clientes de demostración con historia (dos por país), productos, movimientos
+  del oro operacional, detalle con "No reconozco este cargo" y "Bloquear tarjeta", asistente flotante, `/banca/reclamos`.
+- **Consola del experto** `/operador/`: cola por prioridad, paquete de traspaso de 19 campos, mismo hilo, resolución.
+  El código de acceso es `LATAM_OPERADOR_CODIGO` de Cloud Run
+  (`gcloud run services describe latam-chat --region us-central1 --format="value(spec.template.spec.containers[0].env)"`).
+- **Casos, bloqueos, traspasos y mensajes** en Firestore; los comparten Cloud Run y Agent Runtime.
+- **Probado de punta a punta en producción (29 sep):** ingresar, movimientos, reclamar con la transacción fijada, aprobar,
+  "Mis reclamos", pedir persona, cola con país correcto, tomar, mensaje visible para el cliente y resolver.
+- Todos los frentes tienen modo `?demo=local` con fixtures para revisarlos sin backend.
+- Provisionales por definir con Gobierno: tiempos de atención por prioridad (P1 120 s a P4 3600 s) y las 48 h del
+  abono provisional de México.
 
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/tecnologia-tec-6-api-banca` | `../fh-banca-api` | endpoints de banca y consola, banco en Firestore (arregla el crédito provisional duplicado), `PaqueteTraspaso` de 19 campos |
-
-## Pendiente de desplegar
-
-Todo está fusionado en `develop`; producción sigue con el agente anterior hasta redesplegar:
-
-1. Agente: `uv run --with "google-cloud-aiplatform[agent_engines]" --with cloudpickle python
-   tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
-   projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272` (prompt 1.1.0, trabajador 0.2.0,
-   ficha visual y eventos de herramientas).
-2. Chat: `just desplegar-chat-run` con `LATAM_TRABAJADOR_VERSION=0.2.0` y el mismo `LATAM_AGENT_RUNTIME_RECURSO`.
-3. Probar una disputa en el sitio y revisar las trazas.
+## Evaluación del agente
 
 **Evaluación en GEAP (29 sep, `ia/evaluacion/reportes/geap_2026-09-29.md`):** 12 de 21 escenarios (57%), 0 inseguros,
 0 violaciones de registro y de enmascarado; trayectoria exacta 52% y en orden 62% en el GenAI Evaluation Service;
