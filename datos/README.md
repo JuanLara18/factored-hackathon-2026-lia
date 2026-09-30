@@ -61,8 +61,8 @@ ruta relativa a `s3://<bucket>/data/`, bytes, sha256, filas de datos, tabla dest
 recomputa la cadena y sale con 1 si alguien editó un manifiesto viejo. La primera corrida (13 de 13 tablas con
 `coincide = true`) se calculó sobre la carga ya hecha: su `job_id` es `null` porque esa carga se hizo antes de que el cargador lo
 registrara. El cargador ahora escribe a `bronce_<t>_nuevo`, compara con las filas de los CSV y solo entonces
-reemplaza la tabla vigente (si no cuadra, la borra y no toca la vigente). Límite del sandbox: recargar `digital_events` (3,9 GB) necesita
-espacio para `_nuevo` y la vigente a la vez, y el tope de 10 GB no lo permite hoy; habría que borrar tablas que no se usan.
+reemplaza la tabla vigente (si no cuadra, la borra y no toca la vigente). Recargar `digital_events` (3,9 GB) necesita espacio para `_nuevo` y la vigente a la vez (unos 8 GB adicionales);
+desde que hay facturación ya no hay tope de 10 GB, solo costo de almacenamiento (centavos al mes).
 
 `just comparar-respaldo` compara `respaldo_20260831` con el espejo por ruta relativa y sha256 (y filas donde difieren) y
 guarda solo el resumen en `platino_comparacion_respaldo` y `manifiestos/comparacion_respaldo.json`. El respaldo no se carga.
@@ -71,7 +71,7 @@ Hallazgo: solo `branches`, `daily_exchange_rates` y `marketing_campaigns` son id
 del organizador (verificado con `aws s3 ls` el 29 sep: 453 objetos; la descarga local está completa); el resto difiere en contenido con conteos de filas distintos en `call_center_interactions`, `campaign_sends`,
 `digital_events` y `transactions`.
 
-**Vencimiento.** Las tablas del sandbox vencen el 2026-11-28. Fuente reproducible: el espejo local
+**Vencimiento.** Las tablas siguen con el vencimiento del sandbox, 2026-11-28 (la facturación ya está abierta, pero el vencimiento no se quitó; `bq update --expiration 0 <tabla>` lo retira). Fuente reproducible: el espejo local
 (`aws s3 sync`) más el manifiesto, que dice qué archivos y qué huellas produjeron cada tabla; con eso se recarga y se verifica.
 `just inventario` deja `platino_inventario_insumos` (clase de procedencia, origen, `AS_OF`); la política de
 actualización está en `POLITICA_ACTUALIZACION.md`.
@@ -84,7 +84,7 @@ Todo vive en el dataset `latam_bank` con prefijo de capa.
 
 | Modelo | Qué es |
 |---|---|
-| `plata_<tabla>` (13) | tipos canónicos con `SAFE_CAST` (dinero `NUMERIC(2)`, fechas `DATE`, marcas `DATETIME`, país ISO 3166), dedup por llave (gana la mayor fecha de actualización, luego la huella de la fila). `plata_digital_events` es **vista** (15,6 M filas) por el tope de 10 GB del sandbox |
+| `plata_<tabla>` (13) | tipos canónicos con `SAFE_CAST` (dinero `NUMERIC(2)`, fechas `DATE`, marcas `DATETIME`, país ISO 3166), dedup por llave (gana la mayor fecha de actualización, luego la huella de la fila). `plata_digital_events` es **vista** (15,6 M filas): se decidió bajo el tope de 10 GB del sandbox y se mantuvo para no duplicar 3,9 GB |
 | `plata_transactions.amount_usd` | si la fuente lo trae vacío (57% de las filas) se recalcula: USD igual al monto, otras monedas por la tasa del día de `plata_daily_exchange_rates`; `amount_usd_origen` marca `fuente`, `igual_monto`, `recalculado_tasa` o `sin_tasa` |
 | `platino_cast_fallidos` | por columna, cuántos valores no vacíos no se pudieron convertir (pasan a NULL en plata). Ya detectó `products.last_transaction_date`, que es marca de tiempo y no fecha |
 | `platino_huerfanos`, `platino_conteos_plata` | llaves huérfanas por relación; filas de bronce contra plata y duplicados descartados |
@@ -99,8 +99,8 @@ huérfano, dueño ajeno, `amount_usd` recalculado, país, seudónimos) como unit
 **Privacidad (C2).** La llave vive en `latam_seguridad.llave` (32 bytes aleatorios, generados dentro de BigQuery por `crear_llave`,
 nunca en el repositorio). Documento, correo y teléfonos (y el número de producto) llegan a plata como `SHA-256(secreto || valor
 normalizado)`; nombres, dirección, fecha de nacimiento, IP y texto libre no pasan. `plata_restringida_clientes` guarda género, estado civil,
-educación y banda de edad solo para auditar equidad. En el sandbox el IAM es de proyecto, así que esa separación es por construcción, no por
-control de acceso; el destino de producción son etiquetas de política (policy tags) en las columnas, vistas autorizadas para oro operacional
+educación y banda de edad solo para auditar equidad. El IAM es de proyecto (`projectReaders` lee todo), así que esa separación es por construcción, no por
+control de acceso; solo `latam-chat@` está acotada, con lectura de `latam_bank` a nivel de dataset y sin acceso a `latam_seguridad`; el destino de producción son etiquetas de política (policy tags) en las columnas, vistas autorizadas para oro operacional
 y acceso a `latam_seguridad` solo para la cuenta del pipeline.
 
 **Recortes.** Sin cuarentena por fila ni lotes (bronce sin `_lote_id`); los dominios canónicos conservan los valores de la fuente (en inglés salvo producto y subcategoría), la traducción es solo etiqueta; las bandas de riesgo son provisionales hasta que Gobierno fije la zona gris; `plata_digital_events` sin conteos de plata.

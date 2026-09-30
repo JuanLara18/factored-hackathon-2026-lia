@@ -10,7 +10,7 @@
 | `src/latam_tecnologia/canales/` | chat (AG-UI), WhatsApp, voz en navegador y teléfono |
 | `src/latam_tecnologia/gateway/` | LiteLLM, Presidio, Model Armor |
 | `web/` | sitio de LATAM Bank, vista del experto, panel de trazas |
-| `infra/terraform/` | Google Cloud como código |
+| `infra/terraform/` | Google Cloud como código: declara lo desplegado (presupuesto, Firestore, `latam-chat`, BigQuery), valida y no se ha aplicado; ver `infra/ARRANQUE.md` |
 | `src/latam_tecnologia/runtime/` | agente de disputas como agente propio de Agent Runtime (`query`, `stream_query`, Sessions) |
 | `infra/agent_runtime/` | `desplegar.py` (paquete, `--dry-run`, despliegue), `iam.sh` (mínimo privilegio) |
 
@@ -36,7 +36,9 @@ Despliegue: `just probar-agente-runtime` (arma y valida, sin API), `just despleg
 permisos. El registro en Agent Registry es automático al desplegar con el SDK.
 
 Cuentas: el chat en Cloud Run usa `latam-chat@` con solo `bigquery.dataViewer` sobre `latam_bank` (a nivel de
-dataset), `bigquery.jobUser`, `aiplatform.user` (invocar el agente, Sessions y modelos) y `cloudtrace.agent`. El
-agente corre con su Agent Identity con permisos análogos. Así se deja de depender de la cuenta de Compute por
-defecto con `roles/editor`.
+dataset), `bigquery.jobUser`, `aiplatform.user` (invocar el agente, Sessions y modelos), `cloudtrace.agent` y
+`datastore.user` (Firestore). El
+agente en Agent Runtime corre con esa misma cuenta (`identity_type: SERVICE_ACCOUNT`): Agent Identity exige que el
+proyecto esté en una organización y no lo está (`iam.sh agente` queda para ese día). Así se deja de depender de la
+cuenta de Compute por defecto con `roles/editor`, que sigue asignada porque Cloud Build la usa.
 

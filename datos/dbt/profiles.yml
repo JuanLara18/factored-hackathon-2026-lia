@@ -1,6 +1,6 @@
 # Sin secretos: la identidad la da gcloud (ADC) o la cuenta de servicio del entorno
 latam_datos:
-  target: sandbox
+  target: sandbox  # nombre histórico: hoy es el proyecto con facturación
   outputs:
     sandbox:
       type: bigquery

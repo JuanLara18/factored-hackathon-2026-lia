@@ -3,8 +3,8 @@
 > **Reemplazada parcialmente por D-30** (`presidencia/decisiones.md`). Todo corre en Google Cloud; la carga
 > queda fuera de alcance y un proceso externo deja el bucket como tablas crudas. Hay un solo dataset,
 > `latam_bank`, con la capa como prefijo del nombre de tabla, y `latam_seguridad` para la llave. Las secciones
-> de abajo siguen como referencia de diseño; donde chocan con esta tabla, manda la tabla. Sandbox sin
-> facturación: 10 GB de tope y las tablas vencen el 2026-11-28.
+> de abajo siguen como referencia de diseño; donde chocan con esta tabla, manda la tabla. Desde el 29 sep
+> hay facturación (ya no rige el tope de 10 GB del sandbox); las tablas siguen venciendo el 2026-11-28.
 >
 > | Antes (zona o dataset) | Ahora | Estado |
 > |---|---|---|
