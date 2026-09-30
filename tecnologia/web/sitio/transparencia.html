@@ -12,15 +12,22 @@
 <body>
 <a class="salto" href="#principal">Ir al contenido</a>
 <header class="cabecera">
-  <div class="contenedor">
-    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
+  <div class="contenedor cabecera-fila">
+    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
     <nav class="nav" aria-label="Principal">
-      <a href="index.html">Inicio</a>
+      <a href="index.html">Personas</a>
+      <a href="productos.html">Productos</a>
       <a href="reclamos.html">Reclamos</a>
-      <a href="transparencia.html" aria-current="page">Transparencia</a>
-      <a href="privacidad.html">Privacidad</a>
-      <a href="chat.html">Chat</a>
+      <a href="seguridad.html">Seguridad</a>
+      <a href="ayuda.html">Ayuda</a>
+      <span class="nav-pronto">Empresas <small>próximamente</small></span>
     </nav>
+    <div class="cabecera-acciones">
+      <label class="pais" for="pais"><span class="visualmente-oculto">País</span>
+        <select id="pais" aria-label="País"><option value="MX">México</option><option value="CO">Colombia</option><option value="AR">Argentina</option></select>
+      </label>
+      <a class="boton primario" href="banca/index.html">Banca en línea</a>
+    </div>
   </div>
 </header>
 <main id="principal">
@@ -53,13 +60,19 @@
 </main>
 <footer class="pie">
   <div class="contenedor">
-    <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026</p>
-    <nav aria-label="Información">
-      <a href="reclamos.html">Reclamos</a>
-      <a href="transparencia.html">Transparencia</a>
-      <a href="privacidad.html">Privacidad</a>
-    </nav>
+    <div class="pie-rejilla">
+      <div class="pie-marca">
+        <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
+        <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026. Nada de este sitio es una oferta real y ninguna acción mueve dinero.</p>
+      </div>
+      <nav aria-label="Productos y ayuda"><h2>Para usted</h2>
+        <a href="productos.html">Productos</a><a href="ayuda.html">Centro de ayuda</a><a href="contacto.html">Contacto</a><a href="banca/index.html">Banca en línea</a></nav>
+      <nav aria-label="Información legal"><h2>Información</h2>
+        <a href="reclamos.html">Reclamos</a><a href="seguridad.html">Seguridad</a><a href="transparencia.html">Transparencia</a><a href="privacidad.html">Privacidad</a></nav>
+    </div>
+    <p class="pie-legal">Demostración sin valor legal. Los textos legales y de privacidad están pendientes de revisión por el área de Gobierno.</p>
   </div>
 </footer>
+<script src="assets/pais.js" defer></script>
 </body>
 </html>

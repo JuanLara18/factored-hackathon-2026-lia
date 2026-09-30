@@ -75,7 +75,17 @@ def _leer(p: Path) -> _Pagina:
 
 def test_hay_paginas() -> None:
     nombres = {p.name for p in PAGINAS}
-    assert {"index.html", "reclamos.html", "transparencia.html", "privacidad.html", "chat.html"} <= nombres
+    assert {
+        "index.html",
+        "reclamos.html",
+        "transparencia.html",
+        "privacidad.html",
+        "chat.html",
+        "productos.html",
+        "ayuda.html",
+        "seguridad.html",
+        "contacto.html",
+    } <= nombres
 
 
 @pytest.mark.parametrize("pagina", PAGINAS, ids=lambda p: p.name)
@@ -95,6 +105,8 @@ def test_enlaces_internos_existen(pagina: Path) -> None:
     for ref in p.enlaces + p.recursos:
         if re.match(r"^(https?:|mailto:|#)", ref):
             continue
+        if ref.startswith("banca/"):
+            continue  # la banca en línea la publica otra rama; se verifica en test_banca
         destino = (SITIO / ref.split("#")[0]).resolve()
         assert destino.is_file(), f"{pagina.name}: {ref} no existe"
 
@@ -113,3 +125,33 @@ def test_firebase_publica_el_sitio_con_cabeceras_de_seguridad() -> None:
     cabeceras = {h["key"]: h["value"] for bloque in hosting["headers"] for h in bloque["headers"]}
     assert "unsafe-inline" not in cabeceras["Content-Security-Policy"]
     assert cabeceras["X-Content-Type-Options"] == "nosniff"
+
+
+@pytest.mark.parametrize("pagina", PAGINAS, ids=lambda p: p.name)
+def test_cabecera_comun_con_banca_y_pais(pagina: Path) -> None:
+    p = _leer(pagina)
+    assert "banca/index.html" in p.enlaces
+    assert "assets/pais.js" in p.recursos
+    html = pagina.read_text(encoding="utf-8")
+    assert 'id="pais"' in html
+    assert "banco ficticio" in html
+
+
+def test_selector_de_pais_recuerda_con_localstorage_protegido() -> None:
+    js = (SITIO / "assets" / "pais.js").read_text(encoding="utf-8")
+    assert "localStorage" in js
+    assert js.count("try {") >= 2
+    for pais in ("MX", "CO", "AR"):
+        assert pais in js
+
+
+def test_ayuda_tiene_buscador_y_preguntas_clave() -> None:
+    html = (SITIO / "ayuda.html").read_text(encoding="utf-8")
+    assert 'id="buscar"' in html
+    assert html.count('class="faq"') >= 8
+    assert "bloqueo" in html.lower() or "bloqueo mi tarjeta" in html.lower()
+
+
+def test_chat_apunta_a_banca_en_linea() -> None:
+    html = (SITIO / "chat.html").read_text(encoding="utf-8")
+    assert "El asistente vive en Banca en línea" in html
