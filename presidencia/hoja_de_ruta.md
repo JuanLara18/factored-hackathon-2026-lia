@@ -1,9 +1,9 @@
 # Hoja de ruta y backlog (v1)
 
 **Propósito:** ordenar el trabajo para pasar del diseño al desarrollo. Lo mantiene la **Oficina de
-Entrega** ([04](04_Organizacion_y_roles.md), sección 5); la arquitectura está en
-[06](06_Arquitectura.md) y las decisiones en [Decisiones.md](Decisiones.md). Los criterios de
-aceptación citan escenarios y métricas de [01](01_Interacciones_y_criterios.md).
+Entrega** ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 5); la arquitectura está en
+[06](../docs/diseno/06_Arquitectura.md) y las decisiones en [Decisiones.md](Decisiones.md). Los criterios de
+aceptación citan escenarios y métricas de [01](../docs/diseno/01_Interacciones_y_criterios.md).
 
 ---
 
@@ -15,7 +15,7 @@ aceptación citan escenarios y métricas de [01](01_Interacciones_y_criterios.md
 | Diseño | principios, interacciones, plan, datos, organización v2, cobertura del enunciado y arquitectura |
 | Decisiones | D-01 a D-21 cerradas; abiertas solo las que dependen de terceros (proveedores, uso de modelos externos, tamaño del equipo) |
 | Construcción | nada; el repositorio no existe |
-| Bloqueos externos | las preguntas a los organizadores ([05](05_Cobertura_del_enunciado.md), sección 4) |
+| Bloqueos externos | las preguntas a los organizadores ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 4) |
 
 ## 2. Antes del arranque (D0)
 
@@ -24,11 +24,11 @@ En este orden; los *spikes* cierran decisiones que quedaron provisionales.
 1. **Enviar las preguntas a los organizadores** (son diez; las dos últimas se sumaron con la voz: si se
    puede preparar código antes del inicio oficial y si se permiten APIs de voz y grabaciones con
    consentimiento). Si no se puede preparar código antes, los puntos 2 a 5 esperan al D1.
-2. **Crear el repositorio** fuera del Drive (D-03) con el esqueleto de [06](06_Arquitectura.md),
+2. **Crear el repositorio** fuera del Drive (D-03) con el esqueleto de [06](../docs/diseno/06_Arquitectura.md),
    sección 8, `.gitignore` para datos y secretos, `justfile`, `docker-compose.yml` (Postgres y
    Phoenix) y los ADR de D-11, D-12 y D-17 a D-20.
 3. **Escribir los subagentes** en `.claude/agents/` con mandato, entradas, formato de salida y permisos
-   ([04](04_Organizacion_y_roles.md), sección 10).
+   ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 10).
 4. **Bronce completo** del bucket con manifiesto y las consultas de la investigación 13 sobre el total.
 5. **Spikes:**
 
@@ -90,7 +90,7 @@ Cada épica tiene dueño, fase, dependencias y criterio de aceptación.
 
 | ID | Épica | Fase | Depende de | Aceptación |
 |---|---|---|---|---|
-| TEC-1 | Tipos del dominio ([06](06_Arquitectura.md), sección 5) | F3, primer día | | pyright estricto sin errores |
+| TEC-1 | Tipos del dominio ([06](../docs/diseno/06_Arquitectura.md), sección 5) | F3, primer día | | pyright estricto sin errores |
 | TEC-2 | Motor de flujo con estados y estado durable con idempotencia | F3 | TEC-1 | secuencia de estados en la traza; V6 |
 | TEC-3 | Servicios simulados BIAN e identidad (`acr`, OTP, reloj) | F3 | DAT-4 | D5 y S4 |
 | TEC-4 | Capa de herramientas tipada y punto de decisión con registro | F3 | TEC-1 | S1 a S10 rechazados en la capa de herramientas |
@@ -117,7 +117,7 @@ Cada épica tiene dueño, fase, dependencias y criterio de aceptación.
 
 | ID | Épica | Fase | Aceptación |
 |---|---|---|---|
-| AUD-1 | Verificación de las fuentes restantes | antes de F7 | tabla de estado completa ([investigación 19](../Investigacion/19_Auditoria.md)) |
+| AUD-1 | Verificación de las fuentes restantes | antes de F7 | tabla de estado completa ([investigación 19](../docs/investigacion/19_Auditoria.md)) |
 | AUD-2 | Matriz de trazabilidad con consulta por fila | F6 y F7 | ninguna exigencia sin evidencia |
 | AUD-3 | Prueba en máquina limpia y dictamen | F7 | aprobado, con salvedades o devuelto |
 

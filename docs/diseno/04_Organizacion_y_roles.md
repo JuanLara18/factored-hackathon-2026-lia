@@ -80,7 +80,7 @@ atiende primero, por chat y por voz?**
   explicar sin disputar, no repetir, plazos correctos, menos minutos humanos).
 - **Composición:** un sombrero de cada VP de primera línea; Gobierno y Auditoría quedan **afuera** para
   conservar la independencia.
-- **Backlog:** el de la [hoja de ruta](07_Hoja_de_ruta.md), ordenado por la Oficina de Entrega.
+- **Backlog:** el de la [hoja de ruta](../../presidencia/hoja_de_ruta.md), ordenado por la Oficina de Entrega.
 - **Roles humanos** (investigación 21): la Presidencia es el supervisor en forma de M, por encima del
   circuito; los especialistas de fraude son los expertos en forma de T, dentro del circuito en las
   excepciones; los agentes humanos son la primera línea aumentada que recibe el traspaso.
@@ -209,7 +209,7 @@ D = dueño, R = revisa y desafía, C = certifica.
   recorta. No decide diseño; decide orden.
 
 Cada sesión de comité deja un acta en `Diseno/Actas/` con lo que se pidió aprobar, **los desafíos de
-cada cara**, la respuesta, la decisión y la firma; el acta alimenta [Decisiones.md](Decisiones.md).
+cada cara**, la respuesta, la decisión y la firma; el acta alimenta [Decisiones.md](../../presidencia/decisiones.md).
 
 ## 10. Cómo se ejercen las caras (modo mixto)
 

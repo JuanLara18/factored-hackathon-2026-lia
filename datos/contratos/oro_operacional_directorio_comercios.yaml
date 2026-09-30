@@ -14,7 +14,7 @@ description:
 team:
   name: VP Datos
 servers:
-  - server: sandbox
+  - server: produccion
     type: bigquery
     project: latam-bank-hackaton-2026
     dataset: latam_bank

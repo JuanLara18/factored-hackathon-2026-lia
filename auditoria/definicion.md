@@ -7,15 +7,15 @@ reconocido" (recepción de disputas por chat y por voz, en español y portugués
 evidencia y con qué criterios se emite el dictamen que puede **devolver la entrega**. La norma
 principal es el enunciado de la hackatón (`Documentos/Enunciado_Factored_Hackathon_2026.pdf`, seis
 páginas, leído completo): cada exigencia suya debe terminar con evidencia. Se apoya en el
-[modelo operativo](00_Presidencia_Modelo_operativo.md), los [principios](../Diseno/00_Principios.md),
-las [interacciones y criterios](../Diseno/01_Interacciones_y_criterios.md), el
-[plan](../Diseno/02_Plan.md), los [datos por capas](../Diseno/03_Datos_por_capas.md), la
-[organización](../Diseno/04_Organizacion_y_roles.md), la
-[cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md), la
-[arquitectura](../Diseno/06_Arquitectura.md), la [hoja de ruta](../Diseno/07_Hoja_de_ruta.md), el
-[registro de decisiones](../Diseno/Decisiones.md) y las investigaciones
-[4](../Investigacion/04_Evaluacion.md), [13](../Investigacion/13_Auditoria_del_dataset.md) y
-[19](../Investigacion/19_Auditoria.md).
+[modelo operativo](../presidencia/modelo_operativo.md), los [principios](../docs/diseno/00_Principios.md),
+las [interacciones y criterios](../docs/diseno/01_Interacciones_y_criterios.md), el
+[plan](../docs/diseno/02_Plan.md), los [datos por capas](../docs/diseno/03_Datos_por_capas.md), la
+[organización](../docs/diseno/04_Organizacion_y_roles.md), la
+[cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md), la
+[arquitectura](../docs/diseno/06_Arquitectura.md), la [hoja de ruta](../presidencia/hoja_de_ruta.md), el
+[registro de decisiones](../presidencia/decisiones.md) y las investigaciones
+[4](../docs/investigacion/04_Evaluacion.md), [13](../docs/investigacion/13_Auditoria_del_dataset.md) y
+[19](../docs/investigacion/19_Auditoria.md).
 
 **Cómo leerlo:** la sección 2 son las reglas del juego (`R-AUD-01` a `R-AUD-56`); la sección 6 trae la
 **matriz de trazabilidad llena**; la sección 11 trae la **tabla de estado de fuentes**. Lo verificado, lo
@@ -33,10 +33,10 @@ un ejemplo de la regla R-AUD-34: nada se da por verificado sin haber leído la f
 
 ### 1.1 Mandato
 
-**Que lo que LATAM Bank afirma sea verdad y se pueda reproducir** ([04](../Diseno/04_Organizacion_y_roles.md),
+**Que lo que LATAM Bank afirma sea verdad y se pueda reproducir** ([04](../docs/diseno/04_Organizacion_y_roles.md),
 sección 5). Auditoría no audita el modelo por dentro: audita la **cadena de evidencia**, es decir, que
 cada afirmación del reporte, de la demo y del repositorio se pueda reconstruir desde trazas, actas,
-datos versionados y consultas ([investigación 19](../Investigacion/19_Auditoria.md)).
+datos versionados y consultas ([investigación 19](../docs/investigacion/19_Auditoria.md)).
 
 | Atributo | Valor | Fuente |
 |---|---|---|
@@ -69,7 +69,7 @@ coexisten y ninguna reemplaza a la otra.
 - **No diseña, no construye, no etiqueta ni corrige.** Señala, recomienda y verifica que la cara dueña
   corrija. Quien corrige lo que audita pierde la objetividad (Normas Globales de Auditoría Interna,
   principio 2).
-- **No escribe el retenido ni lo corre** (es de Gobierno, D-10 y [04](../Diseno/04_Organizacion_y_roles.md),
+- **No escribe el retenido ni lo corre** (es de Gobierno, D-10 y [04](../docs/diseno/04_Organizacion_y_roles.md),
   sección 13, pregunta C). Sí puede leerlo para verificar su huella y reproducir resultados.
 - **No certifica riesgo cero.** El enunciado lo dice: *"Zero observed failures in a small test set does
   not establish zero risk."* El dictamen informa conteos, denominadores y cotas, no garantías.
@@ -94,7 +94,7 @@ coexisten y ninguna reemplaza a la otra.
 ### 1.5 Posición frente a la misión
 
 Auditoría está **fuera de la misión** y fuera de la cadena de la Presidencia
-([04](../Diseno/04_Organizacion_y_roles.md), secciones 3 y 4). Audita el resultado de la misión como un
+([04](../docs/diseno/04_Organizacion_y_roles.md), secciones 3 y 4). Audita el resultado de la misión como un
 todo: los dos canales (chat y voz, D-17), los dos idiomas (español y portugués) y las cinco
 vicepresidencias. Su contrapeso declarado es "todos quieren afirmar resultados; Auditoría exige
 evidencia" (04, sección 6).
@@ -139,7 +139,7 @@ el jurado.
 evidencia**: el Drive del proyecto, el repositorio completo (incluido `eval/cases/holdout/`), platino,
 las trazas exportadas, las actas, la bitácora, las respuestas de los organizadores y el historial de
 git. Sobre los **datos**, el auditor también cumple el mínimo privilegio (P11): su acceso es la fila
-"Auditoría" de la matriz de accesos de Datos ([03](03_VP_Datos.md), sección 4.4): metadatos de bronce,
+"Auditoría" de la matriz de accesos de Datos ([03](../datos/definicion.md), sección 4.4): metadatos de bronce,
 plata tokenizada, solo agregados de la zona restringida, oro y platino, y nada de la zona de
 seguridad. Auditar no exige ver un dato personal: exige ver que el control funcionó. Hay una exclusión
 deliberada más: **nunca abre `Documentos/Dataset_Diccionario_LATAM_Bank.pdf`**, porque contiene la
@@ -156,7 +156,7 @@ que ningún archivo versionado la contenga, que `.env` esté ignorado y que el e
 
 **Límite honesto: la independencia es emulada.** Una sola persona ejerce la Presidencia y la primera
 línea con Claude, y el subagente de Auditoría también es Claude: misma persona detrás, misma familia de
-modelo. Esto no se esconde; se acota y se declara en el reporte ([04](../Diseno/04_Organizacion_y_roles.md),
+modelo. Esto no se esconde; se acota y se declara en el reporte ([04](../docs/diseno/04_Organizacion_y_roles.md),
 sección 10). Se defiende con evidencia que un tercero puede revisar:
 
 1. **Definición del subagente versionada**: `.claude/agents/auditoria.md` con mandato, entradas,
@@ -172,7 +172,7 @@ sección 10). Se defiende con evidencia que un tercero puede revisar:
    familia; los desacuerdos se informan.
 7. **Declaración en el reporte**: "independencia emulada, con estas siete salvaguardas".
 
-**Escepticismo profesional.** Lo que no tiene evidencia no está hecho ([investigación 19](../Investigacion/19_Auditoria.md),
+**Escepticismo profesional.** Lo que no tiene evidencia no está hecho ([investigación 19](../docs/investigacion/19_Auditoria.md),
 sección 3). Un texto del modelo, una descripción del reporte o una intención de diseño no son evidencia
 de comportamiento.
 
@@ -241,7 +241,7 @@ clasificación obligatoria: **toda afirmación lleva su tipo, y cada tipo exige 
    un hallazgo bloqueante.
 
 **Trazas de evaluación.** Cada evento de traza se serializa en JSON canónico y se encadena **por
-conversación**, como ya lo define Tecnología ([04](04_VP_Tecnologia.md), R-TEC-58 y R-TEC-118):
+conversación**, como ya lo define Tecnología ([04](../tecnologia/definicion.md), R-TEC-58 y R-TEC-118):
 `h(i) = SHA256( h(i-1) || SHA256(evento(i)) )`, con `h(0) = SHA256(run_id || conversation_id ||
 huella del manifiesto de corrida)`. La **raíz de la corrida** es la huella de la lista ordenada de las
 cabezas de todas las conversaciones; va al manifiesto de corrida, al acta de F6 y a un commit
@@ -249,7 +249,7 @@ empujado. El resumen exportado a platino puede ir sin contenido (R-TEC-118) siem
 conserve la huella de su contenido redactado: así el contenido guardado en Phoenix o en
 `resultados_evaluacion` se puede comprobar contra la cadena. La verificación recalcula todas las
 cadenas y la raíz desde los eventos guardados. De la propuesta de registros a
-prueba de manipulación para agentes ([investigación 19](../Investigacion/19_Auditoria.md), arXiv
+prueba de manipulación para agentes ([investigación 19](../docs/investigacion/19_Auditoria.md), arXiv
 2609.01931, pendiente de verificar) se toma solo el encadenamiento, no el anclaje en cadena de bloques.
 
 **Manifiesto de corrida.** Toda corrida que produce una cifra del reporte deja un manifiesto con estos
@@ -270,7 +270,7 @@ campos mínimos:
 | Regla | Enunciado | Cómo se verifica |
 |---|---|---|
 | **R-AUD-08** | Toda afirmación del reporte final lleva su tipo (tabla 2.2.1) y la evidencia mínima de ese tipo | revisión del reporte: 100% de afirmaciones materiales etiquetadas; muestra de al menos 20 afirmaciones rastreadas hasta su evidencia sin fallas |
-| **R-AUD-09** | **Ninguna cifra del reporte se escribe a mano**: cada una sale de una consulta oficial sobre platino y queda en `metricas_reporte` con su valor, consulta y corrida ([03](../Diseno/03_Datos_por_capas.md), sección 3.4) | script que extrae los números del reporte y los empareja con `metricas_reporte`; cifra sin pareja es hallazgo |
+| **R-AUD-09** | **Ninguna cifra del reporte se escribe a mano**: cada una sale de una consulta oficial sobre platino y queda en `metricas_reporte` con su valor, consulta y corrida ([03](../docs/diseno/03_Datos_por_capas.md), sección 3.4) | script que extrae los números del reporte y los empareja con `metricas_reporte`; cifra sin pareja es hallazgo |
 | **R-AUD-10** | Toda tasa se reporta como *x de n* con intervalo de Wilson al 95%; cero eventos, con la cota de la regla del tres (3/n); comparaciones pareadas con McNemar; `k` y pass^k donde el resultado depende de un modelo; y el conjunto sobre el que se calcula (representativo o de estrés, D-16) | revisión del reporte y de `metricas_reporte`: cada tasa trae numerador, denominador, intervalo y conjunto |
 | **R-AUD-11** | Una afirmación material se sostiene con evidencia de nivel 1 o 2; los niveles 3 y 4 solo donde no hay verificación determinista y con su validación; el nivel 5 nunca basta | revisión de la matriz: ninguna fila material con evidencia solo de nivel 5 |
 | **R-AUD-12** | La huella del retenido (texto y voz) se registra en el acta de F2 y en una etiqueta de git empujada con fecha anterior al primer commit del motor; en F6 se recalcula y tiene que coincidir | comando de verificación del retenido; comparación de fechas en el remoto |
@@ -285,7 +285,7 @@ campos mínimos:
 
 El enunciado pide *"tracing"* y *"explanations based on sources, policy rules, and execution records"*.
 La literatura de 2026 dice que no hay un esquema de trazas unificado para agentes y que las trazas
-completas mejoran la atribución de fallas por paso ([investigación 19](../Investigacion/19_Auditoria.md),
+completas mejoran la atribución de fallas por paso ([investigación 19](../docs/investigacion/19_Auditoria.md),
 arXiv 2606.04990, pendiente de verificar). Por eso Auditoría fija el **mínimo** que necesita; Tecnología
 lo implementa con OpenTelemetry y Phoenix (D-20) y puede agregar lo que quiera. Donde exista, se usa el
 atributo de las convenciones semánticas GenAI de OpenTelemetry (`gen_ai.provider.name`,
@@ -304,7 +304,7 @@ voz); un **span por etapa** dentro del turno.
 | Canal | `canal` (chat o voz), `transporte` (web, WebRTC, teléfono), versión de la superficie | desagregar por canal; D-17 |
 | Idioma | idioma detectado, variante (es-MX, es-CO, es-AR, es neutro, pt-BR), idioma de la respuesta | equidad; L1 a L6 |
 | Sesión | referencia opaca de sesión, nivel `acr`, estado de autenticación, expiración, **seudónimo del cliente** (HMAC con llave fuera del repositorio), segmento autorizado | autorización y equidad sin datos personales |
-| Estado | estado anterior, estado nuevo, ruta vigente (R1 a R8) | secuencia de estados de [01](../Diseno/01_Interacciones_y_criterios.md), sección 4 |
+| Estado | estado anterior, estado nuevo, ruta vigente (R1 a R8) | secuencia de estados de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 4 |
 | Entrada | texto del cliente **redactado**, HMAC del texto original, entidades marcadas | qué se recibió, sin PII |
 | Interpretación | motivo, urgencia, entidades, confianza, id y versión del componente, umbral aplicado | comprensión auditable (D-14) |
 | Decisión | `Decision` completa (ruta, acción, requiere confirmación, motivo); **reglas aplicadas** con id, versión, norma y fecha de consulta (`ReglaDePolitica`); id del registro del punto de decisión y su resultado (permitir o negar) | P4; explicación basada en reglas |
@@ -378,9 +378,9 @@ adopta por cuatro razones, no solo por obediencia:
 4. **No es la causa de nada en LATAM Bank.** El código decide (P4): la causa de una acción es el
    registro del punto de decisión, la regla aplicada y los hechos verificados. Eso es lo que se audita.
 
-**El campo de razonamiento visible.** La [investigación 8](../Investigacion/08_IA_con_tipos_seguros.md)
+**El campo de razonamiento visible.** La [investigación 8](../docs/investigacion/08_IA_con_tipos_seguros.md)
 recomienda poner un campo de razonamiento antes del campo de respuesta en las salidas estructuradas,
-porque mejora la calidad. Es texto del modelo ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 19).
+porque mejora la calidad. Es texto del modelo ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 19).
 Tratamiento:
 
 - **Se permite** como ayuda a la generación.
@@ -406,21 +406,21 @@ Tratamiento:
 
 ### 2.4 Matriz de trazabilidad: formato definitivo
 
-La matriz es el artefacto central de Auditoría ([07](../Diseno/07_Hoja_de_ruta.md), AUD-2): una fila por
+La matriz es el artefacto central de Auditoría ([07](../presidencia/hoja_de_ruta.md), AUD-2): una fila por
 exigencia, y cada fila termina en una consulta o un chequeo que alguien puede correr. Extiende la
-sección 8 de [01](../Diseno/01_Interacciones_y_criterios.md) y el formato propuesto en la
-[investigación 19](../Investigacion/19_Auditoria.md), y **reemplaza** la tabla de 01, sección 8, como
+sección 8 de [01](../docs/diseno/01_Interacciones_y_criterios.md) y el formato propuesto en la
+[investigación 19](../docs/investigacion/19_Auditoria.md), y **reemplaza** la tabla de 01, sección 8, como
 matriz oficial (esa tabla todavía nombra el puntaje de riesgo como componente aprendido, superado por
 D-14).
 
 | Columna | Contenido | Regla de llenado |
 |---|---|---|
-| `id` | `E-01` a `E-71` (frases del enunciado con la numeración de [05](../Diseno/05_Cobertura_del_enunciado.md), sección 2; la 9 se abre en `E-09a` a `E-09e`), `DS-1` a `DS-4` (resumen y diccionario del dataset), `V-01` a `V-12` (voz), `C-01` a `C-06` (chat), `X-01` (entre canales) | estable; nunca se renumera |
+| `id` | `E-01` a `E-71` (frases del enunciado con la numeración de [05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 2; la 9 se abre en `E-09a` a `E-09e`), `DS-1` a `DS-4` (resumen y diccionario del dataset), `V-01` a `V-12` (voz), `C-01` a `C-06` (chat), `X-01` (entre canales) | estable; nunca se renumera |
 | `exigencia` | cita textual en inglés, tal cual está en el enunciado, con su página | sin parafrasear |
 | `criterio` | criterio 1 a 6 del enunciado, o su sección (Alcance, Arquitectura, Fronteras de datos, Evidencia de evaluación); para voz y chat, la decisión que la origina | |
 | `duena` | **una sola** cara: `CLI`, `IA`, `DAT`, `TEC`, `GOB` o `PRE` | R-AUD-29 |
 | `participan` | las demás caras que aportan | |
-| `escenarios` | ids del catálogo de [01](../Diseno/01_Interacciones_y_criterios.md), sección 3 | "análisis" si no es conversacional |
+| `escenarios` | ids del catálogo de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 3 | "análisis" si no es conversacional |
 | `metrica` | id y versión de la métrica oficial (01, sección 5, y catálogo de Datos, D-21) | |
 | `evidencia` | artefacto y ruta, con su nivel de la sección 2.2.2 | |
 | `consulta` | `Q-<familia>-<nn>` sobre platino o `CHK-<familia>-<nn>` | R-AUD-28 |
@@ -474,7 +474,7 @@ Una cita es una afirmación sobre el mundo, y se verifica como cualquier otra. E
 7. **Registro** en `audit/fuentes.yaml`: URL, versión (v1, v2), fecha de consulta, pasaje, resultado,
    verificador y huella de la copia descargada o enlace de archivo.
 8. **Estado** según la tabla siguiente y, si cambia algo, **nota fechada** en la investigación que la cita
-   (convención del [índice de investigación](../Investigacion/README.md)).
+   (convención del [índice de investigación](../README.md)).
 
 | Estado | Significado | Qué se puede hacer con la cifra |
 |---|---|---|
@@ -493,7 +493,7 @@ decisión firme (`D-xx`) descansa solo en ella, Auditoría abre un hallazgo mayo
 hasta que tenga otra fuente verificada o evidencia propia; si la verificación la refuta, el hallazgo
 pasa a bloqueante porque la decisión firme queda sin fundamento declarado.
 
-**Cifras propias.** Las cifras del dataset que vienen de la muestra ([investigación 13](../Investigacion/13_Auditoria_del_dataset.md))
+**Cifras propias.** Las cifras del dataset que vienen de la muestra ([investigación 13](../docs/investigacion/13_Auditoria_del_dataset.md))
 llevan su alcance ("muestra de...") hasta que se reconfirman sobre el total en F1 (*spike* S5 y DAT-2).
 Las operaciones aritméticas que hacen los documentos se recalculan (sección 11.2 trae ejemplos).
 
@@ -515,7 +515,7 @@ antes de correr).
 
 **Entornos.** Tecnología ya comprometió que la máquina limpia solo necesita git, Docker con Compose, uv
 y just, y que `just setup demo` funciona en Linux y en Windows 11 con Docker Desktop y Git Bash en 30
-minutos o menos ([04](04_VP_Tecnologia.md), R-TEC-44). Auditoría prueba los dos: **Linux**, en un
+minutos o menos ([04](../tecnologia/definicion.md), R-TEC-44). Auditoría prueba los dos: **Linux**, en un
 ejecutor efímero `ubuntu-latest` de GitHub Actions (referencia) y en un contenedor limpio sin cachés de
 uv, sin `~/.aws` y sin variables de entorno del autor; **Windows 11**, en Windows Sandbox o una cuenta
 de usuario nueva, porque la máquina del autor es Windows y el jurado puede usar cualquiera.
@@ -531,7 +531,7 @@ de usuario nueva, porque la máquina del autor es Windows y el jurado puede usar
 | 4 | `just setup` (uv con `uv.lock` congelado) | duración, versiones de uv, Python, just y Docker | termina sin intervención |
 | 5 | Credenciales de solo lectura según el README, **fuera del repositorio**; lo hace el operador, Auditoría no ve la llave | que el paso existió y cuánto tomó | único paso manual permitido |
 | 6 | `just data-test` (el *fixture* etiquetado, sin credenciales) | resultados esperados contra obtenidos | todos iguales |
-| 7 | `just data`: sincroniza el bucket al espejo local y, con la red hacia Google Cloud bloqueada, reconstruye bronce a platino ([03](03_VP_Datos.md), R-DAT-01) | etags y huellas de tablas | iguales al manifiesto de linaje de F6; código de salida 0 |
+| 7 | `just data`: sincroniza el bucket al espejo local y, con la red hacia Google Cloud bloqueada, reconstruye bronce a platino ([03](../datos/definicion.md), R-DAT-01) | etags y huellas de tablas | iguales al manifiesto de linaje de F6; código de salida 0 |
 | 8 | `just test` (unitarias, propiedades con semilla fija, *fixture*) | conteos, ejemplos generados | todo pasa |
 | 9 | `docker compose up` y humo de la demo: los tres casos obligatorios en español y portugués por chat, y por voz con audio sintetizado si la voz está en el alcance | trazas generadas, cadena verificada | la cadena verifica; rutas esperadas |
 | 10 | **Recalcular**: `just metrics --from-run <run_id>` desde las trazas y resultados guardados de F6 | cifras recalculadas | diferencia cero con `metricas_reporte` |
@@ -556,7 +556,7 @@ de usuario nueva, porque la máquina del autor es Windows y el jurado puede usar
 | **R-AUD-38** | La instalación se reproduce en una máquina limpia con los comandos del README, sin pasos manuales salvo la configuración de credenciales fuera del repositorio | registro de la prueba, pasos 1 a 9 |
 | **R-AUD-39** | Recalcular las métricas desde las trazas y resultados guardados da exactamente las cifras del reporte | paso 10: diferencia cero |
 | **R-AUD-40** | La reejecución de la submuestra cae dentro de las tolerancias fijadas antes de correr y no produce resultados inseguros nuevos | paso 11: informe de reejecución |
-| **R-AUD-41** | Correr el pipeline de datos en la máquina limpia da las mismas huellas de tablas que el manifiesto de F6 ("correr dos veces da lo mismo", [03](../Diseno/03_Datos_por_capas.md), sección 5.4) | paso 7: huellas iguales |
+| **R-AUD-41** | Correr el pipeline de datos en la máquina limpia da las mismas huellas de tablas que el manifiesto de F6 ("correr dos veces da lo mismo", [03](../docs/diseno/03_Datos_por_capas.md), sección 5.4) | paso 7: huellas iguales |
 | **R-AUD-42** | La prueba deja un registro completo y sellado; un ensayo general se hace en D5 con la versión del día, para no descubrir en D10 que no instala | existe el registro de D5 y el de D10 |
 
 ### 2.7 Programa de auditoría por compuerta
@@ -564,10 +564,10 @@ de usuario nueva, porque la máquina del autor es Windows y el jurado puede usar
 La lista adapta tres marcos: el **marco de auditoría de IA del IIA** (actualización de 2024, alineada
 con el NIST AI RMF, organizada sobre el modelo de tres líneas: gobierno, gestión y auditoría interna;
 cubre alineación estratégica, ética, gobierno de datos, recursos técnicos, terceros y monitoreo;
-[investigación 19](../Investigacion/19_Auditoria.md)); las cuatro funciones del **NIST AI RMF**
+[investigación 19](../docs/investigacion/19_Auditoria.md)); las cuatro funciones del **NIST AI RMF**
 (Gobernar, Mapear, Medir, Gestionar); y el dominio V de las **Normas Globales de Auditoría Interna**
 (principio 13, planear el trabajo; 14, ejecutarlo; 15, comunicar y dar seguimiento). Las compuertas son
-las de [02](../Diseno/02_Plan.md) y [07](../Diseno/07_Hoja_de_ruta.md). Severidad si el ítem falla:
+las de [02](../docs/diseno/02_Plan.md) y [07](../presidencia/hoja_de_ruta.md). Severidad si el ítem falla:
 **B** bloqueante, **M** mayor, **m** menor.
 
 En F2, F4, F5 y F6 Auditoría **no firma** (firman Gobierno o el Comité de Confianza); entrega un
@@ -616,7 +616,7 @@ informe de revisión que se anexa al acta. En F7 firma el dictamen.
 | F5-05 | ¿La prueba de capacidad informa el punto de quiebre y el cuello de botella con su manifiesto? | reporte de TEC-9 | presente | Gestión: recursos técnicos | Medir | M |
 | F5-06 | ¿El error de reconocimiento por acento se midió con intervalos y las grabaciones humanas tienen consentimiento previo? | tabla de WER, registro de consentimientos | consentimiento anterior a cada grabación | Gobierno: ética y privacidad | Gestionar | B |
 | F5-07 | ¿Los reintentos acotados y la caída segura se ven en trazas de desarrollo (D1, D2)? | trazas | reintentos no mayores a 2; ruta R8 | Gestión: recursos técnicos | Medir | M |
-| F5-08 | ¿Quién valida las respuestas en portugués y cómo se informa la calidad de esas etiquetas? | protocolo | escrito ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 14) | Gobierno: ética (equidad) | Mapear | M |
+| F5-08 | ¿Quién valida las respuestas en portugués y cómo se informa la calidad de esas etiquetas? | protocolo | escrito ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 14) | Gobierno: ética (equidad) | Mapear | M |
 | F5-09 | ¿Los proveedores externos (modelos, voz) tienen documentados sus términos de retención y de uso para entrenamiento, y nada salió sin autorización (D-15)? | ficha por proveedor; registros del gateway | fichas completas; solicitudes externas enmascaradas | Gestión: terceros | Gobernar | B |
 | F5-10 | ¿La completitud de trazas en desarrollo y la verificación de la cadena funcionan de punta a punta? | `Q-TRZ-01`, verificación de cadena | completitud informada; cadena verifica | Auditoría interna | Gestionar | M |
 
@@ -651,7 +651,7 @@ informe de revisión que se anexa al acta. En F7 firma el dictamen.
 | F7-09 | ¿Los cambios después de F2 tienen acta y aparecen en el reporte? | actas | R-AUD-13 | Gobierno: rendición de cuentas | Gobernar | B |
 | F7-10 | ¿Las grabaciones de voz tienen consentimiento y su borrado está registrado? | registro de consentimientos | completo | Gobierno: ética y privacidad | Gestionar | M |
 | F7-11 | ¿Las explicaciones al cliente y al agente humano salen de fuentes, reglas y registros de ejecución, sin razonamiento del modelo? | trazas y ejemplos | R-AUD-24 | Gobierno: ética | Gestionar | B |
-| F7-12 | ¿La tabla "dónde va la IA y dónde la lógica determinista" coincide con el código entregado? | [06](../Diseno/06_Arquitectura.md), sección 3, y el código | sin diferencias | Gestión: recursos técnicos | Mapear | M |
+| F7-12 | ¿La tabla "dónde va la IA y dónde la lógica determinista" coincide con el código entregado? | [06](../docs/diseno/06_Arquitectura.md), sección 3, y el código | sin diferencias | Gestión: recursos técnicos | Mapear | M |
 
 | Regla | Enunciado | Cómo se verifica |
 |---|---|---|
@@ -747,7 +747,7 @@ aplica a las definiciones de Presidencia (00), Clientes, IA, Datos (03), Tecnolo
 | 3 | Cobertura del enunciado | cada fila de la matriz (sección 6.3) se enlaza con la regla o historia de la cara dueña que la cubre | filas sin cobertura: bloqueantes |
 | 4 | Coherencia con principios y decisiones | lista de contradicciones típicas (tabla siguiente) y lectura de cada regla contra P1 a P13 y D-01 a D-21 | contradicciones: bloqueantes |
 | 5 | Coherencia entre definiciones | mismos nombres (rutas, escenarios, tipos, métricas), mismas cifras (presupuestos, umbrales, plazos), mismo glosario | inconsistencias: mayores |
-| 6 | Grafo de interfaces | tabla de todas las solicitudes (de, para, qué, cuándo, aceptación, estado); se buscan huérfanas, entregables sin dueño, ciclos que se bloquean y fechas incompatibles con el calendario de [07](../Diseno/07_Hoja_de_ruta.md), sección 5 | sin receptor o sin dueño: bloqueantes |
+| 6 | Grafo de interfaces | tabla de todas las solicitudes (de, para, qué, cuándo, aceptación, estado); se buscan huérfanas, entregables sin dueño, ciclos que se bloquean y fechas incompatibles con el calendario de [07](../presidencia/hoja_de_ruta.md), sección 5 | sin receptor o sin dueño: bloqueantes |
 | 7 | Verificabilidad | cada regla tiene un método objetivo (prueba, consulta, chequeo documental) | regla sin método: mayor |
 | 8 | Evidencia que produce cada cara | cada definición dice qué consulta o artefacto entrega para la matriz | faltante: mayor |
 | 9 | Fuentes y cifras | citas con estado; cifras con fuente; lo verificado, supuesto y proyectado separados (P3) | según la sección 2.5 |
@@ -824,7 +824,7 @@ Impedimentos declarados
 
 Auditoría usa poca tecnología y casi toda gratuita: huellas, firmas, un registro de fuentes y la
 capacidad de reejecutar. La sofisticación va en las garantías, no en las herramientas (la misma
-lectura que [03](../Diseno/03_Datos_por_capas.md) hace de los datos). Las URL de normas y documentación
+lectura que [03](../docs/diseno/03_Datos_por_capas.md) hace de los datos). Las URL de normas y documentación
 citadas en esta sección son las publicadas por sus autores; **no se reconsultaron en esta ronda** y se
 confirman en AUD-1.
 
@@ -842,7 +842,7 @@ confirman en AUD-1.
 | 10 | Verificación de fuentes | `audit/fuentes.yaml`; API de metadatos de arXiv para existencia y fechas; copia con huella o enlace de archivo | protocolo de la sección 2.5 | no aplica | Zotero; API de Semantic Scholar | existencia y fechas se verifican de forma determinista; el pasaje lo transcribe quien verifica |
 | 11 | Estadística | statsmodels (Wilson con `proportion_confint`, `mcnemar`) y *bootstrap* para percentiles, más una implementación independiente de Wilson de diez líneas como control cruzado | intervalos de Wilson, McNemar y regla del tres (investigación 4) | no aplica | R | Auditoría recalcula con el código de Datos y con uno propio; si difieren, hay hallazgo |
 | 12 | Subagente de auditoría | `.claude/agents/auditoria.md` con herramientas de solo lectura (Read, Grep, Glob y un Bash restringido a comandos de verificación) y escritura solo en sus rutas | subagentes invocados en frío (D-10) | Vertex AI como proveedor de un modelo de otra familia para la segunda opinión, si hay créditos | revisión humana externa (no disponible en la hackatón) | independencia de contexto verificable (R-AUD-04) |
-| 13 | Evidencia de voz | registro de consentimientos sin audio ni datos en claro (huella del consentimiento firmado); audio cifrado local; acta de borrado | D-18; [03](../Diseno/03_Datos_por_capas.md), sección 8; R-DAT-55 | bucket con llaves administradas por el cliente y regla de ciclo de vida que borra | no aplica | la voz es dato personal; se prueba que se borró |
+| 13 | Evidencia de voz | registro de consentimientos sin audio ni datos en claro (huella del consentimiento firmado); audio cifrado local; acta de borrado | D-18; [03](../docs/diseno/03_Datos_por_capas.md), sección 8; R-DAT-55 | bucket con llaves administradas por el cliente y regla de ciclo de vida que borra | no aplica | la voz es dato personal; se prueba que se borró |
 
 **Lo que no se usa, y por qué:** cadena de bloques (la huella encadenada con un sello externo prueba
 lo mismo sin costo, investigación 19); plataformas comerciales de auditoría y GRC (innecesarias en diez
@@ -1144,7 +1144,7 @@ Estado: abierta
 | Bloqueantes abiertos al cierre | hallazgos bloqueantes sin cerrar | 0 | informes |
 
 **Catálogo de consultas.** La matriz usa los ids oficiales de Datos (`M-01` a `M-46`,
-[03](03_VP_Datos.md), catálogo de métricas) servidos desde `platino.metricas_reporte`. Lo que la matriz
+[03](../datos/definicion.md), catálogo de métricas) servidos desde `platino.metricas_reporte`. Lo que la matriz
 necesita y el catálogo no tiene va con id provisional `Q-AUD-nn` hasta que Datos le asigne uno
 (S-AUD-04):
 
@@ -1230,7 +1230,7 @@ paréntesis, la página del enunciado.
 | E-09d | *Design for reliability* (2) | TEC | D1 a D9 | M-23, M-24, M-09 | caída segura y consistencia | Def |
 | E-09e | *Design for scalability* (2) | TEC | carga simulada | Q-AUD-16 | prueba de capacidad (TEC-9) | Def |
 | E-10 | *explicit trade-offs across autonomy, accuracy, latency, cost, and human oversight* (2) | GOB (TEC) | retenido representativo | M-01, M-03, M-18, M-20 por punto de operación | tres puntos registrados antes de F6 | Def |
-| E-11 | *where AI is appropriate, where deterministic logic is preferable* (2) | TEC | análisis | CHK-01 | [06](../Diseno/06_Arquitectura.md), sección 3, contra el código | Def |
+| E-11 | *where AI is appropriate, where deterministic logic is preferable* (2) | TEC | análisis | CHK-01 | [06](../docs/diseno/06_Arquitectura.md), sección 3, contra el código | Def |
 | E-12 | *how you evaluate the system for quality and safety* (2) | GOB (IA) | retenido completo | M-01 a M-24, Q-AUD-01 | reporte de evaluación | Def |
 | E-13 | *evidence of production readiness and an honest account of the work required before deployment* (2) | PRE (todas) | análisis | CHK-02 | sección de trabajo restante | Par: sección por escribir |
 | E-14 | *Select a coherent workflow* (2) | PRE (DAT) | análisis | CHK-05, M-39 | D-02 con su evidencia | Def |
@@ -1347,7 +1347,7 @@ conocidas por el equipo y **no reconsultados en esta ronda**; se confirman antes
 
 ## 8. Backlog propuesto
 
-Las épicas AUD-1 a AUD-3 vienen de [07](../Diseno/07_Hoja_de_ruta.md); AUD-4 a AUD-8 son nuevas.
+Las épicas AUD-1 a AUD-3 vienen de [07](../presidencia/hoja_de_ruta.md); AUD-4 a AUD-8 son nuevas.
 
 | Historia | Qué | Criterio de aceptación | Depende de | Día |
 |---|---|---|---|---|
@@ -1451,10 +1451,10 @@ Las épicas AUD-1 a AUD-3 vienen de [07](../Diseno/07_Hoja_de_ruta.md); AUD-4 a 
 ### 11.1 Documentos del proyecto
 
 Enunciado (`Documentos/Enunciado_Factored_Hackathon_2026.pdf`, leído completo); modelo operativo
-([00](00_Presidencia_Modelo_operativo.md)); definiciones de Datos ([03](03_VP_Datos.md)), Tecnología
-([04](04_VP_Tecnologia.md)) y Gobierno ([05](05_VP_Gobierno.md)), consultadas solo en puntos concretos
+([00](../presidencia/modelo_operativo.md)); definiciones de Datos ([03](../datos/definicion.md)), Tecnología
+([04](../tecnologia/definicion.md)) y Gobierno ([05](../gobierno/definicion.md)), consultadas solo en puntos concretos
 (solicitudes dirigidas a Auditoría, catálogo de métricas, accesos, trazas); diseño 00 a 07 y
-[Decisiones](../Diseno/Decisiones.md); investigaciones 4, 13 y 19, y el contexto de las citas de 1, 2, 4,
+[Decisiones](../presidencia/decisiones.md); investigaciones 4, 13 y 19, y el contexto de las citas de 1, 2, 4,
 5, 8 a 12, 14, 15, 18 y 20.
 
 ### 11.2 Estado de fuentes (primera pasada de Auditoría, 27 de septiembre de 2026)

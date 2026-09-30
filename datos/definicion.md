@@ -3,8 +3,8 @@
 > **Reemplazada parcialmente por D-30** (`presidencia/decisiones.md`). Todo corre en Google Cloud; la carga
 > queda fuera de alcance y un proceso externo deja el bucket como tablas crudas. Hay un solo dataset,
 > `latam_bank`, con la capa como prefijo del nombre de tabla, y `latam_seguridad` para la llave. Las secciones
-> de abajo siguen como referencia de diseño; donde chocan con esta tabla, manda la tabla. Sandbox sin
-> facturación: 10 GB de tope y las tablas vencen el 2026-11-28.
+> de abajo siguen como referencia de diseño; donde chocan con esta tabla, manda la tabla. Desde el 29 sep
+> hay facturación (ya no rige el tope de 10 GB del sandbox); las tablas siguen venciendo el 2026-11-28.
 >
 > | Antes (zona o dataset) | Ahora | Estado |
 > |---|---|---|
@@ -22,7 +22,7 @@
 > | Q-BRZ-01, 03, 05, 06, 11 | reinterpretadas en `reglas.py`; Q-BRZ-12 y 13 son nuevas | vigentes |
 
 **Cara:** VP Datos. **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión, pendiente del
-desafío de Gobierno y de la auditoría de completitud ([modelo operativo](00_Presidencia_Modelo_operativo.md),
+desafío de Gobierno y de la auditoría de completitud ([modelo operativo](../presidencia/modelo_operativo.md),
 sección 7).
 
 **Propósito:** fijar las reglas del juego de los datos para la misión "cargo no reconocido", por chat y por
@@ -32,11 +32,11 @@ construye y se revisa el capítulo que el enunciado califica a todos los equipos
 data engineering and AI/ML rigor"*, y el criterio 4: *"repeatable data preparation with contracts, quality
 checks, lineage, and an update/freshness policy"*.
 
-**Se apoya en:** [datos por capas](../Diseno/03_Datos_por_capas.md) (diseño base, que esta definición
-precisa y en algunos puntos corrige), [auditoría del dataset](../Investigacion/13_Auditoria_del_dataset.md),
-[investigación 16](../Investigacion/16_VP_Datos.md), [cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md),
-[arquitectura](../Diseno/06_Arquitectura.md), [hoja de ruta](../Diseno/07_Hoja_de_ruta.md),
-[decisiones](../Diseno/Decisiones.md) D-01 a D-21 y [principios](../Diseno/00_Principios.md) P1 a P13.
+**Se apoya en:** [datos por capas](../docs/diseno/03_Datos_por_capas.md) (diseño base, que esta definición
+precisa y en algunos puntos corrige), [auditoría del dataset](../docs/investigacion/13_Auditoria_del_dataset.md),
+[investigación 16](../docs/investigacion/16_VP_Datos.md), [cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md),
+[arquitectura](../docs/diseno/06_Arquitectura.md), [hoja de ruta](../presidencia/hoja_de_ruta.md),
+[decisiones](../presidencia/decisiones.md) D-01 a D-21 y [principios](../docs/diseno/00_Principios.md) P1 a P13.
 
 **Cómo leer las cifras:** las del dataset son de la **muestra** auditada el 26 de septiembre de 2026 salvo
 que se diga otra cosa, y se confirman sobre el total en F1 (sección 2.14). Los precios llevan su estado de
@@ -81,7 +81,7 @@ verificación (sección 7.2). Lo medido, lo supuesto y lo proyectado van marcado
 
 ### 1.1 Mandato
 
-**Una sola verdad certificada y el origen de toda cifra oficial** ([organización v2](../Diseno/04_Organizacion_y_roles.md),
+**Una sola verdad certificada y el origen de toda cifra oficial** ([organización v2](../docs/diseno/04_Organizacion_y_roles.md),
 sección 5). En la práctica: cada dato que ve el agente, cada número del reporte y cada caso de evaluación
 se puede rastrear hasta un archivo del bucket (o hasta un insumo del equipo declarado), con su versión, su
 contrato y su huella.
@@ -169,12 +169,12 @@ Cada regla dice **cómo se verifica**. Una regla sin verificación no es regla.
 | PD4 | **El tiempo del evento manda**; el tiempo de carga es metadato | `process_date` fuera de toda métrica de negocio |
 | PD5 | **Mínimo necesario**: una columna sin consumidor no avanza de capa | oro operacional estrecho; PII sin consumidor se queda en bronce |
 | PD6 | **Lo reproducible es lo verdadero**: una cifra que no se puede reconstruir no es oficial | local de referencia, huellas, manifiesto encadenado |
-| PD7 | **Garantías antes que infraestructura** ([03](../Diseno/03_Datos_por_capas.md), sección 0) | la sofisticación va en idempotencia, cuarentena, linaje y frescura |
+| PD7 | **Garantías antes que infraestructura** ([03](../docs/diseno/03_Datos_por_capas.md), sección 0) | la sofisticación va en idempotencia, cuarentena, linaje y frescura |
 
 ### 2.2 Plataforma y capas
 
 **Las capas** son las de D-08, cada una con su pregunta, su consumidor y su garantía
-([03](../Diseno/03_Datos_por_capas.md), sección 3). Esta definición agrega las **zonas de confianza**, que
+([03](../docs/diseno/03_Datos_por_capas.md), sección 3). Esta definición agrega las **zonas de confianza**, que
 son la frontera física de privacidad:
 
 | Zona | Capa | Contenido | Local | Google Cloud |
@@ -195,7 +195,7 @@ son la frontera física de privacidad:
 | R-DAT-03 | **Paridad.** En el perfil de nube, cada tabla de plata, oro y platino de datos tiene el mismo conteo y la misma huella que la corrida local sobre los mismos lotes; si una difiere, la copia en nube queda **no certificada** para esa corrida | `platino.paridad` con 100% de tablas iguales; la corrida de nube falla si no |
 | R-DAT-04 | **Cada tabla tiene pregunta, consumidor, contrato y dueño.** Una tabla sin contrato no existe para los consumidores: no se publica ni se cita | script que cruza las tablas de plata, oro y platino con `contracts/`; cero huérfanas |
 | R-DAT-05 | **Bronce es inmutable y de solo agregar.** Todo como texto; una reentrega agrega un lote nuevo y no reescribe el anterior; nada se corrige en bronce | prueba: la huella de los lotes previos no cambia después de procesar una reentrega del *fixture* |
-| R-DAT-06 | **Metadatos mínimos por fila, completos por lote.** Por fila: `_lote_id`, `_linea` y `_huella_fila`. Por lote, en `bronce._lotes`: `source_key`, `etag`, `tamano`, `last_modified`, `huella_encabezado`, `generacion`, `tenia_bom`, `filas`, `ingerido_en`, `clase` (NUEVO o REENTREGA). Esto precisa [03](../Diseno/03_Datos_por_capas.md), sección 3.1, que ponía todo por fila: en BigQuery con facturación lógica, 300 bytes por fila de metadatos repetidos costarían más que los datos | contrato de bronce; prueba de que toda fila une con un lote |
+| R-DAT-06 | **Metadatos mínimos por fila, completos por lote.** Por fila: `_lote_id`, `_linea` y `_huella_fila`. Por lote, en `bronce._lotes`: `source_key`, `etag`, `tamano`, `last_modified`, `huella_encabezado`, `generacion`, `tenia_bom`, `filas`, `ingerido_en`, `clase` (NUEVO o REENTREGA). Esto precisa [03](../docs/diseno/03_Datos_por_capas.md), sección 3.1, que ponía todo por fila: en BigQuery con facturación lógica, 300 bytes por fila de metadatos repetidos costarían más que los datos | contrato de bronce; prueba de que toda fila une con un lote |
 | R-DAT-07 | **Fuente autorizada: solo `data/`.** `data_backup_20260831/` se ingiere como generación aparte, solo para auditoría y para la prueba de regeneración; archivos sueltos de la raíz (`marketing_campaigns.csv`) no se ingieren | regla Q-BRZ-07: cero filas de otra generación en plata |
 | R-DAT-08 | **`process_date` es metadato de carga.** Toda métrica de negocio usa la fecha del evento; `process_date` solo aparece en métricas de frescura y de retraso de llegada | prueba de linaje: ninguna columna de `metricas_reporte` de negocio desciende de `process_date` |
 | R-DAT-09 | **Reloj simulado `AS_OF`.** Se fija en F1 como el máximo `event_ts` de las tablas operacionales redondeado a la hora siguiente, con la consulta que lo produce, en `configuracion/as_of.yaml`; ningún modelo ni servicio usa la hora real | búsqueda de `now()`, `current_date` y `current_timestamp` en `models/` y en los servicios: cero; prueba con `AS_OF` inyectado |
@@ -603,7 +603,7 @@ diaria por lotes**; la necesidad de tiempo real está en la ruta operativa (secc
   (si la tabla lo trae; se confirma en F1), luego la del objeto con mayor `last_modified` de S3 (un dato de
   la fuente), luego la de mayor `_huella_fila`. **`_ingerido_en` no desempata**: depende del orden en que
   corre el pipeline y rompería la independencia del orden. Esto corrige
-  [03](../Diseno/03_Datos_por_capas.md), sección 3.2, punto 3 (DP-DAT-09).
+  [03](../docs/diseno/03_Datos_por_capas.md), sección 3.2, punto 3 (DP-DAT-09).
 
 **Algoritmo de una corrida incremental por tabla:**
 
@@ -759,7 +759,7 @@ confirmar en F3):
 | Salidas | por tabla: filas, huella, rechazos por regla, duplicados descartados, huérfanos, filas con `_owner_ok` falso, resultado del contrato |
 | Publicación | archivo de oro operacional publicado y su SHA-256, o motivo de no publicación |
 | Paridad | en el perfil de nube: tablas iguales sobre tablas comparadas |
-| Cadena | `sha256_manifiesto` y `sha256_manifiesto_anterior`: cada manifiesto encadena al anterior, así una edición posterior se detecta ([investigación 19](../Investigacion/19_Auditoria.md)) |
+| Cadena | `sha256_manifiesto` y `sha256_manifiesto_anterior`: cada manifiesto encadena al anterior, así una edición posterior se detecta ([investigación 19](../docs/investigacion/19_Auditoria.md)) |
 
 | ID | Regla | Cómo se verifica |
 |---|---|---|
@@ -860,7 +860,7 @@ dueno_umbral: VP Gobierno
 
 BCBS 239 son los 14 principios del Comité de Basilea (2013) para agregar datos de riesgo y reportarlos
 ([BIS](https://www.bis.org/publ/bcbs239.pdf)); el linaje y la trazabilidad siguen siendo su brecha principal
-en la industria ([investigación 16](../Investigacion/16_VP_Datos.md)). El capítulo de datos del reporte se
+en la industria ([investigación 16](../docs/investigacion/16_VP_Datos.md)). El capítulo de datos del reporte se
 presenta con esta tabla, y cada fila apunta a evidencia que existe:
 
 | # | Principio | Cómo lo cumple LATAM Bank | Evidencia |
@@ -1672,7 +1672,7 @@ y de linaje, y parte de la credibilidad de la ruta a producción.
 
 ## 8. Backlog propuesto
 
-Las épicas DAT-1 a DAT-6 son las de la [hoja de ruta](../Diseno/07_Hoja_de_ruta.md); DAT-7 es nueva y es la
+Las épicas DAT-1 a DAT-6 son las de la [hoja de ruta](../presidencia/hoja_de_ruta.md); DAT-7 es nueva y es la
 **primera en recortarse** dentro del capítulo de datos. Días según el calendario relativo de 07.
 
 ### DAT-1 Bronce con manifiesto y vigilancia (F0 y F1)
@@ -1797,12 +1797,12 @@ inventario y métricas oficiales (hoja de ruta, sección 6).
 
 | ID | Decisión | Cambia | Decide | Principio |
 |---|---|---|---|---|
-| DP-DAT-01 | **Un código, dos perfiles:** local (DuckDB, Parquet, dbt con DuckDB, Data Contract CLI) como referencia y origen de toda cifra oficial; Google Cloud (Cloud Storage, BigQuery, dbt con BigQuery, Knowledge Catalog, policy tags con enmascaramiento, Sensitive Data Protection) como despliegue gobernado, certificado solo por paridad de huellas | **modifica D-08** (agrega el segundo perfil; DuckDB sigue como referencia) y la fila 16 de la tabla de componentes de [06](../Diseno/06_Arquitectura.md) | Comité de Plataforma, con ADR | P9, P11, P13 |
+| DP-DAT-01 | **Un código, dos perfiles:** local (DuckDB, Parquet, dbt con DuckDB, Data Contract CLI) como referencia y origen de toda cifra oficial; Google Cloud (Cloud Storage, BigQuery, dbt con BigQuery, Knowledge Catalog, policy tags con enmascaramiento, Sensitive Data Protection) como despliegue gobernado, certificado solo por paridad de huellas | **modifica D-08** (agrega el segundo perfil; DuckDB sigue como referencia) y la fila 16 de la tabla de componentes de [06](../docs/diseno/06_Arquitectura.md) | Comité de Plataforma, con ADR | P9, P11, P13 |
 | DP-DAT-02 | dbt Core en ambos perfiles; Dataform descartado porque rompe la paridad | precisa D-08 | Comité de Plataforma | P13 |
 | DP-DAT-03 | **Linaje por columna obligatorio** con sqlglot y prueba de cero caminos de PII a oro operacional y platino; en nube, linaje de Knowledge Catalog exportado a platino (retención de 30 días) y comparado; OpenLineage y MetricFlow siguen opcionales | **modifica D-21**, que dejaba el linaje en el manifiesto y el grafo de dbt | VP Datos | P11, P13 |
-| DP-DAT-04 | Tokenización HMAC-SHA-256 portable con la llave en la zona `seguridad` y vectores del RFC 4231; Sensitive Data Protection como control detectivo, no como tokenizador | precisa [03](../Diseno/03_Datos_por_capas.md), sección 3.2, punto 7 | VP Datos, con visto bueno de Gobierno | P11 |
+| DP-DAT-04 | Tokenización HMAC-SHA-256 portable con la llave en la zona `seguridad` y vectores del RFC 4231; Sensitive Data Protection como control detectivo, no como tokenizador | precisa [03](../docs/diseno/03_Datos_por_capas.md), sección 3.2, punto 7 | VP Datos, con visto bueno de Gobierno | P11 |
 | DP-DAT-05 | Fuente autorizada `data/`; el respaldo solo como generación aparte para auditoría y prueba de regeneración, hasta que los organizadores digan otra cosa | ninguno | VP Datos | P13 |
-| DP-DAT-06 | Oro operacional como instantánea publicada de solo lectura con huella; nunca BigQuery en la ruta de una herramienta; como alternativa, carga en un esquema `referencia` de Postgres | precisa [06](../Diseno/06_Arquitectura.md) y D-20 | VP Datos con Tecnología | P5, P13 |
+| DP-DAT-06 | Oro operacional como instantánea publicada de solo lectura con huella; nunca BigQuery en la ruta de una herramienta; como alternativa, carga en un esquema `referencia` de Postgres | precisa [06](../docs/diseno/06_Arquitectura.md) y D-20 | VP Datos con Tecnología | P5, P13 |
 | DP-DAT-07 | La llave de AWS del organizador vive solo en la máquina de ingesta; Storage Transfer Service no se usa en la hackatón y en producción va con identidad federada | ninguno | Comité de Plataforma | P11 |
 | DP-DAT-08 | Ventana de corrección de 3 días medida contra `AS_OF`, con modo inicial y reproceso manual registrado | precisa 03, sección 3.2, punto 8 | VP Datos | P13 |
 | DP-DAT-09 | Ganador determinista por `last_updated`, `last_modified` del objeto y huella de fila, **sin** `_ingerido_en` | **corrige** 03, sección 3.2, punto 3 | VP Datos | P13 |
@@ -1840,15 +1840,15 @@ estrategia `merge`; nombres exactos de las columnas marcadas "a confirmar" contr
 
 ## 11. Fuentes
 
-**Del proyecto:** [principios](../Diseno/00_Principios.md), [interacciones y criterios](../Diseno/01_Interacciones_y_criterios.md),
-[datos por capas](../Diseno/03_Datos_por_capas.md), [organización v2](../Diseno/04_Organizacion_y_roles.md),
-[cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md), [arquitectura](../Diseno/06_Arquitectura.md),
-[hoja de ruta](../Diseno/07_Hoja_de_ruta.md), [decisiones](../Diseno/Decisiones.md),
-[modelo operativo](00_Presidencia_Modelo_operativo.md), investigaciones
-[05](../Investigacion/05_Datos_ML_y_operacion.md), [09](../Investigacion/09_Grafos.md),
-[13](../Investigacion/13_Auditoria_del_dataset.md), [14](../Investigacion/14_VP_Clientes.md),
-[16](../Investigacion/16_VP_Datos.md), [18](../Investigacion/18_VP_Gobierno.md),
-[19](../Investigacion/19_Auditoria.md) y [20](../Investigacion/20_Canales_voz_y_chat.md); el enunciado y el
+**Del proyecto:** [principios](../docs/diseno/00_Principios.md), [interacciones y criterios](../docs/diseno/01_Interacciones_y_criterios.md),
+[datos por capas](../docs/diseno/03_Datos_por_capas.md), [organización v2](../docs/diseno/04_Organizacion_y_roles.md),
+[cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md), [arquitectura](../docs/diseno/06_Arquitectura.md),
+[hoja de ruta](../presidencia/hoja_de_ruta.md), [decisiones](../presidencia/decisiones.md),
+[modelo operativo](../presidencia/modelo_operativo.md), investigaciones
+[05](../docs/investigacion/05_Datos_ML_y_operacion.md), [09](../docs/investigacion/09_Grafos.md),
+[13](../docs/investigacion/13_Auditoria_del_dataset.md), [14](../docs/investigacion/14_VP_Clientes.md),
+[16](../docs/investigacion/16_VP_Datos.md), [18](../docs/investigacion/18_VP_Gobierno.md),
+[19](../docs/investigacion/19_Auditoria.md) y [20](../docs/investigacion/20_Canales_voz_y_chat.md); el enunciado y el
 resumen del dataset en `Documentos/`. El diccionario no se abrió (contiene credenciales).
 
 **Externas** (consultadas el 26 y el 27 de septiembre de 2026; las marcadas "a confirmar" en la sección 7.2 no

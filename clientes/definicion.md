@@ -2,14 +2,14 @@
 
 **Cara:** VP Clientes, con sus tres gerencias: Diseño conversacional de chat y voz, Operaciones de fraude y
 disputas, y Calidad de servicio. **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión, para
-el desafío de Gobierno y la auditoría de completitud ([modelo operativo](00_Presidencia_Modelo_operativo.md),
+el desafío de Gobierno y la auditoría de completitud ([modelo operativo](../presidencia/modelo_operativo.md),
 sección 7).
 **Misión:** "cargo no reconocido", de la que esta cara es dueña del resultado
-([organización v2](../Diseno/04_Organizacion_y_roles.md), sección 4).
-**Se apoya en:** principios P1 a P13, decisiones D-01 a D-21, [interacciones y criterios](../Diseno/01_Interacciones_y_criterios.md),
-[cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md), [arquitectura](../Diseno/06_Arquitectura.md),
-[hoja de ruta](../Diseno/07_Hoja_de_ruta.md), las investigaciones 1, 2, 3, 6, 7, 13, 14, 18, 20 y 21, y las
-definiciones ya escritas de [Datos](03_VP_Datos.md) y [Tecnología](04_VP_Tecnologia.md).
+([organización v2](../docs/diseno/04_Organizacion_y_roles.md), sección 4).
+**Se apoya en:** principios P1 a P13, decisiones D-01 a D-21, [interacciones y criterios](../docs/diseno/01_Interacciones_y_criterios.md),
+[cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md), [arquitectura](../docs/diseno/06_Arquitectura.md),
+[hoja de ruta](../presidencia/hoja_de_ruta.md), las investigaciones 1, 2, 3, 6, 7, 13, 14, 18, 20 y 21, y las
+definiciones ya escritas de [Datos](../datos/definicion.md) y [Tecnología](../tecnologia/definicion.md).
 
 **Cómo leer este documento**
 
@@ -19,8 +19,8 @@ definiciones ya escritas de [Datos](03_VP_Datos.md) y [Tecnología](04_VP_Tecnol
   de 2026; **[P]** cifra de proveedor o de fuente secundaria sin verificación independiente; **[S]** supuesto
   nuestro, que se reemplaza por una medición; **[A]** a confirmar, con el cómo al lado. Toda cifra de ahorro
   o de capacidad futura dice **proyección** (P3).
-- Las cifras del dataset salen de la muestra auditada ([investigación 13](../Investigacion/13_Auditoria_del_dataset.md)
-  y [revisión 05](../Diseno/05_Cobertura_del_enunciado.md), sección 3) y se confirman sobre el total en F1 (DAT-2).
+- Las cifras del dataset salen de la muestra auditada ([investigación 13](../docs/investigacion/13_Auditoria_del_dataset.md)
+  y [revisión 05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3) y se confirman sobre el total en F1 (DAT-2).
 - Los textos al cliente que aparecen aquí son la versión 1 del catálogo. La fuente de verdad será el catálogo
   versionado del repositorio (sección 3.1); si difieren, manda el catálogo aprobado y este documento se corrige.
 - Los plazos por país que aparecen en ejemplos son ilustrativos: el contenido de `policy/v1` lo decide
@@ -37,13 +37,13 @@ definiciones ya escritas de [Datos](03_VP_Datos.md) y [Tecnología](04_VP_Tecnol
 Que el cliente resuelva su problema con un cargo que no reconoce, por chat o por voz, en español o en
 portugués, sin repetir lo que ya dijo; y que, cuando interviene una persona, esa persona reciba el caso listo
 para actuar. La VP Clientes es la **dueña del resultado** de la misión; IA, Datos y Tecnología aportan
-capacidades y Gobierno desafía desde fuera ([04](../Diseno/04_Organizacion_y_roles.md), sección 4).
+capacidades y Gobierno desafía desde fuera ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 4).
 
 ### 1.2 Qué decide esta cara, qué propone y qué no decide
 
 | Tipo | Qué | Con quién |
 |---|---|---|
-| **Decide** | experiencia de punta a punta; guiones y plantillas al cliente; textos de los componentes de chat y su degradación a WhatsApp; registro por país; aviso de IA; diseño de voz (lectura de vuelta, rellenos, silencios, teclas); modelo de colas humanas y sus acuerdos de servicio; contenido y orden de la vista del experto; formulario de corrección; árbol de resultados; guion de la demo | consulta obligatoria a IA y a Gobierno (Protección al consumidor); Gobierno puede objetar ([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 2) |
+| **Decide** | experiencia de punta a punta; guiones y plantillas al cliente; textos de los componentes de chat y su degradación a WhatsApp; registro por país; aviso de IA; diseño de voz (lectura de vuelta, rellenos, silencios, teclas); modelo de colas humanas y sus acuerdos de servicio; contenido y orden de la vista del experto; formulario de corrección; árbol de resultados; guion de la demo | consulta obligatoria a IA y a Gobierno (Protección al consumidor); Gobierno puede objetar ([modelo operativo](../presidencia/modelo_operativo.md), sección 2) |
 | **Propone, otro decide** | plazos, umbrales, qué exige confirmación y con qué nivel de autenticación (Gobierno); proveedores y voces (IA); transporte, plataforma y costo técnico (Tecnología); definición oficial de métricas (Datos); gasto (Presidencia) | solicitudes `S-CLI-nn` (sección 5) |
 | **No decide** | la ruta de una conversación concreta (la decide el motor con la política, P4); si una versión sale (Gobierno); qué cuenta como evidencia (Auditoría) | |
 
@@ -51,14 +51,14 @@ capacidades y Gobierno desafía desde fuera ([04](../Diseno/04_Organizacion_y_ro
 
 | Dentro | Fuera, y por qué |
 |---|---|
-| Pasos 1 a 6 del mapa de una disputa ([investigación 6](../Investigacion/06_El_banco_por_dentro.md), sección 5): contacto, autenticación (su experiencia, no el servicio de identidad), identificación de la transacción, contención, radicación y registro del abono provisional | pasos 7 a 9 (investigación ante la red, resolución, comunicación del fallo): quedan como contexto y como destino del traspaso al back office |
-| Rutas R1 a R8 y escenarios N, A, E, F, D, S, L y V de [01](../Diseno/01_Interacciones_y_criterios.md), en chat y en voz | un segundo flujo (P8) |
+| Pasos 1 a 6 del mapa de una disputa ([investigación 6](../docs/investigacion/06_El_banco_por_dentro.md), sección 5): contacto, autenticación (su experiencia, no el servicio de identidad), identificación de la transacción, contención, radicación y registro del abono provisional | pasos 7 a 9 (investigación ante la red, resolución, comunicación del fallo): quedan como contexto y como destino del traspaso al back office |
+| Rutas R1 a R8 y escenarios N, A, E, F, D, S, L y V de [01](../docs/diseno/01_Interacciones_y_criterios.md), en chat y en voz | un segundo flujo (P8) |
 | Chat web con la semántica de WhatsApp simulada (D-19); voz por navegador y teléfono opcional (D-18) | WhatsApp real y línea telefónica real en la hackatón: ruta a producción |
 | Español de México, Colombia, Argentina y neutro; portugués de un cliente con cuenta en México, Colombia o Argentina | la norma brasileña: la cuenta no está en Brasil (escenario L5) |
 | Cola humana destino del traspaso, vista del experto, ingreso al mismo hilo y correcciones como etiquetas | operar un contact center real: en la hackatón los expertos son personas del equipo o un experto simulado, declarado |
 | Comunicaciones del flujo: avisos, plantillas fuera de ventana, notificaciones de estado, consentimiento y accesibilidad | marketing o cualquier mensaje promocional |
 | Resultados para cliente y negocio con línea base del dataset y proyección etiquetada | afirmar una mejora medida en producción (P3) |
-| Ningún movimiento de dinero: el abono provisional de México solo se **registra** para el back office ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 12) | ejecutar o prometer abonos |
+| Ningún movimiento de dinero: el abono provisional de México solo se **registra** para el back office ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 12) | ejecutar o prometer abonos |
 | Cambio de teléfono o correo: fuera del alcance del agente (S5), con traspaso y autenticación reforzada | que la IA cambie datos de contacto |
 
 ### 1.4 Cómo aporta cada gerencia
@@ -98,7 +98,7 @@ Ocho principios de servicio ordenan todas las reglas de esta sección:
 | PS7 | Nunca se acusa: una contradicción es evidencia para una persona | investigación 6, fraude de primera parte | R-CLI-14, R-CLI-67 |
 | PS8 | El estilo se adapta al país de la cuenta; las decisiones no | P12, escenarios L1 y L6 | R-CLI-19, R-CLI-20 |
 
-**Términos nuevos** (para el glosario común, [modelo operativo](00_Presidencia_Modelo_operativo.md), sección 9):
+**Términos nuevos** (para el glosario común, [modelo operativo](../presidencia/modelo_operativo.md), sección 9):
 
 | Término | Significado |
 |---|---|
@@ -123,7 +123,7 @@ mismo estado tiene guion de chat y de voz, y un caso se retoma de un canal al ot
 
 #### 2.2.1 Guion por estado del motor
 
-Estados de [01](../Diseno/01_Interacciones_y_criterios.md), sección 4, con los nombres del `StrEnum` de
+Estados de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 4, con los nombres del `StrEnum` de
 Tecnología. "Dice" es la intención de la plantilla; el texto exacto vive en el catálogo.
 
 | Estado | Qué dice | Qué muestra en chat | Qué pregunta | Diferencia en voz | Nunca |
@@ -509,7 +509,7 @@ Una confirmación vale para una sola acción: confirmar el bloqueo no confirma e
 
 #### 2.4.2 Chat: componentes AG-UI y sus textos
 
-Los seis componentes los implementa Tecnología ([04](04_VP_Tecnologia.md), sección 2.9) como herramientas
+Los seis componentes los implementa Tecnología ([04](../tecnologia/definicion.md), sección 2.9) como herramientas
 de interfaz; esta cara fija su contenido y sus etiquetas. Las etiquetas respetan el límite de 20
 caracteres de WhatsApp y están en infinitivo o sin conjugar para servir a los tres registros.
 
@@ -678,9 +678,9 @@ motivo y la del caso en curso: una falla de herramienta en medio de un fraude en
 
 #### 2.5.2 Especificación del paquete de traspaso
 
-El `PaqueteTraspaso` es un objeto tipado con procedencia ([investigación 14](../Investigacion/14_VP_Clientes.md),
+El `PaqueteTraspaso` es un objeto tipado con procedencia ([investigación 14](../docs/investigacion/14_VP_Clientes.md),
 sección 3). El texto que lee la persona se **renderiza** desde el objeto con plantillas; ningún resumen libre
-del modelo aparece como hecho ([06](../Diseno/06_Arquitectura.md), sección 3).
+del modelo aparece como hecho ([06](../docs/diseno/06_Arquitectura.md), sección 3).
 
 | # | Campo | Contenido | Origen | Obligatorio |
 |---|---|---|---|---|
@@ -707,7 +707,7 @@ del modelo aparece como hecho ([06](../Diseno/06_Arquitectura.md), sección 3).
 **Lo que el paquete no lleva:** nombre del cliente, número de documento, número completo de tarjeta,
 atributos protegidos (edad, género, estado civil, educación), segmento, `fraud_score` en crudo y el campo de
 "razonamiento" de las salidas estructuradas, que es texto del modelo y no evidencia
-([05](../Diseno/05_Cobertura_del_enunciado.md), punto 19).
+([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 19).
 
 **Tipos de conflicto que se detectan y cómo se escriben** (siempre en dos columnas, "declarado" y
 "registro", sin calificativos):
@@ -802,7 +802,7 @@ declaran como etiquetas del equipo.
 
 | ID | Regla | Cómo se verifica |
 |---|---|---|
-| R-CLI-62 | El paquete se renderiza desde el objeto tipado; ningún texto del modelo aparece como hecho. | separación hecho e interpretación por tipos ([01](../Diseno/01_Interacciones_y_criterios.md), sección 5.2); M-13 |
+| R-CLI-62 | El paquete se renderiza desde el objeto tipado; ningún texto del modelo aparece como hecho. | separación hecho e interpretación por tipos ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.2); M-13 |
 | R-CLI-63 | Un paquete sin algún campo obligatorio de 2.5.2 no se encola: el campo se completa con "no disponible" y su motivo. | M-12 igual a 100% por esquema |
 | R-CLI-64 | Cada línea de la vista lleva su procedencia: verificado (fuente y hora), dicho por el cliente o interpretación de la IA (confianza). | prueba de render |
 | R-CLI-65 | El paquete trae los compromisos comunicados al cliente. | E7: el compromiso de avisar al abrir el turno está en el paquete |
@@ -834,9 +834,9 @@ declaran como etiquetas del equipo.
 | Demanda por hora | plana en las 24 horas; 33% entre 00:00 y 07:59 | la IA vale más de noche |
 | Demanda por día | fines de semana a la mitad de los días hábiles | dimensionamiento |
 | Canal | teléfono 84,8%; correo 4,1%; app 3,8%; chat web 3,4%; WhatsApp 3,3%; web 0,5% | justifica voz y chat (D-17) |
-| Escala | 800 mil interacciones en 1.097 días: unas 730 al día para 1.200 agentes (0,6 por agente al día) | el dataset es una muestra del banco: toda cifra de capacidad es proyección ([investigación 12](../Investigacion/12_Organizacion_de_un_banco.md)) |
+| Escala | 800 mil interacciones en 1.097 días: unas 730 al día para 1.200 agentes (0,6 por agente al día) | el dataset es una muestra del banco: toda cifra de capacidad es proyección ([investigación 12](../docs/investigacion/12_Organizacion_de_un_banco.md)) |
 
-Fuente: [revisión 05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.1, sobre la muestra; se confirma
+Fuente: [revisión 05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.1, sobre la muestra; se confirma
 sobre el total en DAT-2.
 
 #### 2.6.2 Colas y enrutamiento
@@ -866,14 +866,14 @@ retenido (P1).
 | P2 | 80% en 5 minutos [S] | respuesta en 1 hora [S] | a los 15 minutos, nivel 1 |
 | P3 | 80% en 20 minutos [S] | respuesta en 4 horas [S] | a los 60 minutos, paso a asíncrono con aviso |
 | P4 | no aplica | siguiente día hábil, 24 horas como máximo [S] | |
-| Abandono en cola | 5% o menos (referencia de industria de 2 a 5%, [investigación 7](../Investigacion/07_Atencion_al_cliente_como_dominio.md)) [P] | | |
+| Abandono en cola | 5% o menos (referencia de industria de 2 a 5%, [investigación 7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md)) [P] | | |
 
 #### 2.6.4 Dimensionamiento
 
 - **Método:** Erlang C por cola y franja, con la llegada de traspasos que produzca el sistema (medida en el
   retenido representativo y proyectada a volumen), el tiempo de gestión de cada categoría (M-46) y el
   acuerdo de servicio de 2.6.3. Pasado el 85% de ocupación hacen falta desproporcionadamente más personas
-  ([investigación 7](../Investigacion/07_Atencion_al_cliente_como_dominio.md), sección 5).
+  ([investigación 7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md), sección 5).
 - **Efecto de selección:** si la IA resuelve lo fácil, el tiempo de gestión humano sube; el dimensionamiento
   usa un factor de traspaso (2.7.2), no el tiempo histórico sin corregir.
 - **Ejemplo que explica E7** (supuestos [S], etiqueta: proyección). Con una sola persona, Erlang C equivale a
@@ -905,13 +905,13 @@ P(esperar más de t) = rho * exp(-(mu-lambda)*t)        rho = lambda/mu
 | 3, contingencia | una especialidad sin personas en el turno, o el interruptor "todo a humano" activo (R-TEC-104) | guardia de la especialidad; la IA recibe, autentica, contiene si la política lo permite en ese modo [A: Gobierno] y encola; Gobierno revisa umbrales; incidente registrado | "Hoy atendemos con demora. Su caso ya está registrado y en fila; le avisaremos por aquí." |
 
 Quién decide: Clientes (Operaciones) declara el nivel; Tecnología ajusta capacidad; Gobierno revisa umbrales
-([04](../Diseno/04_Organizacion_y_roles.md), sección 11). Ningún nivel apaga la opción de persona: cambia
+([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11). Ningún nivel apaga la opción de persona: cambia
 su modo (en vivo, asíncrono o aviso).
 
 #### 2.6.6 Devolución de contacto sin llamadas salientes
 
 "Me llamaron del banco" es el guion de la estafa que más crece en los tres países
-([investigación 6](../Investigacion/06_El_banco_por_dentro.md), sección 2). LATAM Bank **no hace llamadas
+([investigación 6](../docs/investigacion/06_El_banco_por_dentro.md), sección 2). LATAM Bank **no hace llamadas
 salientes** en este flujo: cuando una persona queda disponible, el cliente recibe la plantilla
 "Especialista disponible" (2.8.1) o un aviso en la app y **vuelve él** por un canal oficial, donde se
 reautentica si la sesión venció. Así el cliente puede aplicar una regla simple y verdadera: "si me llaman
@@ -942,7 +942,7 @@ Supuestos para `configuracion/supuestos_operacion.yaml`, con su etiqueta:
 | **Minuto de especialista de fraude con portugués** | **US$0,30** | **US$0,48** | **US$0,89** | derivado |
 | **Contacto de voz de servicio** (204 s de mediana del dataset más trabajo posterior) | **US$0,98** | **US$1,47** | **US$2,50** | derivado |
 
-La referencia de industria de US$7 a 14 por contacto de voz ([investigación 7](../Investigacion/07_Atencion_al_cliente_como_dominio.md))
+La referencia de industria de US$7 a 14 por contacto de voz ([investigación 7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md))
 es de Estados Unidos [P] y queda solo como análisis de sensibilidad; la proyección usa las cifras de
 Latinoamérica (DP-CLI-12).
 
@@ -961,9 +961,9 @@ Latinoamérica (DP-CLI-12).
   primer turno; autenticación antes de datos; plazo desde regla; cierre que distingue; frases prohibidas
   ausentes; idioma y registro correctos; enmascaramiento; oferta de persona tras la frustración.
 - **Juez validado** (arnés de IA) solo para tono y claridad, con rúbrica versionada y acuerdo contra una
-  muestra humana ([investigación 4](../Investigacion/04_Evaluacion.md), sección 3).
+  muestra humana ([investigación 4](../docs/investigacion/04_Evaluacion.md), sección 3).
 - **Sesión de calibración** después de cada corrida de desarrollo: las tres causas principales de falla
-  por capa, con su corrección ([01](../Diseno/01_Interacciones_y_criterios.md), sección 6, punto 10).
+  por capa, con su corrección ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 6, punto 10).
 
 #### 2.6.10 Reglas de la operación humana
 
@@ -989,7 +989,7 @@ Latinoamérica (DP-CLI-12).
 #### 2.7.1 Resultados, indicadores y línea base
 
 Línea base del proceso de reclamos de "Cargo no reconocido" (866 casos de la muestra,
-[revisión 05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.2) y de las demás tablas del dataset.
+[revisión 05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.2) y de las demás tablas del dataset.
 **Advertencia:** esos indicadores son casi iguales entre subcategorías y `sla_breached` no se relaciona con
 `resolution_days`; sirven como **nivel de referencia**, no para afirmar que este motivo se atiende peor.
 
@@ -1014,7 +1014,7 @@ Línea base del proceso de reclamos de "Cargo no reconocido" (866 casos de la mu
 |---|---|---|
 | `m_h` | minutos humanos por caso en el escenario "todo humano" | M-46 |
 | `c_min` | costo del minuto humano | 2.6.7 (bajo, central, alto) |
-| `c_ia` | costo de plataforma y modelos por caso | M-20 (Tecnología, [04](04_VP_Tecnologia.md), sección 7.4) |
+| `c_ia` | costo de plataforma y modelos por caso | M-20 (Tecnología, [04](../tecnologia/definicion.md), sección 7.4) |
 | `c_canal` | mensajes de WhatsApp o minutos de telefonía por caso | sección 7 |
 | `p_tr` | fracción de casos con traspaso | 1 menos M-03, medido en el retenido representativo |
 | `f_tr` | minutos de un traspaso frente a un caso "todo humano" | [S] 0,8 a 1,5: el contexto evita reinterrogar y baja el tiempo; la selección deja los casos difíciles y lo sube |
@@ -1137,7 +1137,7 @@ responde "NO" o equivalente, deja de recibir avisos de ese caso [A: confirmar la
 ### 2.9 Guion de la demo
 
 **Objetivo:** que el jurado vea, en unos 12 minutos [S: confirmar el formato con los organizadores,
-pregunta 1 de [05](../Diseno/05_Cobertura_del_enunciado.md)], los tres casos obligatorios en español y en
+pregunta 1 de [05](../docs/diseno/05_Cobertura_del_enunciado.md)], los tres casos obligatorios en español y en
 portugués, un ataque contenido, una falla segura con reintentos acotados y el paso de chat a voz, con las
 trazas a la vista.
 
@@ -1156,7 +1156,7 @@ trazas a la vista.
 | 10 | 11:15 a 12:00 | resultados | diapositiva | tabla con denominadores e intervalos; etiquetas de medido offline, simulado y proyección; limitaciones (portugués sin datos reales, voces sintéticas, WhatsApp simulado) | cada cifra desde platino |
 
 - Los casos en portugués van por chat para que el recorte de la voz en portugués (orden de recorte de
-  [07](../Diseno/07_Hoja_de_ruta.md), sección 6, punto 4) no toque los casos obligatorios.
+  [07](../presidencia/hoja_de_ruta.md), sección 6, punto 4) no toque los casos obligatorios.
 - Si el formato lo permite, un clip de 30 s muestra la instalación de un comando en máquina limpia.
 
 **Reglas de la demo:**
@@ -1183,12 +1183,12 @@ se versiona, se prueba y se opera lo que el cliente lee y oye, y lo que la perso
 | 3.2 | Formato de montos, fechas y monedas | Babel con datos CLDR por locale (es-MX, es-CO, es-AR, pt-BR) | CLDR es el estándar de facto; evita el error de separadores entre México y el resto | no aplica | formateo manual (descartado: es donde nacen los errores) | propuesta |
 | 3.3 | Calendario de días hábiles | paquete `holidays` de Python validado contra el calendario oficial de cada país [A: Gobierno valida]; lo usa el motor para calcular fechas de plazo | una fecha límite mal calculada es un resultado materialmente incorrecto | no aplica | tabla propia de feriados cargada en `policy/v1` | propuesta; la dueña del contenido es Gobierno |
 | 3.4 | Linter de contenido en integración continua | script propio que revisa longitudes, frases prohibidas, límites de WhatsApp, variables, registro, términos brasileños en PT y emojis | convierte las reglas de 2.3 y 2.4 en pruebas; sin él, las reglas son opinión | Cloud Build si el repositorio corre en la nube | revisión manual (no escala) | propuesta |
-| 3.5 | Componentes de chat | los seis componentes AG-UI de Tecnología como herramientas de interfaz (D-19) | AG-UI es el protocolo de 2026 para eventos, estado y aprobaciones entre agente e interfaz ([investigación 20](../Investigacion/20_Canales_voz_y_chat.md)) | no aplica | A2UI para interfaz generativa: se deja para después porque seis componentes fijos bastan (P9) | firme (D-19) |
+| 3.5 | Componentes de chat | los seis componentes AG-UI de Tecnología como herramientas de interfaz (D-19) | AG-UI es el protocolo de 2026 para eventos, estado y aprobaciones entre agente e interfaz ([investigación 20](../docs/investigacion/20_Canales_voz_y_chat.md)) | no aplica | A2UI para interfaz generativa: se deja para después porque seis componentes fijos bastan (P9) | firme (D-19) |
 | 3.6 | WhatsApp | simulado en la hackatón; en producción, WhatsApp Business Platform (API en la nube de Meta) detrás de un adaptador con la misma interfaz que el modo simulado | la semántica (ventana, plantillas, botones, listas) se prueba sin depender de la aprobación de Meta | Google Cloud no ofrece un canal nativo de WhatsApp; el adaptador corre en Cloud Run | proveedores de soluciones de negocio (Twilio, Infobip u otros) [A: costo y cobertura]; RCS Business Messaging como canal complementario [A] | firme en la hackatón (D-19); propuesta para producción |
 | 3.7 | Voz: persona y marcas | una voz por locale, del mismo género en todos, elegida por la medición de IA en S1 con una prueba de pronunciación de montos, fechas y comercios del directorio; rellenos y plantillas críticas presintetizados en caché | la síntesis también se equivoca y los números son el punto débil; presintetizar baja la latencia (R-TEC-86) | voces Chirp 3 HD de Text-to-Speech (US$30 por millón de caracteres [V en Tecnología]) [A: locales disponibles para es-MX, es-CO, es-AR y pt-BR] | los proveedores que mida IA en S1 | provisional hasta S1 (D-18) |
 | 3.8 | Cola humana y vista del experto | cola propia en Postgres y vista web propia (TEC-15, `lb-staff`), con el paquete expuesto como API | reproducible con un comando (P13); el paquete tipado es lo valioso y cualquier escritorio de agentes lo puede consumir | en producción, Contact Center AI Platform con enrutamiento por habilidades y Agent Assist [A: precio y disponibilidad en la región] | Genesys Cloud, Amazon Connect, Twilio Flex, Zendesk | propuesta |
 | 3.9 | Dimensionamiento y simulación de colas | fórmulas de Erlang C para dimensionar y SimPy (simulación de eventos discretos) para E7 y E8 con el perfil de demanda del dataset | Erlang C es el estándar de gestión de fuerza laboral; la simulación capta la noche y la saturación, que la fórmula promedia | no aplica | biblioteca `pyworkforce` [A: mantenimiento] | propuesta |
-| 3.10 | Control de calidad de conversaciones | verificaciones deterministas más el juez validado del arnés de IA | la literatura pide verificar con reglas lo verificable y usar juez solo para lo demás ([investigación 4](../Investigacion/04_Evaluacion.md)) | en producción, Conversational Insights con evaluación automática de calidad [A: nombre vigente del producto y precio] | Observe.AI, MaestroQA ([investigación 7](../Investigacion/07_Atencion_al_cliente_como_dominio.md)) | propuesta |
+| 3.10 | Control de calidad de conversaciones | verificaciones deterministas más el juez validado del arnés de IA | la literatura pide verificar con reglas lo verificable y usar juez solo para lo demás ([investigación 4](../docs/investigacion/04_Evaluacion.md)) | en producción, Conversational Insights con evaluación automática de calidad [A: nombre vigente del producto y precio] | Observe.AI, MaestroQA ([investigación 7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md)) | propuesta |
 | 3.11 | Accesibilidad | axe-core dentro de las pruebas de Playwright de Tecnología y revisión manual con lector de pantalla (NVDA en Windows) | la prueba automática encuentra una parte de los problemas; la revisión manual el resto | no aplica | Lighthouse | propuesta |
 | 3.12 | Satisfacción | pregunta de un toque al cerrar (1 a 5) y "¿resolvimos su problema?" (sí o no) | instrumento de producción; en la hackatón no hay clientes reales, así que no se reporta como resultado | no aplica | CES | propuesta |
 
@@ -1196,7 +1196,7 @@ se versiona, se prueba y se opera lo que el cliente lee y oye, y lo que la perso
 
 ## 4. Seguridad, privacidad y gobierno del dominio
 
-Los controles técnicos viven en la plataforma ([04](04_VP_Tecnologia.md), secciones 2 y 4) y en la
+Los controles técnicos viven en la plataforma ([04](../tecnologia/definicion.md), secciones 2 y 4) y en la
 política (Gobierno). Esta sección fija los controles propios del contenido, del canal y de la operación
 humana, y continúa la numeración.
 
@@ -1230,14 +1230,14 @@ humana, y continúa la numeración.
 |---|---|---|
 | R-CLI-121 | Ninguna decisión, prioridad ni acuerdo de servicio depende del acento, la variante, el segmento o un atributo protegido; el registro depende solo del país de la cuenta. | prueba de dependencias del motor y del enrutador; L1 |
 | R-CLI-122 | La espera simulada hasta una persona se reporta por idioma y franja (MP-CLI-3); una brecha con intervalos que no se solapan se investiga y queda en acta (P12). | reporte de equidad |
-| R-CLI-123 | El cliente puede pedir que una persona revise cualquier resultado automatizado del flujo, con explicación basada en la regla aplicada (por analogía con el artículo 20 de la LGPD, [investigación 3](../Investigacion/03_Seguridad_privacidad_regulacion.md)). | ruta R5 disponible desde cualquier estado; plantilla de explicación con la regla |
-| R-CLI-124 | Una queja del cliente sobre la atención de la IA se registra con el motivo `QUEJA_SOBRE_ATENCION` y va a Gobierno (Protección al consumidor), según [04](../Diseno/04_Organizacion_y_roles.md), sección 11. | caso de prueba con el motivo en el paquete |
+| R-CLI-123 | El cliente puede pedir que una persona revise cualquier resultado automatizado del flujo, con explicación basada en la regla aplicada (por analogía con el artículo 20 de la LGPD, [investigación 3](../docs/investigacion/03_Seguridad_privacidad_regulacion.md)). | ruta R5 disponible desde cualquier estado; plantilla de explicación con la regla |
+| R-CLI-124 | Una queja del cliente sobre la atención de la IA se registra con el motivo `QUEJA_SOBRE_ATENCION` y va a Gobierno (Protección al consumidor), según [04](../docs/diseno/04_Organizacion_y_roles.md), sección 11. | caso de prueba con el motivo en el paquete |
 
 ### 4.5 Riesgos del dominio en el marco de Gobierno
 
 | Trabajador o artefacto | Riesgo propio de esta cara | Control |
 |---|---|---|
-| Redacción (nivel alto en la clasificación de [investigación 18](../Investigacion/18_VP_Gobierno.md)) | registro equivocado, tono indebido, cifra fuera de plantilla | plantillas críticas; linter; juez validado; filtro de salida (R-TEC-75) |
+| Redacción (nivel alto en la clasificación de [investigación 18](../docs/investigacion/18_VP_Gobierno.md)) | registro equivocado, tono indebido, cifra fuera de plantilla | plantillas críticas; linter; juez validado; filtro de salida (R-TEC-75) |
 | Catálogo de plantillas | una plantilla con un plazo o una promesa incorrectos llega a todos los clientes | revisión de Gobierno; retiro sin desplegar (R-CLI-114) |
 | Vista del experto | exposición de datos a empleados; decisiones sesgadas por datos irrelevantes | minimización; roles; registro de accesos |
 | Cola humana | espera desigual por idioma | idioma alterno; reporte de espera por idioma (R-CLI-122) |
@@ -1447,7 +1447,7 @@ S-DAT-10 de Datos, quedan **aceptadas** con las fechas de la tabla 5.1.
 
 ### 6.1 Métricas oficiales que esta cara vigila
 
-Definiciones del catálogo de Datos ([03](03_VP_Datos.md), M-01 a M-46). Las metas son provisionales (D-07) y
+Definiciones del catálogo de Datos ([03](../datos/definicion.md), M-01 a M-46). Las metas son provisionales (D-07) y
 se fijan antes del retenido.
 
 | Métrica | Meta provisional | Conjunto | Por qué la vigila esta cara |
@@ -1462,7 +1462,7 @@ se fijan antes del retenido.
 | M-15 Acciones informadas sin verificación | 0, con cota de la regla del tres | representativo y estrés | P6 |
 | M-16 Idioma correcto | 100% | representativo | L1 a L6 |
 | M-17 Enmascaramiento | 100% | representativo y estrés | R-CLI-30 |
-| M-19 Latencia de voz a voz | presupuesto de [06](../Diseno/06_Arquitectura.md), sección 6 | voz | un silencio largo se vive como falla |
+| M-19 Latencia de voz a voz | presupuesto de [06](../docs/diseno/06_Arquitectura.md), sección 6 | voz | un silencio largo se vive como falla |
 | M-22 Costo con traspasos | se reporta con los supuestos de 2.6.7 | representativo | el costo que decide está en el traspaso |
 | M-26 Retención de voz frente a texto | se reporta | voz | la voz no debe resolver peor |
 | M-27 Brecha máxima entre grupos | brecha con intervalos que no se solapan, investigada | representativo | P12 |
@@ -1540,7 +1540,7 @@ El precio depende del **mercado del número del cliente** (su código de país),
 plantillas (código y aviso de estado), cobrables una vez agotados los 1.000 gratuitos del mes (que a 10
 mensajes por caso alcanzan para unos 100 casos por número):
 
-| Mercado | Costo del canal por caso | Frente al costo de modelos por caso de chat (US$0,023, [04](04_VP_Tecnologia.md), sección 7.4) |
+| Mercado | Costo del canal por caso | Frente al costo de modelos por caso de chat (US$0,023, [04](../tecnologia/definicion.md), sección 7.4) |
 |---|---|---|
 | México | US$0,085 | 3,7 veces |
 | Colombia | US$0,008 | 0,35 veces |
@@ -1554,7 +1554,7 @@ incluirlo (DP-CLI-13).
 
 ### 7.3 Telefonía (con Tecnología)
 
-Cifras de Tecnología ([04](04_VP_Tecnologia.md), sección 7.2) [V]: número de EE. UU. de Twilio US$1,15 al mes,
+Cifras de Tecnología ([04](../tecnologia/definicion.md), sección 7.2) [V]: número de EE. UU. de Twilio US$1,15 al mes,
 entrante US$0,0085 por minuto y Media Streams US$0,0044 por minuto; número de Colombia US$14 al mes y
 entrante US$0,0945 por minuto. México y Argentina [A: páginas de precios de voz de Twilio por país].
 Una llamada de 3 minutos con número colombiano cuesta 3 × (0,0945 + 0,0044) ≈ US$0,30. En la comparación
@@ -1600,7 +1600,7 @@ La diferencia porcentual del chat coincide con la ilustración de 2.7.2, que us�
 
 ## 8. Backlog propuesto
 
-Épicas de [07](../Diseno/07_Hoja_de_ruta.md), sección 3 (CLI-1 a CLI-5), más una nueva (CLI-6) que la Oficina
+Épicas de [07](../presidencia/hoja_de_ruta.md), sección 3 (CLI-1 a CLI-5), más una nueva (CLI-6) que la Oficina
 de Entrega debe sumar al backlog.
 
 ### CLI-1 Guiones por estado en ES y PT, para chat y voz (F2 y F3)
@@ -1669,7 +1669,7 @@ de Entrega debe sumar al backlog.
 | CLI-6.4 | Reglas de notificaciones: tope y horario silencioso | prueba con reloj (R-CLI-102) | TEC-2 | D5 |
 | CLI-6.5 | Revisión de accesibilidad WCAG 2.2 AA del chat y de la vista | axe-core y lector de pantalla (R-CLI-103) | CLI-2, CLI-4.4 | D7 |
 
-**Orden de recorte dentro de esta cara**, alineado con [07](../Diseno/07_Hoja_de_ruta.md), sección 6: primero
+**Orden de recorte dentro de esta cara**, alineado con [07](../presidencia/hoja_de_ruta.md), sección 6: primero
 la voz en portugués (CLI-3 en PT); después la simulación de colas se reduce a E7 (CLI-4.7); después las
 reglas de notificaciones (CLI-6.4). **Nunca se recortan:** las plantillas críticas (CLI-1.3), el paquete
 de traspaso (CLI-4.3), el aviso de IA y el botón de persona (CLI-2.3) ni los tres casos de la demo en
@@ -1709,15 +1709,15 @@ español y portugués.
 | DP-CLI-02 | Pedir persona inicia el traspaso en el turno siguiente; una contención pendiente se ofrece una sola vez y después de encolar | ofrecer la contención antes de encolar; no ofrecerla | cumple E4 sin resistencia y no pierde minutos de contención en fraude | P7, PS2 | Gobierno (Protección al consumidor) |
 | DP-CLI-03 | Sin especialista del idioma, contención verificada primero y oferta de idioma alterno (español ya o portugués al abrir el turno), a elección del cliente | esperar siempre al especialista en portugués; pasar a español sin preguntar | con una sola persona nocturna el acuerdo P1 solo aguanta menos de un caso por hora (2.6.4); elegir es del cliente | P7, P12 | Clientes (Operaciones), con Gobierno |
 | DP-CLI-04 | Sin llamadas salientes: la devolución de contacto es un aviso para que el cliente vuelva por un canal oficial | devolución de llamada clásica | "me llamaron del banco" es el guion de la estafa; una regla simple protege al cliente | P5 | Clientes, con Gobierno (Seguridad) |
-| DP-CLI-05 | El experto entra al mismo hilo y la IA pasa a modo asistente: no escribe al cliente y sus borradores solo salen si el experto los envía | la IA sigue hablando con el cliente; hilo nuevo para el humano | no hay dos voces ante el cliente; la asistencia al agente es donde la IA tiene evidencia causal más fuerte ([investigación 7](../Investigacion/07_Atencion_al_cliente_como_dominio.md)) | P6, P7 | Clientes, con Tecnología |
+| DP-CLI-05 | El experto entra al mismo hilo y la IA pasa a modo asistente: no escribe al cliente y sus borradores solo salen si el experto los envía | la IA sigue hablando con el cliente; hilo nuevo para el humano | no hay dos voces ante el cliente; la asistencia al agente es donde la IA tiene evidencia causal más fuerte ([investigación 7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md)) | P6, P7 | Clientes, con Tecnología |
 | DP-CLI-06 | El segmento no cambia prioridad ni acuerdo y no se muestra en la vista del experto | colas preferentes por segmento | la prioridad sale del riesgo y la urgencia; mostrar el segmento puede sesgar | P12 | Gobierno (Protección al consumidor) |
 | DP-CLI-07 | Tres escenarios nuevos antes de congelar el retenido: **E8** cola saturada (espera P1 mayor que 5 minutos); **D10** ventana de 24 horas vencida con cambio de estado del caso; **L7** cliente en portugués que acepta español con el experto | dejarlos fuera | prueban las restricciones operativas que el enunciado pide analizar | P1, P8 | Gobierno (Riesgo), antes de F2 |
 | DP-CLI-08 | La espera se declara en rangos calibrados, nunca como promesa, con su métrica de calibración | número exacto; no declarar espera | honestidad medible sobre lo que el cliente espera | P6 | Clientes |
 | DP-CLI-09 | Las métricas MP-CLI-1 a MP-CLI-10 entran al catálogo oficial o se mapean a una M existente | medir solo con las M actuales | el árbol de resultados necesita tiempo hasta la contención, espera por idioma y cierre que distingue | P2 | Datos |
 | DP-CLI-10 | Espejo del tuteo en México solo por chat: si el cliente tutea, el sistema tutea; por defecto, usted | usted siempre en México | la banca digital mexicana tutea a menudo; el espejo sube la cercanía sin cambiar decisiones [A: validar con la muestra de estilo] | P12 | Clientes, con Gobierno |
 | DP-CLI-11 | Plantillas fuera de ventana sin montos, nombres, tarjetas ni enlaces | plantillas con detalle | privacidad en la pantalla bloqueada y menor imitación por estafadores | P11, P5 | Gobierno (Privacidad) |
-| DP-CLI-12 | Costo del minuto humano con cifras de Latinoamérica (bajo, central, alto) registradas en acta antes del retenido; la cifra de EE. UU. de US$7 a 14 por contacto solo como sensibilidad (discrepa de [04](04_VP_Tecnologia.md), sección 7.4) | usar la cifra de EE. UU. | los agentes del banco están en México, Colombia y Argentina; la cifra de EE. UU. infla el ahorro unas cinco a diez veces | P1, P3 | Presidencia, con Tecnología |
-| DP-CLI-13 | La proyección de producción incluye el costo por mensaje de WhatsApp desde el 1 de octubre de 2026 (discrepa de [04](04_VP_Tecnologia.md), sección 7.4, "sin costo de mensajes") | omitirlo | en México el canal cuesta 3,7 veces lo que cuestan los modelos por caso de chat (7.2) | P3 | Tecnología (Comité de Plataforma) |
+| DP-CLI-12 | Costo del minuto humano con cifras de Latinoamérica (bajo, central, alto) registradas en acta antes del retenido; la cifra de EE. UU. de US$7 a 14 por contacto solo como sensibilidad (discrepa de [04](../tecnologia/definicion.md), sección 7.4) | usar la cifra de EE. UU. | los agentes del banco están en México, Colombia y Argentina; la cifra de EE. UU. infla el ahorro unas cinco a diez veces | P1, P3 | Presidencia, con Tecnología |
+| DP-CLI-13 | La proyección de producción incluye el costo por mensaje de WhatsApp desde el 1 de octubre de 2026 (discrepa de [04](../tecnologia/definicion.md), sección 7.4, "sin costo de mensajes") | omitirlo | en México el canal cuesta 3,7 veces lo que cuestan los modelos por caso de chat (7.2) | P3 | Tecnología (Comité de Plataforma) |
 
 **Las cinco más importantes:** DP-CLI-03, DP-CLI-02, DP-CLI-04, DP-CLI-05 y DP-CLI-07.
 
@@ -1744,9 +1744,9 @@ español y portugués.
 
 **Documentos del proyecto**
 
-- [Modelo operativo](00_Presidencia_Modelo_operativo.md); [Datos](03_VP_Datos.md) (métricas M-01 a M-46, S-DAT-09, S-DAT-10); [Tecnología](04_VP_Tecnologia.md) (componentes AG-UI, voz, telefonía, costos, R-TEC-54, 75 a 78, 84, 86, 104, 117)
-- [Principios](../Diseno/00_Principios.md), [interacciones y criterios](../Diseno/01_Interacciones_y_criterios.md), [datos por capas](../Diseno/03_Datos_por_capas.md), [organización](../Diseno/04_Organizacion_y_roles.md), [cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md), [arquitectura](../Diseno/06_Arquitectura.md), [hoja de ruta](../Diseno/07_Hoja_de_ruta.md), [decisiones](../Diseno/Decisiones.md)
-- Investigaciones [1](../Investigacion/01_Industria_y_casos.md), [2](../Investigacion/02_Arquitectura_y_control.md), [3](../Investigacion/03_Seguridad_privacidad_regulacion.md), [4](../Investigacion/04_Evaluacion.md), [6](../Investigacion/06_El_banco_por_dentro.md), [7](../Investigacion/07_Atencion_al_cliente_como_dominio.md), [11](../Investigacion/11_Latencia_y_costo.md), [12](../Investigacion/12_Organizacion_de_un_banco.md), [13](../Investigacion/13_Auditoria_del_dataset.md), [14](../Investigacion/14_VP_Clientes.md), [18](../Investigacion/18_VP_Gobierno.md), [20](../Investigacion/20_Canales_voz_y_chat.md), [21](../Investigacion/21_Organizacion_agentica.md)
+- [Modelo operativo](../presidencia/modelo_operativo.md); [Datos](../datos/definicion.md) (métricas M-01 a M-46, S-DAT-09, S-DAT-10); [Tecnología](../tecnologia/definicion.md) (componentes AG-UI, voz, telefonía, costos, R-TEC-54, 75 a 78, 84, 86, 104, 117)
+- [Principios](../docs/diseno/00_Principios.md), [interacciones y criterios](../docs/diseno/01_Interacciones_y_criterios.md), [datos por capas](../docs/diseno/03_Datos_por_capas.md), [organización](../docs/diseno/04_Organizacion_y_roles.md), [cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md), [arquitectura](../docs/diseno/06_Arquitectura.md), [hoja de ruta](../presidencia/hoja_de_ruta.md), [decisiones](../presidencia/decisiones.md)
+- Investigaciones [1](../docs/investigacion/01_Industria_y_casos.md), [2](../docs/investigacion/02_Arquitectura_y_control.md), [3](../docs/investigacion/03_Seguridad_privacidad_regulacion.md), [4](../docs/investigacion/04_Evaluacion.md), [6](../docs/investigacion/06_El_banco_por_dentro.md), [7](../docs/investigacion/07_Atencion_al_cliente_como_dominio.md), [11](../docs/investigacion/11_Latencia_y_costo.md), [12](../docs/investigacion/12_Organizacion_de_un_banco.md), [13](../docs/investigacion/13_Auditoria_del_dataset.md), [14](../docs/investigacion/14_VP_Clientes.md), [18](../docs/investigacion/18_VP_Gobierno.md), [20](../docs/investigacion/20_Canales_voz_y_chat.md), [21](../docs/investigacion/21_Organizacion_agentica.md)
 - Enunciado de la Factored AI & Data Hackathon 2026 (`Documentos/`)
 
 **Consultadas el 27 de septiembre de 2026**

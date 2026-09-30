@@ -1,14 +1,14 @@
 # Definición de la VP Inteligencia Artificial: la fuerza laboral digital de LATAM Bank
 
 **Cara:** VP Inteligencia Artificial, con sus cuatro gerencias: Comprensión y redacción, Voz, Evaluación de
-desarrollo y simulación, y Operación de agentes ([04](../Diseno/04_Organizacion_y_roles.md), sección 5).
+desarrollo y simulación, y Operación de agentes ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 5).
 **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión, pendiente del desafío de Gobierno y de
-la auditoría de completitud ([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 7).
-**Se apoya en:** [principios](../Diseno/00_Principios.md), [01](../Diseno/01_Interacciones_y_criterios.md),
-[04](../Diseno/04_Organizacion_y_roles.md), [05](../Diseno/05_Cobertura_del_enunciado.md),
-[06](../Diseno/06_Arquitectura.md), [07](../Diseno/07_Hoja_de_ruta.md), [Decisiones](../Diseno/Decisiones.md)
+la auditoría de completitud ([modelo operativo](../presidencia/modelo_operativo.md), sección 7).
+**Se apoya en:** [principios](../docs/diseno/00_Principios.md), [01](../docs/diseno/01_Interacciones_y_criterios.md),
+[04](../docs/diseno/04_Organizacion_y_roles.md), [05](../docs/diseno/05_Cobertura_del_enunciado.md),
+[06](../docs/diseno/06_Arquitectura.md), [07](../presidencia/hoja_de_ruta.md), [Decisiones](../presidencia/decisiones.md)
 (D-01 a D-21), el enunciado, las investigaciones 2, 4, 5, 8, 11, 13, 15 y 20, y la
-[definición de la VP Tecnología](04_VP_Tecnologia.md) (gateway, alias, precios verificados y presupuesto).
+[definición de la VP Tecnología](../tecnologia/definicion.md) (gateway, alias, precios verificados y presupuesto).
 
 **Cómo se marca la evidencia (P3)**
 
@@ -33,7 +33,7 @@ del Comité de Confianza antes de correr el retenido (P1).
 Construir y operar los trabajadores digitales de la misión "cargo no reconocido" como **fuerza laboral** (O2):
 cada modelo tiene rol, identidad, permisos mínimos, supervisor humano, evaluación que lo habilita, versión y
 baja; cada uno demuestra que aporta contra su línea base (P9); y la IA solo está donde hay lenguaje o audio,
-nunca donde hay dinero, derechos o permisos ([06](../Diseno/06_Arquitectura.md), sección 3).
+nunca donde hay dinero, derechos o permisos ([06](../docs/diseno/06_Arquitectura.md), sección 3).
 
 ### 1.2 Qué es un trabajador digital
 
@@ -124,7 +124,7 @@ autorización de agentes; Gartner (abril de 2026) pone el **inventario central d
 contra la proliferación; el perfil agéntico del NIST AI RMF de la CSA (marzo de 2026) exige registrar qué
 autoridad tiene cada agente, qué herramientas usa, qué delegaciones tiene y cuándo se revisa o revoca; y hay
 propuestas de **promoción y retiro guiados por evaluación** (arXiv 2607.00345): un agente no sube de versión
-sin pasar su evaluación ([investigación 15](../Investigacion/15_VP_Inteligencia_Artificial.md), sección 1).
+sin pasar su evaluación ([investigación 15](../docs/investigacion/15_VP_Inteligencia_Artificial.md), sección 1).
 Nuestro registro es la implementación mínima de todo eso, con el Comité de Confianza como compuerta.
 
 **Fuente de verdad.** `agentes/registro.yaml` en el repositorio. De él se generan: la configuración del gateway
@@ -300,7 +300,7 @@ orden de magnitud (sección 7).
 | Criterio | Medición | Nota |
 |---|---|---|
 | Calidad en la tarea del rol | F1 macro (comprensión), bloqueos del filtro y tono (redacción), κ (juez), fidelidad al guion (simulador), brecha de transferencia (generador) | con intervalo de *bootstrap* |
-| Latencia | p50 y p95 del primer token y del total, 200 llamadas desde `us-central1` a través del gateway | el p95 es 1,6 a 3,2 veces el p50 en proveedores de 2026 ([investigación 11](../Investigacion/11_Latencia_y_costo.md)) |
+| Latencia | p50 y p95 del primer token y del total, 200 llamadas desde `us-central1` a través del gateway | el p95 es 1,6 a 3,2 veces el p50 en proveedores de 2026 ([investigación 11](../docs/investigacion/11_Latencia_y_costo.md)) |
 | Costo | costo por 1.000 llamadas con los tokens reales, con y sin caché | precios de la sección 7 |
 | Robustez | cambio de etiqueta bajo inyección (comprensión); adherencia a persona (simulador); autoconsistencia (juez) | |
 | Variabilidad | desviación entre k = 3 corridas | |
@@ -328,7 +328,7 @@ produce la VP IA en cada una.
 | Retiro anunciado por el proveedor | la del reemplazo | plan de migración con fecha (R-IA-16) | según la clase |
 
 Después de congelar el retenido (F2), todo cambio de clase A o B se reporta además en el informe final
-([modelo operativo](00_Presidencia_Modelo_operativo.md), 4.4).
+([modelo operativo](../presidencia/modelo_operativo.md), 4.4).
 
 #### 2.3.4 Presupuestos por trabajador (respuesta a S-TEC-07)
 
@@ -370,7 +370,7 @@ palabra de esas dos frases.
 
 **Por qué este componente:** el dataset no permite otro honesto. Las transcripciones son plantillas sin señal
 (V de Cramér 0,011), `was_escalated` es ruido (AUC 0,51) y `is_fraud` no tiene señal fuera de `fraud_score`,
-que es una fuga de la etiqueta ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.3). Entender lo que el
+que es una fuga de la etiqueta ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.3). Entender lo que el
 cliente dice en cuatro variantes del español y en portugués sí es un problema real, y ninguna regla lo cubre.
 
 #### 2.4.1 Qué predice: el contrato `Interpretacion`
@@ -452,7 +452,7 @@ class Interpretacion(BaseModel, frozen=True):
 
 **Lo que no está, a propósito:** variante dialectal, acento, país inferido, edad o género (P12); un campo de
 razonamiento del modelo (si existiera para depurar, no es evidencia de auditoría:
-[05](../Diseno/05_Cobertura_del_enunciado.md), punto 19); y cualquier decisión.
+[05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 19); y cualquier decisión.
 
 **Cuándo corre:** en `COMPRENDIENDO` (primer turno), cada vez que el cliente escribe fuera de lo que el estado
 espera y en todo turno para `solicita_humano`. En los estados que esperan una respuesta cerrada (confirmar,
@@ -471,7 +471,7 @@ y seguir con uno `fraude` después de ver la ficha ("no, nunca compré ahí y te
 | `fraude` | afirma que ni él ni alguien con su permiso hizo o autorizó el cargo, o describe que un tercero usó su medio de pago o su cuenta | pérdida o robo; "tengo la tarjeta conmigo y aparecen compras"; clonación; acceso a la app que no hizo; le pidieron códigos | MX: "me salieron tres compras en línea que yo no hice y la tarjeta la traigo conmigo"; CO: "me robaron la billetera ayer y hoy me aparecen compras"; AR: "me hackearon el homebanking y hay una transferencia que no hice"; PT: "tem compras no meu cartão que eu não fiz, perdi a carteira ontem" | `desconocido` cuando no hay ningún indicio de tercero |
 | `error_procesamiento` | reconoce la compra o la relación, pero afirma que el cargo está mal en monto, número de veces o moneda, o que ya lo había pagado | "me cobraron dos veces"; "pagué 200 y me cobraron 2.000"; "ya lo pagué en efectivo" | MX: "me cobraron doble el Uber de ayer"; CO: "la compra del supermercado me salió repetida"; AR: "me debitaron dos veces la misma compra"; PT: "fui cobrado duas vezes na mesma loja" | una preautorización pendiente se etiqueta igual (el cliente la declara como duplicado); el motor la resuelve como R1 con el estado real (N7) |
 | `disputa_comercial` | reconoce haber tratado con el comercio, pero afirma que no cumplió: no entregó, entregó distinto o defectuoso, canceló y siguió cobrando, prometió un reembolso que no llegó | "nunca llegó"; "lo devolví y no me reembolsan"; "cancelé y me siguen cobrando" | MX: "pedí unos tenis y nunca me llegaron"; CO: "cancelé la suscripción y me la siguen cobrando"; AR: "el vendedor no me mandó nada y ya pasaron veinte días"; PT: "cancelei a assinatura e continuam cobrando" | `desconocido` si no reconoce al comercio; una suscripción olvidada sin incumplimiento es `desconocido` |
-| `desconocido` | afirma no reconocer el cargo **sin** indicios de fraude, de error ni de incumplimiento; incluye descriptores confusos y "¿qué es este cobro?" | nombre de comercio que no le suena; "no me acuerdo"; pregunta abierta | MX: "¿qué es un cargo que dice `PAYU*XYZ`? no me suena"; CO: "me aparece un cobro raro, no sé de dónde es"; AR: "tengo un consumo de un tal `MP*ALGO`, ni idea qué es"; PT: "apareceu uma cobrança estranha que não reconheço" | es la clase del camino de la ficha: la mayoría de los "no reconozco" son confusión ([investigación 14](../Investigacion/14_VP_Clientes.md), sección 1) |
+| `desconocido` | afirma no reconocer el cargo **sin** indicios de fraude, de error ni de incumplimiento; incluye descriptores confusos y "¿qué es este cobro?" | nombre de comercio que no le suena; "no me acuerdo"; pregunta abierta | MX: "¿qué es un cargo que dice `PAYU*XYZ`? no me suena"; CO: "me aparece un cobro raro, no sé de dónde es"; AR: "tengo un consumo de un tal `MP*ALGO`, ni idea qué es"; PT: "apareceu uma cobrança estranha que não reconheço" | es la clase del camino de la ficha: la mayoría de los "no reconozco" son confusión ([investigación 14](../docs/investigacion/14_VP_Clientes.md), sección 1) |
 | `no_disputa` | dentro del flujo, pero no plantea un cargo nuevo: estado de un reclamo existente, cómo funciona el proceso, plazos, saludo o agradecimiento | "¿cómo va mi reclamo?"; "¿cuánto tarda?"; "gracias" | MX: "¿cómo va la aclaración que metí la semana pasada?"; CO: "¿en qué va mi reclamo?"; AR: "¿cómo sigue mi reclamo?"; PT: "qual o andamento da minha contestação?" | N5 y A5: la ruta la decide el motor con el caso real |
 | `fuera_de_alcance` | pide algo que no es este flujo, o intenta manipular sin plantear un reclamo | crédito, inversión, asesoría legal, rechazo de compra, cambio de datos, otros productos, temas no bancarios, "ignora tus instrucciones" | MX: "¿me pueden aumentar la línea de crédito?"; CO: "¿por qué me rechazaron la compra en el almacén?"; AR: "quiero sacar un préstamo"; PT: "quero trocar meu e-mail cadastrado" | el tema fino va en `temas_fuera_de_alcance`; la contención de un ataque es de la arquitectura, no del clasificador |
 
@@ -502,7 +502,7 @@ Vive en `anotacion/guia@1.0.0.md` y cada registro etiquetado lleva `version_guia
 3. **Un motivo principal**; con dos dentro del alcance, el orden de riesgo de 2.4.2.
 4. **`ambiguo` es una etiqueta válida:** si dos lectores razonables discrepan, se marca y se excluye de la
    métrica principal, que se reporta también con esos casos contados como error; nunca se fuerza ([investigación
-   4](../Investigacion/04_Evaluacion.md), sección 2).
+   4](../docs/investigacion/04_Evaluacion.md), sección 2).
 5. **Urgencia inmediata solo con señal explícita**; la emoción sola no cuenta.
 6. **Entidades:** se marca la posición y se normaliza el valor (monto en decimales con su moneda si se dice;
    fecha como rango resuelto contra el reloj del caso); "aproximado" si hay hedging.
@@ -513,14 +513,14 @@ Vive en `anotacion/guia@1.0.0.md` y cada registro etiquetado lleva `version_guia
    por el `verificador` y relectura humana ciega de una muestra estratificada de 300 turnos [S]; se reporta κ
    entre construcción y humano y entre humanos si hay un segundo anotador. Con una sola persona se declara, se
    reporta el acuerdo de la misma persona en dos lecturas separadas por días y se nombra la limitación
-   ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 15).
+   ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 15).
 10. **Registro de adjudicación:** cada desacuerdo con su resolución, quién resolvió y por qué.
 
 #### 2.4.5 Protocolo de generación (IA-1)
 
 La práctica documenta que los usuarios sintéticos comprimen la varianza, son más largos que los reales (Nubank:
 111 palabras de mediana contra 19) y que un juez favorece a su propia familia; la defensa es semilla humana,
-etiqueta por construcción y familias separadas ([investigación 15](../Investigacion/15_VP_Inteligencia_Artificial.md),
+etiqueta por construcción y familias separadas ([investigación 15](../docs/investigacion/15_VP_Inteligencia_Artificial.md),
 sección 3).
 
 1. **Semilla humana primero.** Meta [S]: 240 mensajes, 48 por variante (es-MX, es-CO, es-AR, neutro) y 48 en
@@ -531,7 +531,7 @@ sección 3).
 2. **Partición de la semilla antes de usarla:** sorteo estratificado con semilla fija en **mitad ancla** (la ve
    el generador como ejemplo de estilo) y **mitad de prueba humana** (nunca entra a un prompt ni a
    entrenamiento). Su huella queda en el acta de F2.
-3. **Catálogo de guiones** generado por código desde los escenarios de [01](../Diseno/01_Interacciones_y_criterios.md)
+3. **Catálogo de guiones** generado por código desde los escenarios de [01](../docs/diseno/01_Interacciones_y_criterios.md)
    (N, A, E, F, L): ruta, motivo declarado por turno, persona y marcadores requeridos. El catálogo es
    combinatorio y determinista, con su semilla registrada.
 4. **El generador** (familia Anthropic) escribe los turnos del cliente con: el guion, cinco ejemplos de la
@@ -556,8 +556,8 @@ turnos pasados por síntesis y reconocimiento por cada uno de los cuatro locales
 
 #### 2.4.6 Auditoría de plantilla sobre nuestros datos
 
-Las mismas pruebas de la [investigación 13](../Investigacion/13_Auditoria_del_dataset.md) y de la
-[investigación 5](../Investigacion/05_Datos_ML_y_operacion.md), sección 1, adaptadas a texto generado, más dos
+Las mismas pruebas de la [investigación 13](../docs/investigacion/13_Auditoria_del_dataset.md) y de la
+[investigación 5](../docs/investigacion/05_Datos_ML_y_operacion.md), sección 1, adaptadas a texto generado, más dos
 que miden si lo generado se parece a lo humano.
 
 | Prueba | Qué detecta | Cómo | Umbral y acción |
@@ -601,13 +601,13 @@ se pide a Gobierno para el retenido (S-IA-05).
 | C2 | SetFit | paraphrase-multilingual-mpnet-base-v2 o multilingual-e5-base ajustado por contraste | pocos ejemplos bastan para una frontera mejor ([Tunstall y otros, 2022](https://arxiv.org/abs/2209.11055)) | cero; decenas de ms |
 | C3 | LLM sin ejemplos | Gemini 3.1 Flash-Lite con salida estructurada y texto deslexicalizado | la pragmática y la negación que los modelos pequeños no captan | centavos por mil; cientos de ms |
 | C4 | LLM con pocos ejemplos | C3 más tres ejemplos por clase recuperados del entrenamiento por similitud | mejora de C3 en clases raras | algo mayor que C3 |
-| C5 | Cascada | el mejor de B1, C1 y C2 primero; C3 o C4 solo si la confianza calibrada queda bajo τ; si sigue baja, aclarar | casi la calidad del LLM a una fracción del costo ([investigación 11](../Investigacion/11_Latencia_y_costo.md), sección 4) | depende de la cobertura |
+| C5 | Cascada | el mejor de B1, C1 y C2 primero; C3 o C4 solo si la confianza calibrada queda bajo τ; si sigue baja, aclarar | casi la calidad del LLM a una fracción del costo ([investigación 11](../docs/investigacion/11_Latencia_y_costo.md), sección 4) | depende de la cobertura |
 | E0 y E1 | Entidades por reglas o por LLM | expresiones regulares, normalizador de números en palabras de ES y PT, fechas relativas contra el reloj | las reglas alcanzan para montos y fechas; el LLM solo si mejora | E0 sin costo |
 | U0 y U1 | Urgencia por léxico o por clasificador | lexicón de señales o las representaciones de B1 y C2 | el clasificador mejora la sensibilidad sin disparar falsos positivos | sin costo |
 
 **Evidencia de partida:** en BANKING77 un modelo pequeño ajustado llegó a 94,2% contra 85,3% de un LLM grande con
 prompt, en 12 ms contra 2 s, y TF-IDF con regresión logística quedó a 2,3 puntos del mejor
-([investigación 5](../Investigacion/05_Datos_ML_y_operacion.md), sección 3). Un modelo pequeño ajustado conviene
+([investigación 5](../docs/investigacion/05_Datos_ML_y_operacion.md), sección 3). Un modelo pequeño ajustado conviene
 con menos de unas 50 intenciones, latencia estricta o necesidad de detectar fuera de alcance; el LLM, con pocas
 etiquetas o necesidad multilingüe (arXiv 2608.20371). Nuestro caso tiene de las dos cosas: por eso se mide.
 **Opcional por P9:** un transformador pequeño ajustado (xlm-roberta-base) solo si C2 muestra margen y sobra
@@ -665,7 +665,7 @@ el cero, con ECE de 0,05 o menos y dentro del presupuesto de latencia de su cana
 | cualquiera y `fuera_de_alcance` | menú con lo que el agente sí hace, en botones (chat) o DTMF (voz) |
 
   Después de dos aclaraciones sin superar el umbral, R5 (el número es un umbral de política,
-  [01](../Diseno/01_Interacciones_y_criterios.md), pregunta 2).
+  [01](../docs/diseno/01_Interacciones_y_criterios.md), pregunta 2).
 
 #### 2.4.12 Transferencia de español a portugués y a transcripciones de voz
 
@@ -703,14 +703,14 @@ Sobre **toda** falla de las pruebas humana, sintética, de portugués y de trans
 **Entregables:** conteo por código, por clase, por variante, por idioma, por origen (humano o generado) y por
 canal (texto o transcripción), con intervalos de Wilson; diez ejemplos enmascarados por código; y las tres causas
 principales con su corrección propuesta y el efecto esperado. El análisis de errores del **sistema** completo
-(por capa, [01](../Diseno/01_Interacciones_y_criterios.md), 6.10) usa la misma plantilla y lo produce el arnés.
+(por capa, [01](../docs/diseno/01_Interacciones_y_criterios.md), 6.10) usa la misma plantilla y lo produce el arnés.
 
 #### 2.4.14 Experimento de riesgo con `fraud_score`: resultado negativo preregistrado
 
 **Por qué se hace aunque se espera negativo:** el enunciado premia prevenir la fuga y la honestidad; la
 muestra ya mostró que `is_fraud` no tiene señal fuera de `fraud_score` (AUC 0,504 con partición temporal y PR
 AUC igual a la prevalencia) y que `fraud_score > 30` identifica fraude con precisión 1,0 y recuperación 0,57,
-porque ninguna transacción legítima pasa de 30 ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.3).
+porque ninguna transacción legítima pasa de 30 ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.3).
 Confirmarlo sobre el total es un paso de verificación de F1 (D-14).
 
 | Elemento | Diseño preregistrado |
@@ -760,7 +760,7 @@ tendría del orden de 800, suficiente para intervalos útiles de PR AUC.
 el enunciado (*"ground factual responses in permitted account, transaction, or policy information"*). La
 práctica que respalda la forma elegida: el traspaso renderizado desde un estado tipado con procedencia tiene
 mucha menos información falsa que un resumen libre del modelo (arXiv 2608.28907,
-[investigación 14](../Investigacion/14_VP_Clientes.md)), y la generación **deslexicalizada** (el modelo escribe
+[investigación 14](../docs/investigacion/14_VP_Clientes.md)), y la generación **deslexicalizada** (el modelo escribe
 con marcadores y un proceso determinista pone los valores) es una técnica clásica de los sistemas de diálogo
 orientados a tareas ([Wen y otros, 2015](https://arxiv.org/abs/1508.01745)).
 
@@ -902,7 +902,7 @@ prompts/
 ```
 
 `esquema.json` se genera desde el tipo Pydantic de salida; nunca se escribe a mano ni se construye con texto del
-usuario (la gramática controlada por un atacante es un vector conocido, [investigación 8](../Investigacion/08_IA_con_tipos_seguros.md)).
+usuario (la gramática controlada por un atacante es un vector conocido, [investigación 8](../docs/investigacion/08_IA_con_tipos_seguros.md)).
 
 #### 2.6.2 Orden de los bloques
 
@@ -988,7 +988,7 @@ razonamiento oculto del modelo no es artefacto de auditoría).
 
 ### 2.7 IA de voz
 
-**Estado del arte en una tabla** ([investigación 20](../Investigacion/20_Canales_voz_y_chat.md)):
+**Estado del arte en una tabla** ([investigación 20](../docs/investigacion/20_Canales_voz_y_chat.md)):
 
 | Hecho | Fuente |
 |---|---|
@@ -1124,7 +1124,7 @@ acento se mide aunque el locale no exista.
 **Estado del arte:** τ-bench mide el **estado final de la base**, no el texto, y reporta pass^k; FraudBench
 muestra que la seguridad depende del historial de la sesión y que seguridad no es negarse; *Policy Loopholes*
 muestra que parte del error medido es ambigüedad de la política; y un juez sin validar puede ser consistente sin
-medir lo que se quiere ([investigación 4](../Investigacion/04_Evaluacion.md)). El arnés sigue esas cuatro
+medir lo que se quiere ([investigación 4](../docs/investigacion/04_Evaluacion.md)). El arnés sigue esas cuatro
 lecciones.
 
 #### 2.8.1 Arquitectura
@@ -1198,7 +1198,7 @@ eval/
 
 #### 2.8.6 Juez
 
-Solo para lo que no tiene verificación determinista ([01](../Diseno/01_Interacciones_y_criterios.md), 6.8).
+Solo para lo que no tiene verificación determinista ([01](../docs/diseno/01_Interacciones_y_criterios.md), 6.8).
 
 | Criterio | Escala y anclas | Métrica de 01 |
 |---|---|---|
@@ -1218,7 +1218,7 @@ Solo para lo que no tiene verificación determinista ([01](../Diseno/01_Interacc
   como mínimo. Si no pasa, ese criterio se reporta solo con la muestra humana. Se valida por idioma; si no hay
   quien califique portugués, el juez en portugués se reporta como no validado.
 - **Alcance en la corrida oficial:** Gobierno usa el juez solo para los códigos que fija R-GOB-60; J4 y J5 son
-  métricas de desarrollo y de [01](../Diseno/01_Interacciones_y_criterios.md) (5.1 y explicabilidad).
+  métricas de desarrollo y de [01](../docs/diseno/01_Interacciones_y_criterios.md) (5.1 y explicabilidad).
 - **Selección del juez:** entre los candidatos de la cuarta familia, el de mayor recuperación de fallas con κ sobre
   el umbral (la práctica de Nubank: preferir el juez que detecta errores).
 
@@ -1231,7 +1231,7 @@ Solo para lo que no tiene verificación determinista ([01](../Diseno/01_Interacc
 | B-humano | todo caso va a un agente con la duración y la espera históricas del dataset y el costo por contacto como supuestos | **simulación** (P3) |
 
 Las tres corren sobre los mismos casos y con el mismo k; la línea base del proceso de reclamos
-([05](../Diseno/05_Cobertura_del_enunciado.md), 3.2) es contexto de negocio y no se mezcla.
+([05](../docs/diseno/05_Cobertura_del_enunciado.md), 3.2) es contexto de negocio y no se mezcla.
 
 #### 2.8.8 Corridas, pass^k y estadística
 
@@ -1280,7 +1280,7 @@ Las tres corren sobre los mismos casos y con el mismo k; la línea base del proc
 ### 2.9 Operación de agentes (AgentOps)
 
 **Qué es:** desplegar, monitorear, gobernar y mejorar a los trabajadores en operación, como DevOps para el
-software y MLOps para los modelos ([investigación 21](../Investigacion/21_Organizacion_agentica.md)). En la
+software y MLOps para los modelos ([investigación 21](../docs/investigacion/21_Organizacion_agentica.md)). En la
 hackatón se opera la demo y las corridas; el diseño es el de producción.
 
 #### 2.9.1 Indicadores y alertas
@@ -1333,7 +1333,7 @@ cerrar con postmortem y acción correctiva.
 | Deriva: PSI mayor que 0,25 en una corrida (o sostenida 3 días en producción) | batería de desarrollo y muestra etiquetada nueva |
 | Desacuerdo del experto mayor que 15% | reetiquetado de la muestra y reporte del componente |
 | Cambio de política que toca etiquetas o umbrales | reporte del componente y curva de umbrales |
-| Nuevo locale, canal o proveedor de voz | S1 abreviado por acento ([04](../Diseno/04_Organizacion_y_roles.md), sección 11) |
+| Nuevo locale, canal o proveedor de voz | S1 abreviado por acento ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11) |
 | Incidente SEV1 o SEV2 | la batería completa antes de reactivar |
 | Periódica en producción | mensual [P] |
 
@@ -1342,7 +1342,7 @@ cerrar con postmortem y acción correctiva.
 Model Armor es una capa **adicional**: la contención la da la arquitectura (P5). Su filtro de inyección analiza
 hasta 512 tokens, así que recibe el mensaje del cliente y las frases de salida, no el prompt completo (R-TEC-93).
 Los filtros se evaden hasta en 100% con técnicas conocidas y todos caen mucho a tasas bajas de falsos positivos
-([investigación 10](../Investigacion/10_Gobernanza_y_gateway.md)).
+([investigación 10](../docs/investigacion/10_Gobernanza_y_gateway.md)).
 
 | Filtro | Entrada | Salida | Por qué |
 |---|---|---|---|
@@ -1377,9 +1377,9 @@ que la arquitectura igual contuvo, en tabla aparte del reporte de seguridad.
 
 | Decisión | Elección | Estado del arte que la respalda | Opción en Google Cloud | Alternativas y por qué no | Estado |
 |---|---|---|---|---|---|
-| Proveedor de modelos | Vertex AI detrás de LiteLLM (D-20, DP-TEC-02) | un gateway es el punto único de gobierno; la garantía la da la arquitectura ([investigación 10](../Investigacion/10_Gobernanza_y_gateway.md)) | Gemini, Claude en Model Garden y modelos abiertos gestionados, una sola facturación | APIs directas de cada proveedor: más secretos y facturas | propuesta |
+| Proveedor de modelos | Vertex AI detrás de LiteLLM (D-20, DP-TEC-02) | un gateway es el punto único de gobierno; la garantía la da la arquitectura ([investigación 10](../docs/investigacion/10_Gobernanza_y_gateway.md)) | Gemini, Claude en Model Garden y modelos abiertos gestionados, una sola facturación | APIs directas de cada proveedor: más secretos y facturas | propuesta |
 | Familias por rol | cuatro familias (2.3.1) | preferencia por la propia familia en jueces (arXiv 2502.01534); usuarios sintéticos sesgados (arXiv 2609.13148) | todo dentro de Vertex AI [A: disponibilidad de Llama, Mistral, Qwen, DeepSeek y gpt-oss como servicio gestionado en `us-central1` o en el endpoint global] | Gemini Pro como generador y juez (supuesto de TEC 7.3): viola D-20 | DP-IA-01 |
-| Cliente tipado de los trabajadores de lenguaje | PydanticAI (D-11) con salida validada | salidas estructuradas mejoran clasificación ([investigación 8](../Investigacion/08_IA_con_tipos_seguros.md)) | Gemini con esquema de respuesta | Instructor, BAML | firme (D-11) |
+| Cliente tipado de los trabajadores de lenguaje | PydanticAI (D-11) con salida validada | salidas estructuradas mejoran clasificación ([investigación 8](../docs/investigacion/08_IA_con_tipos_seguros.md)) | Gemini con esquema de respuesta | Instructor, BAML | firme (D-11) |
 | Clasificador | scikit-learn, sentence-transformers y SetFit, en CPU | BANKING77: modelo pequeño 94,2% contra LLM 85,3%, 12 ms contra 2 s | ninguna necesaria; local | Vertex AI AutoML de texto: caja negra y datos fuera | propuesta |
 | Entidades | reglas: expresiones regulares, normalizador de números en palabras de ES y PT, fechas relativas contra el reloj | determinista donde basta (P4, P9) | | extracción por LLM (se mide como E1) | propuesta |
 | Calibración y umbrales | escalado por temperatura; clasificación selectiva con garantía de Clopper y Pearson | Guo y otros 2017; Geifman y El-Yaniv 2017 | | predicción conformal (MAPIE [A]) como mejora | propuesta |
@@ -1695,7 +1695,7 @@ medición (P3).
 | IA-11.1 | Indicadores, deriva y alertas | alerta sintética recibida | TEC-8 | D7 |
 | IA-11.2 | Model Armor medido y simulacro de incidente | tabla de aporte; contención en 15 minutos | S-IA-04 | D7 |
 
-**Orden de recorte de la VP IA** (se suma al de [07](../Diseno/07_Hoja_de_ruta.md)): IA-8.2; C4 y C5; V-AUG;
+**Orden de recorte de la VP IA** (se suma al de [07](../presidencia/hoja_de_ruta.md)): IA-8.2; C4 y C5; V-AUG;
 semilla humana de voz; nunca IA-2 con línea base, el análisis de errores ni el modo sellado.
 
 ---
@@ -1748,17 +1748,17 @@ semilla humana de voz; nunca IA-2 con línea base, el análisis de errores ni el
 ## 11. Fuentes
 
 - Enunciado de la hackatón (`Documentos/Enunciado_Factored_Hackathon_2026.pdf`).
-- Diseño: [00](../Diseno/00_Principios.md), [01](../Diseno/01_Interacciones_y_criterios.md),
-  [04](../Diseno/04_Organizacion_y_roles.md), [05](../Diseno/05_Cobertura_del_enunciado.md),
-  [06](../Diseno/06_Arquitectura.md), [07](../Diseno/07_Hoja_de_ruta.md), [Decisiones](../Diseno/Decisiones.md).
-- Definiciones: [Tecnología](04_VP_Tecnologia.md) (precios [V: TEC] del 27 de septiembre de 2026),
-  [Datos](03_VP_Datos.md), [Gobierno](05_VP_Gobierno.md).
-- Investigaciones [2](../Investigacion/02_Arquitectura_y_control.md), [4](../Investigacion/04_Evaluacion.md),
-  [5](../Investigacion/05_Datos_ML_y_operacion.md), [8](../Investigacion/08_IA_con_tipos_seguros.md),
-  [10](../Investigacion/10_Gobernanza_y_gateway.md), [11](../Investigacion/11_Latencia_y_costo.md),
-  [13](../Investigacion/13_Auditoria_del_dataset.md), [14](../Investigacion/14_VP_Clientes.md),
-  [15](../Investigacion/15_VP_Inteligencia_Artificial.md), [20](../Investigacion/20_Canales_voz_y_chat.md),
-  [21](../Investigacion/21_Organizacion_agentica.md), con sus fuentes primarias.
+- Diseño: [00](../docs/diseno/00_Principios.md), [01](../docs/diseno/01_Interacciones_y_criterios.md),
+  [04](../docs/diseno/04_Organizacion_y_roles.md), [05](../docs/diseno/05_Cobertura_del_enunciado.md),
+  [06](../docs/diseno/06_Arquitectura.md), [07](../presidencia/hoja_de_ruta.md), [Decisiones](../presidencia/decisiones.md).
+- Definiciones: [Tecnología](../tecnologia/definicion.md) (precios [V: TEC] del 27 de septiembre de 2026),
+  [Datos](../datos/definicion.md), [Gobierno](../gobierno/definicion.md).
+- Investigaciones [2](../docs/investigacion/02_Arquitectura_y_control.md), [4](../docs/investigacion/04_Evaluacion.md),
+  [5](../docs/investigacion/05_Datos_ML_y_operacion.md), [8](../docs/investigacion/08_IA_con_tipos_seguros.md),
+  [10](../docs/investigacion/10_Gobernanza_y_gateway.md), [11](../docs/investigacion/11_Latencia_y_costo.md),
+  [13](../docs/investigacion/13_Auditoria_del_dataset.md), [14](../docs/investigacion/14_VP_Clientes.md),
+  [15](../docs/investigacion/15_VP_Inteligencia_Artificial.md), [20](../docs/investigacion/20_Canales_voz_y_chat.md),
+  [21](../docs/investigacion/21_Organizacion_agentica.md), con sus fuentes primarias.
 - Guía oficial de la API de Claude, tabla de modelos y precios de primera parte (caché del 24 de junio de 2026).
 - [Guo y otros, calibración](https://arxiv.org/abs/1706.04599);
   [Geifman y El-Yaniv, clasificación selectiva](https://arxiv.org/abs/1705.08500);

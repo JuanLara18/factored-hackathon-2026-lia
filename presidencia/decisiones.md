@@ -71,6 +71,9 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 - **Modifica:** D-28 (se retira el perfil local de referencia y la paridad R-DAT-03), D-29 (Ollama local
   pasa a Vertex AI), R-DAT-01 de la definición de Datos y las historias de ingesta DAT-1.1 a DAT-1.6, que se
   reducen a validar las tablas crudas con las reglas Q-BRZ que sigan aplicando.
+- **Actualización (30 sep):** el pipeline no quedó como Cloud Run Job: dbt, la carga y las reglas Q-BRZ corren desde
+  la máquina del dueño con sus credenciales, y el sandbox sin facturación ya no aplica (ver D-32). El dataset
+  `latam_pruebas` guarda los fallos de dbt.
 - **Estado:** firme (instrucción de la presidencia humana).
 
 ## D-29 · Canales reales, todo en Google Cloud y gasto menor a US$20 (28 sep 2026)
@@ -86,6 +89,8 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
   `main` como producción y `develop` como integración.
 - **Modifica:** D-18, D-19, D-22 (teléfono y WhatsApp reales), D-24 (sin Anthropic), D-25 (tope real de
   US$20) y D-03 (los documentos pasan al repositorio).
+- **Actualización (30 sep):** el presupuesto desplegado no es de US$250 sino de COP 20.000 al mes con alertas al 25,
+  50 y 100% (D-32); los canales de WhatsApp y teléfono siguen sin desplegar.
 - **Límite conocido:** la protección de ramas no está disponible en repositorios privados del plan
   gratuito; las reglas de `CONTRIBUTING.md` se cumplen por disciplina y CI.
 - **Estado:** firme (instrucción de la presidencia humana).
@@ -110,7 +115,7 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
   de la auditoría de equidad (género y banda de edad sí, para auditar); ningún proveedor sin ficha de
   términos; M-07 por tipo U1 a U13; retención: registros operativos 30 días, evidencia de evaluación cierre
   más 90 días.
-- **Por qué:** hallazgos H-GOB-01 a 04 y choques 7, 8, 10, 11 y 12 ([10](../Definiciones/10_Resolucion_Presidencia.md)).
+- **Por qué:** hallazgos H-GOB-01 a 04 y choques 7, 8, 10, 11 y 12 ([10](definiciones/10_resolucion.md)).
 - **Estado:** firme.
 
 ## D-26 · Repeticiones en el retenido de voz (27 sep 2026)
@@ -302,8 +307,8 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
   subagentes de solo lectura invocados en frío en cada compuerta.
 - **Alternativas:** organigrama de banco tradicional (v0); solo agentes; solo personas.
 - **Por qué:** independencia de quien desafía (P1), funciones obligatorias por país con dueño, cada
-  cara con artefacto, compuerta y veto. Ver [04_Organizacion_y_roles.md](04_Organizacion_y_roles.md).
-- **Estado:** firme en la **v2** ([04](04_Organizacion_y_roles.md)): misión como unidad de entrega,
+  cara con artefacto, compuerta y veto. Ver [04_Organizacion_y_roles.md](../docs/diseno/04_Organizacion_y_roles.md).
+- **Estado:** firme en la **v2** ([04](../docs/diseno/04_Organizacion_y_roles.md)): misión como unidad de entrega,
   Oficina de Entrega, operación humana de fraude y disputas, voz en tres VP, equipo rojo, lista concreta
   de subagentes. Queda abierto solo el tamaño del equipo (pregunta 2 a los organizadores).
 
@@ -316,7 +321,7 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 - **Alternativas:** clasificador sobre transcripciones; predictor de escalamiento.
 - **Por qué:** las transcripciones no tienen señal (dos aperturas, marcadores sin llenar, V de Cramér
   0,011) y `was_escalated` es ruido (AUC 0,51); `fraud_score` sí discrimina (AUC 0,87). Ver
-  [03_Datos_por_capas.md](03_Datos_por_capas.md), sección 2.5 (P9, P10).
+  [03_Datos_por_capas.md](../docs/diseno/03_Datos_por_capas.md), sección 2.5 (P9, P10).
 - **Estado:** reemplazada por D-14.
 
 ## D-08 · Datos por capas: bronce, plata, oro y platino (26 sep 2026)
@@ -326,7 +331,7 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
   agente, aprendizaje); platino como capa de evidencia. DuckDB, Parquet y dbt, con contratos ODCS.
 - **Alternativas:** dos capas (cruda y limpia); Spark o un *warehouse* en la nube.
 - **Por qué:** cada capa tiene contrato y consumidor distintos; el volumen (5,3 GB) cabe local
-  (P9, P11, P13). Ver [03_Datos_por_capas.md](03_Datos_por_capas.md).
+  (P9, P11, P13). Ver [03_Datos_por_capas.md](../docs/diseno/03_Datos_por_capas.md).
 - **Estado:** firme.
 
 ## D-07 · Umbrales provisionales hasta medir la línea base (26 sep 2026)
@@ -381,5 +386,5 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ## D-01 · Principios del proyecto (26 sep 2026)
 
-- **Decisión:** adoptar [00_Principios.md](00_Principios.md) (P1 a P13) como reglas no negociables.
+- **Decisión:** adoptar [00_Principios.md](../docs/diseno/00_Principios.md) (P1 a P13) como reglas no negociables.
 - **Estado:** firme.

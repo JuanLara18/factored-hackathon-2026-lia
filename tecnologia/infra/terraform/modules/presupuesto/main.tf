@@ -1,18 +1,13 @@
-resource "google_monitoring_notification_channel" "correo" {
-  for_each     = toset(var.correos_alerta)
-  project      = var.project_id
-  display_name = "Presupuesto ${each.value}"
-  type         = "email"
-  labels       = { email_address = each.value }
-}
-
+# R-TEC-18: el presupuesto es lo primero. Sin reglas de notificación propias: llegan los correos
+# por defecto a los administradores de la cuenta de facturación (lo que hay desplegado).
 resource "google_billing_budget" "presupuesto" {
   billing_account = var.billing_account
-  display_name    = "${var.prefijo}-presupuesto"
+  display_name    = var.nombre
 
   budget_filter {
     projects               = ["projects/${var.project_number}"]
-    credit_types_treatment = "EXCLUDE_ALL_CREDITS"
+    credit_types_treatment = "INCLUDE_ALL_CREDITS"
+    calendar_period        = "MONTH"
   }
 
   amount {
@@ -26,11 +21,12 @@ resource "google_billing_budget" "presupuesto" {
     for_each = var.umbrales
     content {
       threshold_percent = threshold_rules.value
+      spend_basis       = "CURRENT_SPEND"
     }
   }
 
-  all_updates_rule {
-    monitoring_notification_channels = [for c in google_monitoring_notification_channel.correo : c.id]
-    disable_default_iam_recipients   = false
+  threshold_rules {
+    threshold_percent = 1.0
+    spend_basis       = "FORECASTED_SPEND"
   }
 }

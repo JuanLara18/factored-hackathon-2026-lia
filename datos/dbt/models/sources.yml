@@ -19,7 +19,7 @@ sources:
       - {name: bronce_marketing_campaigns}
       - {name: bronce_campaign_sends}
   - name: seguridad
-    description: "Llave de seudonimización, solo la cuenta del pipeline; en el sandbox el IAM es de proyecto"
+    description: "Llave de seudonimización, solo la cuenta del pipeline; el IAM es de proyecto"
     schema: latam_seguridad
     tables:
       - {name: llave}

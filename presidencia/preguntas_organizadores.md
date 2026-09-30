@@ -1,6 +1,6 @@
 # Preguntas para los organizadores
 
-Las doce preguntas de la [revisión 05](05_Cobertura_del_enunciado.md), sección 4, listas para enviar.
+Las doce preguntas de la [revisión 05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 4, listas para enviar.
 La versión en inglés va primero porque el enunciado está en inglés.
 
 ## English

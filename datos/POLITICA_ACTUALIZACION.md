@@ -16,5 +16,5 @@ mezcla con la generación vigente; se decide con Presidencia y, si se adopta, se
 (`bronce_<t>_nuevo`, conteo contra los CSV, reemplazo) y se corre `just manifiesto`, que encadena el manifiesto nuevo al anterior.
 
 **Verificación.** `just verificar-cadena` en cada corrida; una cadena rota bloquea cifras oficiales (PD6). Las tablas
-del sandbox vencen el 2026-11-28: antes de esa fecha se recargan desde el espejo local, y el manifiesto es la prueba de que
+vencen el 2026-11-28 (vencimiento heredado del sandbox): antes de esa fecha se recargan desde el espejo local, y el manifiesto es la prueba de que
 la recarga es igual.

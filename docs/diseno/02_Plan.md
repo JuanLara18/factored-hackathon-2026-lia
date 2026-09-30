@@ -2,14 +2,14 @@
 
 **Nota del 26 de septiembre de 2026:** las fases y compuertas de este documento siguen vigentes; el
 backlog por cara, la ruta crítica, el calendario y el orden de recorte están en
-[07_Hoja_de_ruta.md](07_Hoja_de_ruta.md), y la arquitectura y la tecnología decidida en
+[07_Hoja_de_ruta.md](../../presidencia/hoja_de_ruta.md), y la arquitectura y la tecnología decidida en
 [06_Arquitectura.md](06_Arquitectura.md). Con la decisión de dos canales (D-17), F3 construye el
 núcleo y el chat, y la nueva **F3v** agrega la voz sobre el mismo núcleo.
 
 **Reglas del plan:** se rige por [00_Principios.md](00_Principios.md). Cada fase tiene entregables
 y una **compuerta de salida**: no se pasa a la siguiente sin cumplirla. Si el tiempo aprieta se
 recorta **alcance** (escenarios, idiomas, pulido), nunca una compuerta ni un principio. Las
-decisiones van al [registro](Decisiones.md).
+decisiones van al [registro](../../presidencia/decisiones.md).
 
 **Horizonte:** diez días desde el arranque oficial (fechas por confirmar). Los días se cuentan
 relativos: **D0** es la preparación antes del arranque, **D1 a D10** los días de la competencia.
@@ -228,7 +228,7 @@ sección 2.** Se conserva la tabla original como registro.
 | Pruebas | pytest, Hypothesis | |
 | Demo | interfaz web simple de chat más vista de agente | Streamlit, Chainlit |
 
-Se decide en F0 y F1 y se registra en [Decisiones.md](Decisiones.md).
+Se decide en F0 y F1 y se registra en [Decisiones.md](../../presidencia/decisiones.md).
 
 ## Esqueleto del repositorio (superado)
 

@@ -97,7 +97,7 @@ models:
       - name: exchange_rate
         data_tests: [not_null]
   - name: plata_digital_events
-    description: "Vista sobre bronce (15,6 M filas): no se materializa por el tope de almacenamiento del sandbox"
+    description: "Vista sobre bronce (15,6 M filas): no se materializa (decisión tomada bajo el tope de 10 GB del sandbox; con facturación podría ser tabla)"
   - name: plata_restringida_clientes
     description: "Atributos protegidos para equidad; sin PII directa"
     columns:
