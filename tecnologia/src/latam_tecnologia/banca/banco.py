@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import secrets
+import threading
 import time
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
@@ -39,9 +40,21 @@ def id_traspaso(conversacion_id: str) -> str:
     return "tr-" + hash_corto("traspaso", conversacion_id)
 
 
+_ultimo_ns = 0
+_candado_ids = threading.Lock()
+
+
 def id_mensaje() -> str:
-    """Ordenable por tiempo: sirve de cursor en `desde`."""
-    return f"m{time.time_ns():020d}{secrets.token_hex(2)}"
+    """Ordenable por tiempo: sirve de cursor en `desde`.
+
+    Estrictamente creciente dentro del proceso: el reloj de Windows tiene poca resolución y dos mensajes
+    seguidos podían recibir el mismo instante (el sufijo aleatorio decidía el orden y `desde` los perdía).
+    """
+    global _ultimo_ns
+    with _candado_ids:
+        _ultimo_ns = max(time.time_ns(), _ultimo_ns + 1)
+        instante = _ultimo_ns
+    return f"m{instante:020d}{secrets.token_hex(2)}"
 
 
 def caso_nuevo(

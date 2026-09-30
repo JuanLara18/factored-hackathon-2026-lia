@@ -610,3 +610,10 @@ def test_serializador_coincide_con_las_fixtures_de_la_consola() -> None:
         esperado = json.loads(f.read_text(encoding="utf-8"))
         _mismas_claves(detalle, esperado, f.name)
     assert con_mensajes["mensajes"] and set(con_mensajes["mensajes"][0]) == {"id", "autor", "texto", "en"}
+
+
+def test_ids_de_mensaje_estrictamente_crecientes() -> None:
+    from latam_tecnologia.banca.banco import id_mensaje
+
+    ids = [id_mensaje() for _ in range(2000)]
+    assert ids == sorted(ids) and len(set(ids)) == len(ids)
