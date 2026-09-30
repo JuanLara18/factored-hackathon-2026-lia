@@ -11,7 +11,8 @@ import hmac
 import os
 import uuid
 from collections.abc import Callable, Mapping
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, cast
 
 from fastapi import APIRouter, Request
@@ -25,7 +26,9 @@ from latam_tecnologia.banca.refs import ref
 from latam_tecnologia.banca.vista import (
     PAIS_POR_MONEDA,
     PAISES,
+    en_utc,
     enmascarar,
+    fecha,
     final,
     hora,
     monto,
@@ -33,16 +36,25 @@ from latam_tecnologia.banca.vista import (
 )
 from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.demo import Demo, Sesion
-from latam_tecnologia.canales.runtime_cliente import ClienteRuntime, estado_de_confianza, id_usuario
-from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
+from latam_tecnologia.canales.runtime_cliente import (
+    AgenteNoDisponible,
+    ClienteRuntime,
+    estado_de_confianza,
+    id_usuario,
+)
+from latam_tecnologia.herramientas.catalogo import NO_DISPUTABLES, AccesoDenegado, Herramientas
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.retoma import Conversacion
 
 VARIABLE_CODIGO = "LATAM_OPERADOR_CODIGO"
-MAX_MOVIMIENTOS = 50
+MAX_MOVIMIENTOS = 50  # por página
+MAX_HISTORIAL = 200  # lo que se lee del oro para paginar y filtrar por producto
+VIGENCIA_OPERADOR = timedelta(hours=8)
+MAX_OPERADORES = 50
+MAX_FALLOS_CODIGO = 5  # intentos fallidos por ventana antes de responder 429
+VENTANA_FALLOS = timedelta(minutes=1)
 MAX_TEXTO = 2000
 RESULTADOS = ("resuelto", "radicado", "escalado", "sin_accion")
-NO_DISPUTABLES = ("declined", "failed", "reversed")  # ESC-02 de policy/v1
 TIPOS_PRODUCTO = {
     "credit_card": "Tarjeta de crédito",
     "debit_card": "Tarjeta débito",
@@ -79,6 +91,15 @@ ESTADOS_PRODUCTO = {
 Abrir = Callable[[int, str], Sesion]
 
 
+@dataclass
+class _Numeracion:
+    """Contadores de la consola: alias que no se reutilizan y fallos recientes del código."""
+
+    desde: datetime
+    siguiente: int = 1
+    fallos: int = 0
+
+
 def _error(codigo: str, estado: int) -> JSONResponse:
     return JSONResponse({"error": codigo}, status_code=estado)
 
@@ -96,7 +117,8 @@ def contexto_reclamo(tx: Transaccion) -> str:
     return (
         "Contexto fijado por el servidor: el cliente abrió desde la banca en línea el movimiento "
         f"{tx.transaction_id} ({textos.describir_comercio(tx.comercio, tx.tipo)}, "
-        f"{monto(tx.monto.monto)} {tx.monto.moneda}) y dice no reconocerlo. Ya está identificado: no le pida "
+        f"{monto(tx.monto.monto, tx.monto.moneda)} {tx.monto.moneda}) y dice no reconocerlo. "
+        "Ya está identificado: no le pida "
         "que lo busque ni que lo describa. Empiece consultándolo con consultar_transaccion, cuéntele lo que "
         "ve y ofrézcale abrir la disputa."
     )
@@ -115,7 +137,8 @@ def crear_router(
     banco: Banco = demo.banco
     lectura = demo.lectura
     env = os.environ if entorno is None else entorno
-    operadores: dict[str, str] = {}
+    operadores: dict[str, tuple[str, datetime]] = {}  # token -> (alias, vencimiento)
+    numeracion = _Numeracion(desde=demo.reloj())
 
     # Ayudas
 
@@ -125,7 +148,7 @@ def crear_router(
 
     def _movimientos(s: Sesion) -> dict[str, Transaccion]:
         cliente = s.autenticada.cliente_id
-        recientes = lectura.transacciones_recientes(cliente, MAX_MOVIMIENTOS)
+        recientes = lectura.transacciones_recientes(cliente, MAX_HISTORIAL)
         return {ref("tx", cliente, t.transaction_id): t for t in recientes}
 
     def _estado_producto(cliente: str, p: Producto) -> str:
@@ -141,13 +164,13 @@ def crear_router(
         caso = abiertos.get(tx.transaction_id)
         return {
             "tx_ref": ref("tx", cliente, tx.transaction_id),
-            "fecha": tx.event_ts.date().isoformat(),
-            "hora": tx.event_ts.strftime("%H:%M"),
+            "fecha": fecha(tx.event_ts),  # Bogotá; el oro guarda UTC
+            "hora": hora(tx.event_ts),
             "descripcion": textos.describir_comercio(tx.comercio, tx.tipo),
             "categoria": tx.categoria,
             "tipo": tx.tipo,
             "canal": tx.canal,
-            "monto": monto(tx.monto.monto),
+            "monto": monto(tx.monto.monto, tx.monto.moneda),
             "moneda": tx.monto.moneda,
             "estado": tx.estado,
             "pais": tx.pais,
@@ -183,7 +206,10 @@ def crear_router(
         indice = cuerpo.get("indice")
         if not isinstance(indice, int) or isinstance(indice, bool) or not 0 <= indice < len(demo.clientes):
             return _error("cliente_desconocido", 400)
-        s = abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+        try:
+            s = abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+        except AgenteNoDisponible:
+            return _error("agente_no_disponible", 503)
         cliente = s.autenticada.cliente_id
         pais = demo.pais_de(cliente)
         moneda = next((p.moneda for p in lectura.productos(cliente) if p.moneda), None)
@@ -249,21 +275,25 @@ def crear_router(
         corte: datetime | None = None
         if antes_de:
             try:
-                corte = datetime.fromisoformat(antes_de)
+                corte = en_utc(datetime.fromisoformat(antes_de))
             except ValueError:
                 return _error("antes_de_invalido", 400)
-        txs = sorted(_movimientos(s).values(), key=lambda t: t.event_ts, reverse=True)
+        txs = sorted(
+            _movimientos(s).values(), key=lambda t: (en_utc(t.event_ts), t.transaction_id), reverse=True
+        )
         if filtrar:
             txs = [t for t in txs if t.product_id == filtrar]
         if corte is not None:
-            txs = [t for t in txs if t.event_ts < corte]
+            txs = [t for t in txs if en_utc(t.event_ts) < corte]
         limite = max(1, min(limite, MAX_MOVIMIENTOS))
+        while limite < len(txs) and en_utc(txs[limite].event_ts) == en_utc(txs[limite - 1].event_ts):
+            limite += 1  # un empate en el borde no se parte: `antes_de` es estricto y se perdería
         pagina = txs[:limite]
         abiertos = _casos_abiertos(cliente)
         return JSONResponse(
             {
                 "movimientos": [_movimiento(s, t, abiertos) for t in pagina],
-                "siguiente": pagina[-1].event_ts.isoformat() if len(txs) > limite else None,
+                "siguiente": en_utc(pagina[-1].event_ts).isoformat() if len(txs) > limite else None,
             }
         )
 
@@ -313,17 +343,20 @@ def crear_router(
             )
         )
         contexto = contexto_reclamo(tx)
+        if runtime is not None:  # primero el agente: sin su sesión la conversación no serviría
+            try:
+                runtime.crear_sesion(
+                    user_id=id_usuario(cliente),
+                    session_id=conversacion,
+                    estado={
+                        **estado_de_confianza(s.autenticada, conversacion),
+                        "contexto": contexto,
+                    },
+                )
+            except AgenteNoDisponible:
+                return _error("agente_no_disponible", 503)
         s.contextos[conversacion] = contexto
         s.reclamos[tx_ref] = conversacion
-        if runtime is not None:
-            runtime.crear_sesion(
-                user_id=id_usuario(cliente),
-                session_id=conversacion,
-                estado={
-                    **estado_de_confianza(s.autenticada, conversacion),
-                    "contexto": contexto,
-                },
-            )
         return JSONResponse({"conversacion": conversacion})
 
     @router.get("/api/banca/reclamos")
@@ -348,7 +381,7 @@ def crear_router(
                     "caso_ref": c.caso_ref,
                     "tx_ref": ref("tx", cliente, c.transaccion_id),
                     "descripcion": textos.describir_comercio(tx.comercio, tx.tipo) if tx else "Movimiento",
-                    "monto": monto(c.monto),
+                    "monto": monto(c.monto, c.moneda),
                     "moneda": c.moneda,
                     "estado": c.estado,
                     "abierto_en": c.abierto_en.isoformat(),
@@ -422,19 +455,37 @@ def crear_router(
     # Experto
 
     def _operador(request: Request) -> str | JSONResponse:
-        alias = operadores.get(request.headers.get("x-operador", ""))
-        return _error("operador", 401) if alias is None else alias
+        token = request.headers.get("x-operador", "")
+        entrada = operadores.get(token)
+        if entrada is None:
+            return _error("operador", 401)
+        if demo.reloj() >= entrada[1]:
+            operadores.pop(token, None)
+            return _error("operador", 401)
+        return entrada[0]
 
     @router.post("/api/operador/ingresar")
     async def operador_ingresar(request: Request) -> Response:
         esperado = env.get(VARIABLE_CODIGO, "")
         if not esperado:
             return _error("operador_no_configurado", 503)
+        ahora = demo.reloj()
+        if ahora - numeracion.desde > VENTANA_FALLOS:
+            numeracion.fallos, numeracion.desde = 0, ahora
+        if numeracion.fallos >= MAX_FALLOS_CODIGO:
+            return _error("demasiados_intentos", 429)
         codigo = str((await _json(request)).get("codigo", ""))
         if not hmac.compare_digest(codigo.encode(), esperado.encode()):
+            numeracion.fallos += 1
             return _error("codigo", 401)
+        numeracion.fallos = 0
+        for vencido in [t for t, (_, exp) in operadores.items() if ahora >= exp]:
+            del operadores[vencido]
+        if len(operadores) >= MAX_OPERADORES:
+            return _error("demasiadas_sesiones", 429)
         token = uuid.uuid4().hex
-        operadores[token] = f"Experto {len(operadores) + 1}"
+        operadores[token] = (f"Experto {numeracion.siguiente}", ahora + VIGENCIA_OPERADOR)
+        numeracion.siguiente += 1
         return JSONResponse({"sesion_operador": token})
 
     def _fila(t: Traspaso) -> dict[str, Any]:

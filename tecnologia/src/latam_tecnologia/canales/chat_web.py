@@ -8,19 +8,21 @@ El botón de persona no pasa por el modelo: llama a `escalar` y responde en el a
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ag_ui.core import RunFinishedInterruptOutcome
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from google.api_core.exceptions import GoogleAPICallError, RetryError
 from latam_comun.dominio import Canal
 from pydantic_ai import DeferredToolRequests
 from pydantic_ai.models import Model
@@ -28,12 +30,14 @@ from pydantic_ai.models import Model
 from latam_tecnologia import observabilidad
 from latam_tecnologia.banca.api import crear_router
 from latam_tecnologia.banca.vista import enmascarar
+from latam_tecnologia.banca.vista import monto as monto_pais
 from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.chat_agui import ChatAdapter, FiltradoEventStream
 from latam_tecnologia.canales.demo import Demo, Sesion, crear_demo
 from latam_tecnologia.canales.modelo import crear_modelo
 from latam_tecnologia.canales.runtime_cliente import (
     VARIABLE_RECURSO,
+    AgenteNoDisponible,
     ClienteAgentRuntime,
     ClienteRuntime,
     estado_de_confianza,
@@ -44,6 +48,10 @@ from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_di
 from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
 
 VIGENCIA_CONFIRMACION = timedelta(minutes=5)
+MAX_CUERPO = 64 * 1024  # bytes; ningún cuerpo legítimo de la API se le acerca
+MAX_MENSAJE = 4000  # caracteres del mensaje del cliente al agente
+MAX_VIVAS = 2000  # confirmaciones emitidas y sin gastar, por proceso
+log = logging.getLogger(__name__)
 WEB_DIR = Path(__file__).resolve().parents[3] / "web" / "chat"
 CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-ancestors 'none'"
 _PERSONA = re.compile(r"\b(persona|humano|asesor)\b", re.IGNORECASE)
@@ -59,7 +67,11 @@ class Vencimientos:
     _vivas: dict[tuple[str, str], datetime] = field(default_factory=dict[tuple[str, str], datetime])
 
     def emitir(self, sesion: str, interrupcion: str) -> datetime:
-        expira = self.reloj() + VIGENCIA_CONFIRMACION
+        ahora = self.reloj()
+        expira = ahora + VIGENCIA_CONFIRMACION
+        if len(self._vivas) >= MAX_VIVAS:  # sin esto, cada turno sin resolver se queda en memoria
+            for clave in [c for c, e in self._vivas.items() if e <= ahora] or list(self._vivas)[:100]:
+                del self._vivas[clave]
         self._vivas[(sesion, interrupcion)] = expira
         return expira
 
@@ -112,8 +124,24 @@ class AdaptadorChat(ChatAdapter):
         )
 
 
+def _cuerpo(crudo: bytes) -> dict[str, Any]:
+    """El cuerpo JSON como objeto; vacío o malformado es `{}` y cada ruta decide qué responder."""
+    try:
+        valor: Any = json.loads(crudo or b"{}")
+    except ValueError:
+        return {}
+    return cast(dict[str, Any], valor) if isinstance(valor, dict) else {}
+
+
+def _mensajes(cuerpo: dict[str, Any]) -> list[dict[str, Any]]:
+    crudos: object = cuerpo.get("messages")
+    if not isinstance(crudos, list):
+        return []
+    return [cast(dict[str, Any], m) for m in cast(list[object], crudos) if isinstance(m, dict)]
+
+
 def _texto_ultimo_usuario(cuerpo: dict[str, Any]) -> str:
-    for m in reversed(cuerpo.get("messages", [])):
+    for m in reversed(_mensajes(cuerpo)):
         if m.get("role") == "user":
             return str(m.get("content", ""))
     return ""
@@ -122,11 +150,6 @@ def _texto_ultimo_usuario(cuerpo: dict[str, Any]) -> str:
 def _aprobada(resume: dict[str, Any]) -> bool:
     carga: dict[str, Any] = resume.get("payload") or {}
     return bool(carga.get("approved"))
-
-
-def _dinero(monto: Any) -> str:
-    entero, _, dec = f"{float(monto):,.2f}".partition(".")
-    return f"{entero.replace(',', '.')},{dec}"
 
 
 def _final(product_id: str) -> str:
@@ -156,6 +179,23 @@ def crear_app(
     runtime: ClienteRuntime | None = None,
 ) -> FastAPI:
     app = FastAPI()
+
+    @app.middleware("http")
+    async def _errores(  # pyright: ignore[reportUnusedFunction]
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        """Límite de cuerpo y errores sin detalles: ni rastro de pila ni datos del cliente salen a la red."""
+        largo = request.headers.get("content-length", "")
+        if largo.isdigit() and int(largo) > MAX_CUERPO:
+            return JSONResponse({"error": "cuerpo_demasiado_grande"}, status_code=413)
+        try:
+            return await call_next(request)
+        except Exception as error:
+            log.error("error no controlado en %s (%s)", request.url.path, type(error).__name__)
+            if isinstance(error, GoogleAPICallError | RetryError):  # Firestore o BigQuery caídos
+                return JSONResponse({"error": "servicio_no_disponible"}, status_code=503)
+            return JSONResponse({"error": "interno"}, status_code=500)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origenes_cors(entorno),
@@ -188,6 +228,8 @@ def crear_app(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         respuesta = await call_next(request)
+        if len(traza) > 2000:  # la traza de pruebas no crece sin fin en un proceso largo
+            del traza[:1000]
         respuesta.headers["Content-Security-Policy"] = CSP
         respuesta.headers["X-Content-Type-Options"] = "nosniff"
         respuesta.headers["Referrer-Policy"] = "no-referrer"
@@ -214,20 +256,27 @@ def crear_app(
     def abrir(indice: int, registro: str) -> Sesion:
         s = demo.abrir(indice, registro)
         if runtime is not None:
-            runtime.crear_sesion(
-                user_id=id_usuario(s.autenticada.cliente_id),
-                session_id=s.conversacion_id,
-                estado=estado_de_confianza(s.autenticada, s.conversacion_id),
-            )
+            try:
+                runtime.crear_sesion(
+                    user_id=id_usuario(s.autenticada.cliente_id),
+                    session_id=s.conversacion_id,
+                    estado=estado_de_confianza(s.autenticada, s.conversacion_id),
+                )
+            except AgenteNoDisponible:
+                demo.sesiones.pop(s.autenticada.id_sesion, None)  # sin agente no hay sesión a medias
+                raise
         return s
 
     @app.post("/api/sesion")
     async def abrir_sesion(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
-        cuerpo: dict[str, Any] = await request.json()
-        indice = int(cuerpo.get("cliente", 0))
-        if not 0 <= indice < len(demo.clientes):
+        cuerpo = _cuerpo(await request.body())
+        indice = cuerpo.get("cliente", 0)
+        if not isinstance(indice, int) or isinstance(indice, bool) or not 0 <= indice < len(demo.clientes):
             return JSONResponse({"error": "cliente_desconocido"}, status_code=400)
-        s = abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+        try:
+            s = abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+        except AgenteNoDisponible:
+            return JSONResponse({"error": "agente_no_disponible"}, status_code=503)
         return JSONResponse(
             {"sesion": s.autenticada.id_sesion, "conversacion": s.conversacion_id, "registro": s.registro}
         )
@@ -244,10 +293,7 @@ def crear_app(
         if s is None:
             return JSONResponse({"error": "sesion"}, status_code=401)
         reg = registro_de(request, s)
-        try:
-            cuerpo: dict[str, Any] = json.loads((await request.body()) or b"{}")
-        except ValueError:
-            cuerpo = {}
+        cuerpo = _cuerpo(await request.body())
         conversacion = conversacion_de(s, cuerpo.get("conversacion"))
         if conversacion is None:
             return JSONResponse({"error": "conversacion"}, status_code=403)
@@ -272,7 +318,7 @@ def crear_app(
                     tx = herramientas.transaccion(s.autenticada, str(args.get("transaction_id"))).valor
                     if tx is not None:
                         objeto = f"sobre el cargo de {textos.describir_comercio(tx.comercio, tx.tipo)}"
-                        monto, moneda = _dinero(tx.monto.monto), tx.monto.moneda
+                        monto, moneda = monto_pais(tx.monto.monto, tx.monto.moneda), tx.monto.moneda
                 elif herramienta == "bloquear_tarjeta":
                     objeto = f"la tarjeta terminada en {_final(str(args.get('product_id')))}"
             except AccesoDenegado:
@@ -288,10 +334,10 @@ def crear_app(
             return
         turnos = [
             (str(m["role"]), enmascarar(str(m["content"])))
-            for m in cuerpo.get("messages", [])
+            for m in _mensajes(cuerpo)
             if m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str) and m["content"]
         ]
-        for rol, texto in turnos[len(registro.transcripcion) :]:
+        for rol, texto in turnos[registro.turnos_guardados :]:
             demo.banco.agregar_transcripcion(conversacion, "cliente" if rol == "user" else "asistente", texto)
 
     @app.post("/api/agui")
@@ -299,15 +345,21 @@ def crear_app(
         s = sesion_de(request)
         if s is None:
             return JSONResponse({"error": "sesion"}, status_code=401)
-        cuerpo: dict[str, Any] = json.loads(await request.body())
+        cuerpo = _cuerpo(await request.body())
         pedida: object = cuerpo.get("threadId")
         conversacion = conversacion_de(s, pedida)
         if conversacion is None or pedida != conversacion:
             return JSONResponse({"error": "conversacion"}, status_code=403)
         contexto = s.contextos.get(conversacion, "")
         reg = registro_de(request, s)
-        registrar_transcripcion(conversacion, cuerpo)
-        entradas: list[dict[str, Any]] = cuerpo.get("resume") or []
+        if runtime is None:  # con Agent Runtime, el agente guarda los turnos
+            registrar_transcripcion(conversacion, cuerpo)
+        crudas: object = cuerpo.get("resume") or []
+        if not isinstance(crudas, list) or not all(isinstance(r, dict) for r in crudas):  # pyright: ignore[reportUnknownVariableType]
+            return JSONResponse({"error": "interrupcion_invalida"}, status_code=400)
+        entradas = cast(list[dict[str, Any]], crudas)
+        if len(_texto_ultimo_usuario(cuerpo)) > MAX_MENSAJE:
+            return JSONResponse({"error": "mensaje_demasiado_largo"}, status_code=413)
         for r in entradas:
             iid = str(r.get("interruptId", ""))
             if not iid.startswith("int-"):
@@ -317,6 +369,12 @@ def crear_app(
                 return JSONResponse({"error": f"confirmacion_{veredicto}"}, status_code=409)
         if _PERSONA.search(_texto_ultimo_usuario(cuerpo)):
             traza.append("pedido_de_persona_en_texto")
+
+        def rearmar() -> None:
+            """Turno fallido: la aprobación sigue pendiente en el agente; se puede confirmar de nuevo."""
+            for r in entradas:
+                vencimientos.emitir(s.autenticada.id_sesion, str(r["interruptId"]))
+
         if runtime is not None:
             aprobaciones = {str(r["interruptId"])[4:]: _aprobada(r) for r in entradas}
             return StreamingResponse(
@@ -329,6 +387,7 @@ def crear_app(
                     registro=reg,
                     enriquecer=enriquecedor(s, reg),
                     traza=traza,
+                    al_fallar=rearmar,
                 ),
                 media_type="text/event-stream",
             )
