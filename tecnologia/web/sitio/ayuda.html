@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Centro de ayuda, LATAM Bank</title>
+<meta name="description" content="Preguntas frecuentes sobre cargos que no reconoce, bloqueo de tarjeta y reclamos.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="salto" href="#principal">Ir al contenido</a>
+<header class="cabecera">
+  <div class="contenedor cabecera-fila">
+    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="index.html">Personas</a>
+      <a href="productos.html">Productos</a>
+      <a href="reclamos.html">Reclamos</a>
+      <a href="seguridad.html">Seguridad</a>
+      <a href="ayuda.html" aria-current="page">Ayuda</a>
+      <span class="nav-pronto">Empresas <small>próximamente</small></span>
+    </nav>
+    <div class="cabecera-acciones">
+      <label class="pais" for="pais"><span class="visualmente-oculto">País</span>
+        <select id="pais" aria-label="País"><option value="MX">México</option><option value="CO">Colombia</option><option value="AR">Argentina</option></select>
+      </label>
+      <a class="boton primario" href="banca/index.html">Banca en línea</a>
+    </div>
+  </div>
+</header>
+<main id="principal">
+  <div class="contenedor pagina">
+    <p class="sobretitulo">Centro de ayuda</p>
+    <h1>¿En qué le podemos ayudar?</h1>
+    <p class="entrada">Busque su pregunta o entre a Banca en línea para hablar con el asistente.</p>
+    <div class="buscador">
+      <label for="buscar">Buscar en el centro de ayuda</label>
+      <input id="buscar" type="search" placeholder="Por ejemplo: bloquear tarjeta" autocomplete="off">
+      <p id="resultado" class="nota" role="status" aria-live="polite"></p>
+    </div>
+    <div id="faqs" class="faqs">
+      <details class="faq"><summary><span>No reconozco un <span data-p="cargo">cargo</span> en mi cuenta, ¿qué hago?</span></summary><p>Entre a Banca en línea, abra el movimiento y elija “No reconozco este cargo”. El asistente ya tiene identificado ese movimiento, le explica lo que ve y le propone un paso. Usted decide si abre el reclamo.</p></details>
+      <details class="faq"><summary><span>¿Cómo bloqueo mi tarjeta?</span></summary><p>Desde Banca en línea, en la ficha de su tarjeta, o pidiéndoselo al asistente. Antes de bloquearla, el asistente le explica que no se aceptarán nuevos cargos y le pide su confirmación. Si no confirma, no se hace ningún cambio.</p></details>
+      <details class="faq"><summary><span>¿Bloquear la tarjeta abre el reclamo?</span></summary><p>No. Son dos pasos separados. Puede bloquear la tarjeta sin abrir un reclamo, y abrir un reclamo sin bloquearla.</p></details>
+      <details class="faq"><summary><span>¿Cuánto tarda la respuesta a un reclamo?</span></summary><p>El plazo lo fija la norma del país de su cuenta y la política del banco. Al abrir el reclamo, el asistente le informa la fecha que corresponde a su caso. Esta página no repite plazos para no darle una fecha que no sea la suya.</p></details>
+      <details class="faq"><summary><span>¿Me van a devolver el dinero?</span></summary><p>El asistente no decide el resultado. Lo decide el equipo del banco, con la política vigente, y le responde por el mismo medio. El asistente no anuncia devoluciones.</p></details>
+      <details class="faq"><summary><span>¿Puedo hablar con una persona?</span></summary><p>Sí, en cualquier momento. Use el botón “Hablar con una persona” o escriba la palabra persona. La persona recibe un resumen de lo que ya contó, para que no tenga que repetirlo.</p></details>
+      <details class="faq"><summary><span>¿Cómo sé si el asistente es una persona?</span></summary><p>No lo es. El asistente es un sistema de inteligencia artificial y se lo dice al abrir cada conversación.</p></details>
+      <details class="faq"><summary><span>¿El banco me pedirá mi clave o un código?</span></summary><p>Nunca. LATAM Bank no le pide su clave, ni que mueva dinero. Los códigos de verificación solo se digitan en el campo seguro de la aplicación. Vea la página de <a href="seguridad.html">seguridad</a>.</p></details>
+      <details class="faq"><summary><span>¿Qué datos ve el asistente?</span></summary><p>Los movimientos, el estado del cargo y la tarjeta con sus últimos cuatro dígitos. No ve su nombre ni su documento. Más detalle en <a href="transparencia.html">transparencia</a>.</p></details>
+      <details class="faq"><summary><span>¿Dónde veo el <span data-p="documento">estado de cuenta</span>?</span></summary><p>En Banca en línea, dentro del producto correspondiente. En esta demostración es un documento de ejemplo.</p></details>
+    </div>
+    <p id="sin-resultados" class="oculto">No encontramos esa pregunta. Pruebe con otra palabra o <a href="contacto.html">vea los canales de contacto</a>.</p>
+    <div class="acciones sep"><a class="boton primario" href="banca/index.html">Ir a Banca en línea</a><a class="boton" href="contacto.html">Contacto</a></div>
+  </div>
+</main>
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-rejilla">
+      <div class="pie-marca">
+        <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
+        <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026. Nada de este sitio es una oferta real y ninguna acción mueve dinero.</p>
+      </div>
+      <nav aria-label="Productos y ayuda"><h2>Para usted</h2>
+        <a href="productos.html">Productos</a><a href="ayuda.html">Centro de ayuda</a><a href="contacto.html">Contacto</a><a href="banca/index.html">Banca en línea</a></nav>
+      <nav aria-label="Información legal"><h2>Información</h2>
+        <a href="reclamos.html">Reclamos</a><a href="seguridad.html">Seguridad</a><a href="transparencia.html">Transparencia</a><a href="privacidad.html">Privacidad</a></nav>
+    </div>
+    <p class="pie-legal">Demostración sin valor legal. Los textos legales y de privacidad están pendientes de revisión por el área de Gobierno.</p>
+  </div>
+</footer>
+<script src="assets/pais.js" defer></script>
+<script src="assets/ayuda.js" defer></script>
+</body>
+</html>
