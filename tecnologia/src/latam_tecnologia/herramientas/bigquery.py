@@ -16,7 +16,7 @@ from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 _IDENTIFICADOR = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,62}$")
 _COLUMNAS_TX = (
     "transaction_id, product_id, event_ts, amount, currency, amount_usd, transaction_type,"
-    " transaction_status, merchant_name, merchant_category, transaction_country, es_extranjera"
+    " transaction_status, merchant_name, merchant_category, transaction_country, es_extranjera, channel"
 )
 _LIMITE_MAXIMO = 50
 
@@ -65,6 +65,7 @@ class LecturaBigQuery:
             categoria=f["merchant_category"],
             pais=f["transaction_country"],
             es_extranjera=bool(f["es_extranjera"]),
+            canal=f.get("channel"),
         )
 
     def transacciones_recientes(self, cliente_id: str, limite: int) -> tuple[Transaccion, ...]:

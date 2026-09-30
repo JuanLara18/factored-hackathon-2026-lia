@@ -162,18 +162,94 @@ class RespuestaTipada(_Inmutable):
     para_voz: bool = False
 
 
+class Conflicto(_Inmutable):
+    """Lo declarado frente al registro, en dos columnas y sin calificativos (2.5.2)."""
+
+    tipo: str
+    declarado: str
+    registro: str
+
+
+class AccionNoRealizada(_Inmutable):
+    accion: str
+    motivo: str
+
+
+class PreguntaAbierta(_Inmutable):
+    pregunta: str
+    a_quien: Literal["cliente", "back_office", "red"]
+    bloquea: bool
+
+
+class Plazo(_Inmutable):
+    regla: str
+    inicio: datetime
+    vence: datetime
+
+
+class Compromiso(_Inmutable):
+    texto: str
+    hora: datetime
+
+
+class ReglaAplicada(_Inmutable):
+    id: str
+    version: str
+
+
+class ColaDestino(_Inmutable):
+    idioma: str
+    especialidad: str
+    franja: str
+
+
+class Identidad(_Inmutable):
+    nivel: NivelAcr
+    metodo: str
+    hora: datetime
+
+
+class Evidencia(_Inmutable):
+    traza_id: str
+    reglas: tuple[ReglaAplicada, ...] = ()
+    plantillas: tuple[str, ...] = ()
+
+
 class PaqueteTraspaso(_Inmutable):
-    """Lo que recibe el experto humano (enunciado, criterio 3)."""
+    """Lo que recibe el experto humano (enunciado, criterio 3; definición de Clientes, 2.5.2).
+
+    Los seis primeros campos son los de la primera versión y siguen igual; los demás completan los 19 de 2.5.2
+    con valores por defecto para no romper a quien ya construía el paquete. No lleva nombre, documento, número
+    completo de tarjeta, atributos protegidos, segmento, `fraud_score` en crudo ni el razonamiento del modelo.
+    """
 
     solicitud: str
     hechos: tuple[HechoVerificado[str], ...]
     interpretaciones: tuple[Interpretacion, ...]
-    conflictos: tuple[str, ...] = ()
+    conflictos: tuple[Conflicto | str, ...] = ()
     acciones: tuple[AccionVerificada, ...] = ()
-    preguntas_abiertas: tuple[str, ...] = ()
+    preguntas_abiertas: tuple[PreguntaAbierta | str, ...] = ()
     motivo: str
     idioma: Idioma
-    prioridad: Literal["urgente", "normal"]
+    prioridad: Literal["urgente", "normal", "P1", "P2", "P3", "P4"]
+    id_traspaso: str = ""
+    hilo_id: str = ""
+    caso_id: str | None = None
+    motivo_texto: str = ""
+    regla: ReglaAplicada | None = None
+    cola_destino: ColaDestino | None = None
+    registro: str = "usted"
+    pais_cuenta: str | None = None
+    canal_actual: Canal = Canal.CHAT
+    canales_usados: tuple[Canal, ...] = (Canal.CHAT,)
+    identidad: Identidad | None = None
+    acciones_no_realizadas: tuple[AccionNoRealizada, ...] = ()
+    plazos_en_curso: tuple[Plazo, ...] = ()
+    compromisos_comunicados: tuple[Compromiso, ...] = ()
+    preferencias: dict[str, str] = Field(default_factory=dict[str, str])
+    evidencia: Evidencia | None = None
+    transcripcion_ref: str | None = None
+    entidades: tuple[str, ...] = ()  # lo que la IA identificó (producto, comercio), como interpretación
 
 
 class EventoTraza(_Inmutable):

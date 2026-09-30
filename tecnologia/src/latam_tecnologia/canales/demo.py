@@ -13,7 +13,10 @@ from typing import Any
 
 from latam_comun.dominio import Canal, Dinero, NivelAcr, SesionAutenticada
 
-from latam_tecnologia.herramientas.falsos import LecturaOroFalsa, ServiciosBancoFalsos
+from latam_tecnologia.banca.banco import Banco, BancoMemoria, crear_banco
+from latam_tecnologia.banca.modelos import RegistroConversacion
+from latam_tecnologia.banca.vista import PAIS_POR_MONEDA
+from latam_tecnologia.herramientas.falsos import LecturaOroFalsa
 from latam_tecnologia.herramientas.puertos import LecturaOro, Producto, Transaccion
 from latam_tecnologia.motor.retoma import Conversacion
 from latam_tecnologia.servicios.almacen import AlmacenMemoria
@@ -86,6 +89,8 @@ class Sesion:
     autenticada: SesionAutenticada
     conversacion_id: str
     registro: str = "usted"
+    contextos: dict[str, str] = field(default_factory=dict[str, str])  # conversación -> contexto del servidor
+    reclamos: dict[str, str] = field(default_factory=dict[str, str])  # tx_ref -> conversación de ese reclamo
 
 
 @dataclass
@@ -95,10 +100,29 @@ class Demo:
     lectura: LecturaOro
     clientes: list[str]
     origen: str
-    banco: ServiciosBancoFalsos = field(default_factory=ServiciosBancoFalsos)
+    banco: Banco = None  # pyright: ignore[reportAssignmentType]  # `__post_init__` arma el doble
     almacen: AlmacenMemoria = field(default_factory=AlmacenMemoria)
     reloj: Callable[[], datetime] = lambda: datetime.now(UTC)
     sesiones: dict[str, Sesion] = field(default_factory=dict[str, Sesion])
+    paises: dict[str, str] = field(default_factory=dict[str, str])
+
+    def __post_init__(self) -> None:
+        if self.banco is None:  # pyright: ignore[reportUnnecessaryComparison]
+            self.banco = BancoMemoria(self.reloj)
+
+    def pais_de(self, cliente_id: str) -> str:
+        """País de la cuenta: el de la moneda de sus productos o el de su último movimiento."""
+        if cliente_id not in self.paises:
+            pais = None
+            for p in self.lectura.productos(cliente_id):
+                pais = PAIS_POR_MONEDA.get(p.moneda or "")
+                if pais:
+                    break
+            if pais is None:
+                for t in self.lectura.transacciones_recientes(cliente_id, 1):
+                    pais = t.pais or PAIS_POR_MONEDA.get(t.monto.moneda)
+            self.paises[cliente_id] = pais or "CO"
+        return self.paises[cliente_id]
 
     def etiquetas_clientes(self) -> list[str]:
         return [f"Cliente {i}" for i in range(1, len(self.clientes) + 1)]
@@ -122,6 +146,15 @@ class Demo:
             registro,
         )
         self.sesiones[id_sesion] = sesion
+        self.banco.registrar_conversacion(
+            RegistroConversacion(
+                id=conversacion_id,
+                cliente_id=cliente_id,
+                registro=registro,
+                pais=self.pais_de(cliente_id),
+                creada_en=ahora,
+            )
+        )
         return sesion
 
 
@@ -129,7 +162,18 @@ def crear_demo(entorno: dict[str, str] | None = None) -> Demo:
     env = os.environ if entorno is None else entorno
     proyecto = env.get("LATAM_GCP_PROJECT")
     real = _clientes_bigquery(proyecto) if proyecto else None
+
+    def reloj() -> datetime:
+        return datetime.now(UTC)
+
+    try:
+        banco = crear_banco(env, reloj)
+    except Exception as error:  # sin credenciales de Firestore: solo se tolera si no se pidió explícitamente
+        if env.get("LATAM_BANCO"):
+            raise
+        log.warning("Firestore no disponible (%s); el banco queda en memoria", type(error).__name__)
+        banco = BancoMemoria(reloj)
     if real is not None:
-        return Demo(lectura=real[0], clientes=real[1], origen="bigquery")
+        return Demo(lectura=real[0], clientes=real[1], origen="bigquery", banco=banco)
     lectura, ids = lectura_sembrada()
-    return Demo(lectura=lectura, clientes=ids, origen="memoria")
+    return Demo(lectura=lectura, clientes=ids, origen="memoria", banco=banco)

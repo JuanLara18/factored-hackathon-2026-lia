@@ -212,6 +212,7 @@ class AgenteDisputasRuntime:
         *,
         modelo: Any = None,
         lectura: Any = None,
+        banco: Any = None,
         sesiones: Sesiones | None = None,
         reloj: Callable[[], Any] | None = None,
     ) -> None:
@@ -222,6 +223,7 @@ class AgenteDisputasRuntime:
         # Solo pruebas: en el despliegue se dejan en None y `set_up` los arma con GEAP y BigQuery.
         self._modelo, self._lectura, self._sesiones, self._reloj = modelo, lectura, sesiones, reloj
         self._agente: Any = None
+        self._banco: Any = banco
 
     # Ciclo de vida
 
@@ -239,11 +241,11 @@ class AgenteDisputasRuntime:
         from datetime import UTC, datetime
 
         from latam_tecnologia import observabilidad
+        from latam_tecnologia.banca.banco import crear_banco
         from latam_tecnologia.canales.geap import VARIABLE_PROYECTO, VARIABLE_UBICACION, crear_modelo_geap
         from latam_tecnologia.herramientas.agente import crear_agente_disputas
         from latam_tecnologia.herramientas.bigquery import LecturaBigQuery
         from latam_tecnologia.herramientas.catalogo import Herramientas
-        from latam_tecnologia.herramientas.falsos import ServiciosBancoFalsos
         from latam_tecnologia.servicios.almacen import AlmacenMemoria
 
         proyecto = self.proyecto or os.environ[VARIABLE_PROYECTO]
@@ -257,8 +259,8 @@ class AgenteDisputasRuntime:
         modelo = self._modelo or crear_modelo_geap(entorno)[0]
         lectura = self._lectura or LecturaBigQuery(proyecto, self.dataset)
         self._reloj = self._reloj or (lambda: datetime.now(UTC))
-        # Banco y almacén siguen simulados, como en el chat en proceso (ver tecnologia/README.md).
-        self._banco = ServiciosBancoFalsos()
+        # Banco compartido (Firestore, o memoria con LATAM_BANCO=memoria): el chat y la consola lo ven.
+        self._banco = self._banco or crear_banco({**os.environ, VARIABLE_PROYECTO: proyecto}, self._reloj)
         self._almacen = AlmacenMemoria()
         self._herramientas = Herramientas(lectura, self._banco, self._almacen, reloj=self._reloj)
         self._agente = crear_agente_disputas(modelo)
@@ -279,12 +281,13 @@ class AgenteDisputasRuntime:
 
     # Turno
 
-    def _sesion(self, session_id: str, user_id: str) -> tuple[Any, str] | str:
-        """Sesión autenticada desde el estado que fijó el canal, o el código de error."""
+    def _sesion(self, session_id: str, user_id: str) -> tuple[Any, str, str] | str:
+        """Sesión autenticada, conversación y contexto fijado por el canal, o el código de error."""
         from datetime import datetime
 
         from latam_comun.dominio import Canal, NivelAcr, SesionAutenticada
 
+        from latam_tecnologia.banca.modelos import RegistroConversacion
         from latam_tecnologia.motor.retoma import Conversacion
 
         estado = self._sesiones.estado(session_id, user_id)  # type: ignore[union-attr]
@@ -310,7 +313,10 @@ class AgenteDisputasRuntime:
                     estado="inicio",
                 )
             )
-        return sesion, conversacion_id
+        self._banco.registrar_conversacion(
+            RegistroConversacion(id=conversacion_id, cliente_id=sesion.cliente_id, creada_en=reloj())
+        )
+        return sesion, conversacion_id, str(estado.get("contexto", ""))
 
     async def _turno(
         self,
@@ -324,6 +330,7 @@ class AgenteDisputasRuntime:
         from pydantic_ai import DeferredToolRequests, DeferredToolResults, ToolDenied
         from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter, ModelResponse, ToolCallPart
 
+        from latam_tecnologia.banca.vista import enmascarar
         from latam_tecnologia.herramientas.agente import ContextoAgente
 
         self.set_up()
@@ -331,7 +338,7 @@ class AgenteDisputasRuntime:
         if isinstance(resuelta, str):
             yield {"tipo": "error", "codigo": resuelta}
             return
-        sesion, conversacion_id = resuelta
+        sesion, conversacion_id, contexto = resuelta
         historial: list[ModelMessage] = []
         for texto in self._sesiones.eventos(session_id, user_id):  # type: ignore[union-attr]
             historial += ModelMessagesTypeAdapter.validate_json(texto)
@@ -358,7 +365,12 @@ class AgenteDisputasRuntime:
             return
         registro = registro if registro in ("usted", "vos") else "usted"
         # El prompt versionado (ia/prompts/disputas) ya fija el registro; aquí solo se elige cuál.
-        ctx = ContextoAgente(self._herramientas, sesion, conversacion_id, Canal.CHAT, registro=registro)
+        ctx = ContextoAgente(
+            self._herramientas, sesion, conversacion_id, Canal.CHAT, registro=registro, contexto=contexto
+        )
+        if mensaje:
+            self._banco.agregar_transcripcion(conversacion_id, "cliente", enmascarar(mensaje))
+        respuesta: list[str] = []
         instrucciones = f"Registro: {registro}."
         async with self._agente.run_stream(
             mensaje,
@@ -368,9 +380,12 @@ class AgenteDisputasRuntime:
             instructions=instrucciones,
         ) as corrida:
             async for delta in corrida.stream_text(delta=True):
+                respuesta.append(delta)
                 yield {"tipo": "texto", "delta": delta}
             salida = await corrida.get_output()
             nuevos = corrida.new_messages()
+        if respuesta:
+            self._banco.agregar_transcripcion(conversacion_id, "asistente", enmascarar("".join(respuesta)))
         self._sesiones.agregar(  # type: ignore[union-attr]
             session_id,
             user_id,

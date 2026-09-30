@@ -59,11 +59,16 @@ class ServiciosBancoFalsos:
         if llave in self.respuestas:
             return self.respuestas[llave]
         self.llamadas += 1
-        caso = self.casos.setdefault((cliente_id, transaccion_id), f"caso-{len(self.casos) + 1}")
-        if credito_provisional:
+        existente = self.casos.get((cliente_id, transaccion_id))
+        caso = existente or f"caso-{len(self.casos) + 1}"
+        self.casos[(cliente_id, transaccion_id)] = caso
+        if existente is None and credito_provisional:  # un caso ya abierto no vuelve a recibir crédito
             self.creditos_provisionales.append(caso)
         self.respuestas[llave] = caso
         return caso
+
+    def credito_provisional_de(self, caso: str) -> bool:
+        return caso in self.creditos_provisionales
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
         return tuple(

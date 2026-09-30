@@ -25,6 +25,7 @@ class ContextoAgente:
     conversacion_id: str
     canal: Canal
     registro: str = "usted"
+    contexto: str = ""  # lo que el servidor fija sobre la conversación (p. ej. el movimiento reclamado)
 
 
 def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
@@ -34,7 +35,8 @@ def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
 
 
 def _instrucciones(ctx: RunContext[ContextoAgente]) -> str:
-    return instrucciones_disputas(ctx.deps.registro)
+    base = instrucciones_disputas(ctx.deps.registro)
+    return f"{base}\n\n{ctx.deps.contexto}" if ctx.deps.contexto else base
 
 
 def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | DeferredToolRequests]:

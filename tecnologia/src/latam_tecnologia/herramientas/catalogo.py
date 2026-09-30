@@ -9,6 +9,8 @@ from typing import Any
 from latam_comun.dominio import AccionVerificada, Confirmacion, HechoVerificado, NivelAcr, SesionAutenticada
 from latam_gobierno.politica import PoliticaV1, cargar
 
+from latam_tecnologia.banca.banco import Banco
+from latam_tecnologia.banca.paquete import construir_paquete
 from latam_tecnologia.herramientas.puertos import (
     CasoAbierto,
     LecturaOro,
@@ -124,7 +126,8 @@ class Herramientas:
             caso = self._banco.abrir_caso(
                 llave, cliente, transaccion_id, transaccion.monto, motivo, credito_provisional
             )
-            sufijo = " con crédito provisional" if credito_provisional else ""
+            # La bandera es la del caso, no la de esta llamada: un caso abierto no recibe crédito otra vez.
+            sufijo = " con crédito provisional" if self._banco.credito_provisional_de(caso) else ""
             return AccionVerificada(
                 accion="abrir_disputa", exito=True, resultado_releido=f"{caso}{sufijo}", hora=ahora
             )
@@ -177,7 +180,21 @@ class Herramientas:
         cliente = sesion.cliente_id
 
         def ejecutor(llave: str) -> AccionVerificada:
-            turno = self._banco.encolar_traspaso(llave, cliente, conversacion_id, motivo, urgente)
+            if isinstance(self._banco, Banco):  # el banco compartido recibe el paquete completo (2.5.2)
+                paquete = construir_paquete(
+                    politica=self._politica,
+                    lectura=self._lectura,
+                    banco=self._banco,
+                    almacen=self._almacen,
+                    sesion=sesion,
+                    conversacion_id=conversacion_id,
+                    motivo=motivo,
+                    urgente=urgente,
+                    ahora=ahora,
+                )
+                turno = self._banco.encolar_paquete(llave, cliente, conversacion_id, paquete)
+            else:
+                turno = self._banco.encolar_traspaso(llave, cliente, conversacion_id, motivo, urgente)
             return AccionVerificada(accion="escalar", exito=True, resultado_releido=turno, hora=ahora)
 
         return ejecutar_una_vez(

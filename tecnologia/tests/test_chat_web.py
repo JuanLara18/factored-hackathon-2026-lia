@@ -175,8 +175,10 @@ def test_disputa_completa_con_aprobacion(entorno: Entorno) -> None:
 
     e3 = n.resolver(e2, aprobado=True)
     assert e3[-1]["outcome"]["type"] == "success"
-    assert "quedó registrado el reclamo caso-1" in _texto(e3)
-    assert demo.banco.llamadas == 1 and list(demo.banco.casos) == [("demo-1", "tx-1-1")]
+    assert "quedó registrado el reclamo caso-" in _texto(e3)
+    assert demo.banco.llamadas == 1 and [c.transaction_id for c in demo.banco.casos_abiertos("demo-1")] == [
+        "tx-1-1"
+    ]
 
 
 def test_rechazo_no_ejecuta_y_usa_plantilla_sin_cambios(entorno: Entorno) -> None:
@@ -224,9 +226,9 @@ def test_boton_de_persona_traspasa_sin_pasar_por_el_modelo(entorno: Entorno) -> 
     r = cliente.post("/api/traspaso", headers=n.h)
     assert r.status_code == 200
     assert r.json()["texto"] == textos.plantilla("traspaso.chat", "usted", rango_espera="unos minutos")
-    assert demo.banco.traspasos == [("demo-1", n.conv, False)]
+    assert demo.banco.traspaso_de_conversacion(n.conv) is not None
     cliente.post("/api/traspaso", headers=n.h)  # idempotente: no encola otro
-    assert len(demo.banco.traspasos) == 1
+    assert demo.banco.llamadas == 1
     assert cliente.post("/api/traspaso").status_code == 401
 
 

@@ -28,6 +28,7 @@ class Transaccion(_Inmutable):
     categoria: str | None
     pais: str | None
     es_extranjera: bool
+    canal: str | None = None
 
 
 class Producto(_Inmutable):
@@ -75,6 +76,10 @@ class ServiciosBanco(Protocol):
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
         """Solo lectura: los casos abiertos del cliente."""
+        ...
+
+    def credito_provisional_de(self, caso: str) -> bool:
+        """Si el caso lleva la bandera de crédito provisional (la de su apertura, no la de esta llamada)."""
         ...
 
     def bloquear_tarjeta(self, llave: str, cliente_id: str, producto_id: str) -> str: ...
