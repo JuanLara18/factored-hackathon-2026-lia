@@ -32,6 +32,19 @@
   const el = {};
   let reloj = null;
 
+  // La conversación sobrevive a recargas y a cambiar de página de la banca: si no, tras un traspaso el cliente
+  // dejaría de ver las respuestas de la persona.
+  function recordar() {
+    B.guardar.escribir("banca_conv", JSON.stringify({ conversacion: est.conversacion, traspaso: est.traspaso, ultimo: est.ultimoMensaje }));
+  }
+  function recuperar() {
+    try {
+      const d = JSON.parse(B.guardar.leer("banca_conv") || "null");
+      if (d && d.conversacion) return d;
+    } catch (e) { /* sin rastro */ }
+    return null;
+  }
+
   const et = (k) => est.textos.etiquetas[k] || RESPALDO.etiquetas[k] || "";
   const tx = (k) => est.textos.textos[k] || RESPALDO.textos[k] || "";
 
@@ -114,6 +127,7 @@
     est.abierto = true;
     el.panel.classList.remove("oculto");
     el.lanzador.setAttribute("aria-expanded", "true");
+    el.lanzador.textContent = "Asistente";
     if (o.conversacion && o.conversacion !== est.conversacion) await empezar(o.conversacion, o.contexto);
     else if (!est.conversacion && !o.conversacion) mostrarSinContexto();
     el.titulo.focus();
@@ -139,6 +153,7 @@
     est.historial = [];
     est.traspaso = false;
     est.ultimoMensaje = null;
+    recordar();
     el.log.textContent = "";
     await cargarTextos();
     burbuja("asistente", tx("aviso")); // aviso de IA en el primer turno (R-CLI-13)
@@ -156,6 +171,7 @@
       const r = await B.llamar("/api/traspaso", { metodo: "POST", cuerpo: { conversacion: est.conversacion } });
       texto = r.texto || "Ya avisamos a una persona. Le responderá en esta misma conversación.";
       est.traspaso = true;
+      recordar();
     } catch (e) {
       texto = e.status === 401 ? et("sesion_vencida") : "No pudimos avisar a una persona en este momento. Puede intentarlo de nuevo.";
     }
@@ -178,8 +194,10 @@
       const lista = await B.llamar(`/api/banca/conversaciones/${encodeURIComponent(est.conversacion)}/mensajes${q}`);
       for (const m of lista) {
         est.ultimoMensaje = m.id;
+        recordar();
         if (m.autor !== "persona") continue;
         const b = burbuja("persona");
+        if (!est.abierto) el.lanzador.textContent = "Asistente, mensaje nuevo";
         b.append(etiquetaAutor("Persona de LATAM Bank"), h("span", { texto: m.texto }));
         anunciar("Nueva respuesta de una persona de LATAM Bank");
         el.estado.textContent = "";
@@ -271,6 +289,7 @@
     const asistentes = [];
     const llamadas = {};
     let interrupciones = [];
+    let error = false;
     for await (const e of eventos) {
       if (e.type === "TEXT_MESSAGE_START") {
         asistentes.push({ id: e.messageId, role: "assistant", content: "" });
@@ -288,6 +307,7 @@
       } else if (e.type === "RUN_FINISHED") {
         interrupciones = (e.outcome && e.outcome.interrupts) || [];
       } else if (e.type === "RUN_ERROR") {
+        error = true;
         burbuja("asistente error", tx("falla"));
       }
     }
@@ -301,6 +321,10 @@
     }
     for (const [id, c] of Object.entries(llamadas)) if (c.name === "FichaTransaccion") dibujarFicha(id, JSON.parse(c.args));
     for (const i of interrupciones) dibujarAprobacion(i);
+    // Un turno sin texto, ficha ni aprobación dejaría al cliente esperando sin respuesta: se avisa.
+    if (!error && !asistentes.length && !Object.keys(llamadas).length && !interrupciones.length) {
+      burbuja("asistente error", tx("falla"));
+    }
   }
 
   // Componente de transacción: solo campos conocidos, tarjeta siempre enmascarada (R-CLI-30).
@@ -401,6 +425,17 @@
 
   if (!B.sesion()) return; // sin ingreso no hay asistente
   construir();
+  const previa = recuperar();
+  if (previa) {
+    est.conversacion = previa.conversacion;
+    est.traspaso = Boolean(previa.traspaso);
+    est.ultimoMensaje = null; // el registro se vuelve a pintar entero
+    if (est.traspaso) {
+      burbuja("asistente", "Retomamos su conversación con una persona de LATAM Bank.");
+      el.estado.textContent = "Esperando a una persona";
+      iniciarSondeo();
+    }
+  }
   window.BancaWidget = { abrir, cerrar };
   const q = new URLSearchParams(window.location.search);
   if (B.MOCK && q.get("asistente")) {

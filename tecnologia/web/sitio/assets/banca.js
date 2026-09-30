@@ -40,14 +40,14 @@
   // Cliente de la API ------------------------------------------------------------------------------------------
 
   class ErrorApi extends Error {
-    constructor(status, mensaje) { super(mensaje || "http " + status); this.status = status; }
+    constructor(status, mensaje, codigo) { super(mensaje || "http " + status); this.status = status; this.codigo = codigo || ""; }
   }
 
   function sesion() {
     try { return JSON.parse(guardar.leer("banca_sesion") || "null"); } catch (e) { return null; }
   }
   function guardarSesion(s) { guardar.escribir("banca_sesion", JSON.stringify(s)); }
-  function salir() { guardar.borrar("banca_sesion"); guardar.borrar("banca_mock_estado"); }
+  function salir() { guardar.borrar("banca_sesion"); guardar.borrar("banca_mock_estado"); guardar.borrar("banca_conv"); }
 
   async function llamar(ruta, opciones) {
     const o = opciones || {};
@@ -64,7 +64,11 @@
     } catch (e) {
       throw new ErrorApi(0, "sin conexión");
     }
-    if (!r.ok) throw new ErrorApi(r.status);
+    if (!r.ok) {
+      let codigo = "";
+      try { codigo = String((await r.json()).error || ""); } catch (e) { /* sin cuerpo */ }
+      throw new ErrorApi(r.status, "", codigo);
+    }
     return r.json();
   }
 
@@ -73,7 +77,7 @@
   const cacheFx = {};
   async function fixture(nombre) {
     if (!cacheFx[nombre]) {
-      const r = await fetch("fixtures/" + nombre + ".json");
+      const r = await fetch("/banca/fixtures/" + nombre + ".json");
       if (!r.ok) throw new ErrorApi(404);
       cacheFx[nombre] = await r.json();
     }
@@ -180,7 +184,9 @@
     const [texto, tono] = ESTADOS[estado] || [String(estado || "").replace(/_/g, " "), "neutro"];
     return h("span", { clase: "bn-insignia bn-" + tono, texto });
   }
-  const esTarjeta = (p) => String(p.tipo || "").includes("tarjeta");
+  // El backend manda el tipo como texto ("Tarjeta Crédito"), no como código: se normaliza antes de comparar.
+  const minuscula = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const esTarjeta = (p) => /tarjeta|card/.test(minuscula(p.tipo) + " " + minuscula(p.etiqueta));
 
   // Piezas comunes ---------------------------------------------------------------------------------------------
 
@@ -209,6 +215,15 @@
     return "Ocurrió un problema. Puede intentarlo de nuevo en unos minutos.";
   }
 
+  // Con la sesión vencida no hay nada que mostrar: se limpia y se vuelve al ingreso con un aviso.
+  function sesionVencida(e) {
+    if (!e || e.status !== 401) return false;
+    salir();
+    guardar.escribir("banca_aviso", "Su sesión venció. Vuelva a ingresar para continuar.");
+    window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
+    return true;
+  }
+
   function cabeceraSesion() {
     const s = sesion();
     const zona = $("zona-sesion");
@@ -216,7 +231,7 @@
     zona.textContent = "";
     if (!s) return;
     const b = h("button", { type: "button", clase: "bn-enlace", texto: "Salir" });
-    b.addEventListener("click", () => { salir(); window.location.href = "index.html"; });
+    b.addEventListener("click", () => { salir(); window.location.href = "/banca/index.html"; });
     zona.append(h("span", { clase: "bn-quien", texto: s.cliente.alias }), b);
   }
 
@@ -241,7 +256,9 @@
     const sel = h("select", { id: "cliente-demo", name: "cliente" });
     lista.forEach((c) => sel.append(h("option", { value: String(c.indice), texto: c.alias })));
     const btn = h("button", { type: "submit", clase: "primario", texto: "Ingresar a la demostración" });
-    const err = h("p", { id: "ingreso-error", clase: "bn-msg-error", role: "alert" });
+    const aviso = guardar.leer("banca_aviso") || "";
+    guardar.borrar("banca_aviso");
+    const err = h("p", { id: "ingreso-error", clase: "bn-msg-error", role: "alert", texto: aviso });
     const form = h("form", { id: "form-ingreso" },
       h("div", { clase: "campo" }, h("label", { for: "cliente-demo", texto: "Cliente de demostración" }), sel),
       btn, err);
@@ -252,7 +269,7 @@
       try {
         const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice: Number(sel.value), registro: "usted" } });
         guardarSesion({ sesion: r.sesion, cliente: r.cliente });
-        window.location.href = "index.html" + (MOCK ? "?demo=local" : "");
+        window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
       } catch (e) {
         err.textContent = mensajeDeError(e);
         btn.disabled = false;
@@ -334,6 +351,7 @@
       pintarMovimientos();
       $("mas").classList.toggle("oculto", !tablero.siguiente);
     } catch (e) {
+      if (sesionVencida(e)) return;
       cont.textContent = "";
       cont.append(estadoError(mensajeDeError(e), () => cargarMovimientos(false)));
     }
@@ -357,7 +375,7 @@
     } catch (e) {
       cont.textContent = "";
       cont.append(estadoError(mensajeDeError(e), cargarResumen));
-      if (e.status === 401) { salir(); window.location.href = "index.html"; }
+      sesionVencida(e);
     }
   }
 
@@ -386,7 +404,7 @@
     const res = h("p", { id: "detalle-resultado", clase: "bn-resultado", role: "status" });
     const acciones = h("div", { clase: "bn-acciones-detalle" });
     if (m.caso_ref) {
-      acciones.append(h("a", { clase: "boton", href: "reclamos.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mi reclamo" }));
+      acciones.append(h("a", { clase: "boton", href: "/banca/reclamos.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mi reclamo" }));
     } else if (m.reclamable) {
       const b = h("button", { type: "button", clase: "primario", texto: "No reconozco este cargo" });
       b.addEventListener("click", () => reclamar(m, b, res));
@@ -442,7 +460,9 @@
       } catch (e) {
         si.disabled = false;
         dlg.close();
-        res.textContent = mensajeDeError(e);
+        res.textContent = e.status === 400 || e.status === 404
+          ? "No pudimos bloquear esta tarjeta desde aquí. Puede pedir ayuda a una persona desde el asistente."
+          : mensajeDeError(e);
       }
     };
     no.onclick = () => dlg.close();
@@ -495,11 +515,12 @@
         cont.textContent = "";
         if (!lista.length) {
           cont.append(estadoVacio("No tiene reclamos", "Si no reconoce un cargo, ábralo desde sus movimientos y le ayudamos.",
-            h("a", { clase: "boton", href: "index.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mis movimientos" })));
+            h("a", { clase: "boton", href: "/banca/index.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mis movimientos" })));
           return;
         }
         cont.append(...lista.map(tarjetaReclamo));
       } catch (e) {
+        if (sesionVencida(e)) return;
         cont.textContent = "";
         cont.append(estadoError(mensajeDeError(e), cargar));
       }
