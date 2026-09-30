@@ -45,11 +45,10 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB de 10 GB; las ta
   con esa variable. Volver al agente en proceso: quitar la variable; al guion: `LATAM_MODELO=guionado`.
 - **Pendiente:** Gemini 3 falla con herramientas por el endpoint compatible con OpenAI (pierde la `thought_signature`);
   volver a Gemini 3 exige el proveedor nativo de Google (hoy choca con dbt-bigquery en el lock). Agent Identity exige
-  que el proyecto esté en una organización (hoy "sin organización"). En modo runtime el chat no dibuja la ficha visual.
-  El despliegue crea un recurso nuevo en vez de actualizar. Fase 3 hecha en parte (29 sep): arnés con cliente simulado por LLM, prompt de disputas 1.1.0 y GenAI Evaluation Service
+  que el proyecto esté en una organización (hoy "sin organización"). Fase 3 hecha en parte (29 sep): arnés con cliente simulado por LLM, prompt de disputas 1.1.0 y GenAI Evaluation Service
   con trayectoria y rúbrica de tono (`ia/evaluacion/reportes/geap_2026-09-29.md`): 12 de 21 escenarios pasan, 0 inseguros;
   falla sobre todo la llamada malformada que persiste tras el reintento y la ruta (escalar, bloquear). Quedan E8 y E9 sin
-  correr en la corrida final y `abrir_disputa` sobre un caso ya abierto todavía da crédito provisional.
+  correr en la corrida final.
   `roles/editor` sigue en la cuenta de Compute (la usa Cloud Build); retirarlo tras mover los builds a su propia cuenta.
 
 ## Desplegar el sitio
@@ -63,14 +62,12 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 
 ## Pendientes del usuario
 
-1. Decidir si se reabre la facturación (tope real US$20). Sin ella no hay Cloud Run, Vertex AI, Cloud SQL ni
-   buckets; los modelos irían por el nivel gratuito de la API de Gemini (llave de AI Studio).
-2. Instalar Terraform y correr `terraform fmt -recursive` y `terraform validate` en `tecnologia/infra/terraform/envs/dev`.
-3. Instalar `just` (las recetas del `justfile` se usan en la documentación).
-4. Las llaves del organizador quedaron en el perfil `default` de AWS; revisar si había credenciales propias ahí.
-5. Meta (WhatsApp) y Twilio en modo de prueba; preguntas a los organizadores.
-6. Crear una llave de AI Studio (https://aistudio.google.com/apikey) y exportarla como `GEMINI_API_KEY`; sin ella la IA corre con `TestModel`.
-
+1. Instalar Terraform y correr `terraform fmt -recursive` y `terraform validate` en `tecnologia/infra/terraform/envs/dev`
+   (el Terraform no refleja aún lo desplegado a mano: Firestore, Agent Runtime, `latam-chat@`, bucket de staging).
+2. Instalar `just` (las recetas del `justfile` se usan en la documentación).
+3. Revisar el perfil `default` de AWS (quedaron ahí las llaves del organizador) y revocar el token de Hugging Face.
+4. Meta (WhatsApp) y Twilio en modo de prueba, si se quieren canales reales; preguntas a los organizadores.
+5. Mover el proyecto a la organización si se quiere Agent Identity en lugar de la cuenta `latam-chat@`.
 
 ## Banco de punta a punta (D-33), en producción
 
@@ -99,12 +96,11 @@ tono 2,95 de 5. Causa principal de fallas: llamadas malformadas de Gemini 2.5 po
 
 1. **IA:** volver a Gemini 3 con el proveedor nativo de Google (es la causa principal de fallas en la evaluación) (sacar dbt-bigquery del lock del workspace, por
    ejemplo con `uvx`, para destrabar `pydantic-ai-slim[google]`); IA-3.1 e IA-7.2.
-2. **Tecnología:** en el banco simulado, `abrir_disputa` sobre un caso ya abierto todavía da crédito provisional.
-3. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
-4. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
-5. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
+2. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
+3. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
+4. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
    voz (spike S1) y WhatsApp de prueba.
-6. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
+5. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
 
 ## Cómo se trabaja
 
