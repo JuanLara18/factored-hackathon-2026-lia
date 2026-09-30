@@ -17,6 +17,7 @@ dependencies = [
     "pyyaml>=6",
     "pydantic-ai-slim[ag-ui,openai]>=2.51.0",
     "uvicorn>=0.54.0",
+    "google-cloud-firestore>=2.19",
 ]
 
 [build-system]

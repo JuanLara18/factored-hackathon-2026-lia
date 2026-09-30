@@ -11,6 +11,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from latam_tecnologia.banca.banco import BancoMemoria
 from latam_tecnologia.canales.chat_web import crear_app
 from latam_tecnologia.canales.demo import Demo, lectura_sembrada
 from latam_tecnologia.canales.runtime_cliente import ClienteAgentRuntime
@@ -64,7 +65,7 @@ def _guion() -> FunctionModel:
 def _agente(sesiones: SesionesMemoria) -> tuple[AgenteDisputasRuntime, Any]:
     lectura, _ = lectura_sembrada()
     agente = AgenteDisputasRuntime(
-        "p", modelo=_guion(), lectura=lectura, sesiones=sesiones, reloj=lambda: AHORA
+        "p", modelo=_guion(), lectura=lectura, banco=BancoMemoria(), sesiones=sesiones, reloj=lambda: AHORA
     )
     agente.set_up()
     return agente, agente._banco  # pyright: ignore[reportPrivateUsage]
@@ -99,8 +100,8 @@ async def test_disputa_completa_con_aprobacion_del_canal() -> None:
     pedida = e1[-1]["aprobaciones"][0]
     assert pedida["herramienta"] == "abrir_disputa" and pedida["args"]["transaction_id"] == "tx-1-1"
     e2 = await _turno(agente, aprobaciones={pedida["id"]: True})
-    assert e2[-1]["tipo"] == "fin" and "caso-1" in "".join(e.get("delta", "") for e in e2)
-    assert banco.llamadas == 1 and list(banco.casos) == [("demo-1", "tx-1-1")]
+    assert e2[-1]["tipo"] == "fin" and "caso-" in "".join(e.get("delta", "") for e in e2)
+    assert banco.llamadas == 1 and [c.transaction_id for c in banco.casos_abiertos("demo-1")] == ["tx-1-1"]
     assert len(sesiones.eventos("c-1", "u-1")) == 2  # el historial vive en Sessions
 
 
@@ -231,7 +232,7 @@ def test_chat_web_reenvia_al_runtime_con_aprobacion() -> None:
         c, h, conv, None, [{"interruptId": i["id"], "status": "resolved", "payload": {"approved": True}}]
     )
     assert e2[-1]["outcome"]["type"] == "success" and rt.banco.llamadas == 1
-    assert "caso-1" in "".join(e["delta"] for e in e2 if e["type"] == "TEXT_MESSAGE_CONTENT")
+    assert "caso-" in "".join(e["delta"] for e in e2 if e["type"] == "TEXT_MESSAGE_CONTENT")
     # la confirmación es de un solo uso también en este modo
     malo = c.post(
         "/api/agui",
@@ -310,7 +311,12 @@ class RuntimeConFicha(RuntimeEnProceso):
         self.sesiones = SesionesMemoria()
         lectura, _ = lectura_sembrada()
         self.agente = AgenteDisputasRuntime(
-            "p", modelo=_guion_ficha(), lectura=lectura, sesiones=self.sesiones, reloj=lambda: AHORA
+            "p",
+            modelo=_guion_ficha(),
+            lectura=lectura,
+            banco=BancoMemoria(),
+            sesiones=self.sesiones,
+            reloj=lambda: AHORA,
         )
         self.agente.set_up()
         self.estados = []

@@ -26,6 +26,8 @@ from pydantic_ai import DeferredToolRequests
 from pydantic_ai.models import Model
 
 from latam_tecnologia import observabilidad
+from latam_tecnologia.banca.api import crear_router
+from latam_tecnologia.banca.vista import enmascarar
 from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.chat_agui import ChatAdapter, FiltradoEventStream
 from latam_tecnologia.canales.demo import Demo, Sesion, crear_demo
@@ -209,31 +211,48 @@ def crear_app(
     def catalogo(registro: str = "usted") -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return textos.catalogo_pagina(registro)
 
-    @app.post("/api/sesion")
-    async def abrir_sesion(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
-        cuerpo: dict[str, Any] = await request.json()
-        indice = int(cuerpo.get("cliente", 0))
-        if not 0 <= indice < len(demo.clientes):
-            return JSONResponse({"error": "cliente_desconocido"}, status_code=400)
-        s = demo.abrir(indice, textos.registro_valido(cuerpo.get("registro")))
+    def abrir(indice: int, registro: str) -> Sesion:
+        s = demo.abrir(indice, registro)
         if runtime is not None:
             runtime.crear_sesion(
                 user_id=id_usuario(s.autenticada.cliente_id),
                 session_id=s.conversacion_id,
                 estado=estado_de_confianza(s.autenticada, s.conversacion_id),
             )
+        return s
+
+    @app.post("/api/sesion")
+    async def abrir_sesion(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
+        cuerpo: dict[str, Any] = await request.json()
+        indice = int(cuerpo.get("cliente", 0))
+        if not 0 <= indice < len(demo.clientes):
+            return JSONResponse({"error": "cliente_desconocido"}, status_code=400)
+        s = abrir(indice, textos.registro_valido(cuerpo.get("registro")))
         return JSONResponse(
             {"sesion": s.autenticada.id_sesion, "conversacion": s.conversacion_id, "registro": s.registro}
         )
 
+    def conversacion_de(s: Sesion, pedida: object) -> str | None:
+        """La conversación de la sesión o una que abrió con `reclamar`; otra cosa no es suya."""
+        if pedida in (None, "", s.conversacion_id):
+            return s.conversacion_id
+        return str(pedida) if pedida in s.contextos else None
+
     @app.post("/api/traspaso")
-    def traspaso(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
+    async def traspaso(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
         s = sesion_de(request)
         if s is None:
             return JSONResponse({"error": "sesion"}, status_code=401)
         reg = registro_de(request, s)
         try:
-            accion, _ = herramientas.escalar(s.autenticada, s.conversacion_id, "cliente_pidio_persona")
+            cuerpo: dict[str, Any] = json.loads((await request.body()) or b"{}")
+        except ValueError:
+            cuerpo = {}
+        conversacion = conversacion_de(s, cuerpo.get("conversacion"))
+        if conversacion is None:
+            return JSONResponse({"error": "conversacion"}, status_code=403)
+        try:
+            accion, _ = herramientas.escalar(s.autenticada, conversacion, "cliente_pidio_persona")
         except AccesoDenegado:
             return JSONResponse({"texto": textos.plantilla("falla_segura.chat", reg)})
         traza.append("traspaso_iniciado")
@@ -262,15 +281,32 @@ def crear_app(
 
         return enriquecer
 
+    def registrar_transcripcion(conversacion: str, cuerpo: dict[str, Any]) -> None:
+        """Guarda, enmascarados, los turnos nuevos del historial AG-UI (para el paquete del experto)."""
+        registro = demo.banco.conversacion(conversacion)
+        if registro is None:
+            return
+        turnos = [
+            (str(m["role"]), enmascarar(str(m["content"])))
+            for m in cuerpo.get("messages", [])
+            if m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str) and m["content"]
+        ]
+        for rol, texto in turnos[len(registro.transcripcion) :]:
+            demo.banco.agregar_transcripcion(conversacion, "cliente" if rol == "user" else "asistente", texto)
+
     @app.post("/api/agui")
     async def agui(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
         s = sesion_de(request)
         if s is None:
             return JSONResponse({"error": "sesion"}, status_code=401)
         cuerpo: dict[str, Any] = json.loads(await request.body())
-        if cuerpo.get("threadId") != s.conversacion_id:
+        pedida: object = cuerpo.get("threadId")
+        conversacion = conversacion_de(s, pedida)
+        if conversacion is None or pedida != conversacion:
             return JSONResponse({"error": "conversacion"}, status_code=403)
+        contexto = s.contextos.get(conversacion, "")
         reg = registro_de(request, s)
+        registrar_transcripcion(conversacion, cuerpo)
         entradas: list[dict[str, Any]] = cuerpo.get("resume") or []
         for r in entradas:
             iid = str(r.get("interruptId", ""))
@@ -286,7 +322,7 @@ def crear_app(
             return StreamingResponse(
                 flujo_agui(
                     runtime,
-                    thread_id=s.conversacion_id,
+                    thread_id=conversacion,
                     user_id=id_usuario(s.autenticada.cliente_id),
                     mensaje=None if aprobaciones else _texto_ultimo_usuario(cuerpo),
                     aprobaciones=aprobaciones or None,
@@ -297,15 +333,26 @@ def crear_app(
                 media_type="text/event-stream",
             )
         assert agente is not None
-        ctx = ContextoAgente(herramientas, s.autenticada, s.conversacion_id, Canal.CHAT, reg)
+        ctx = ContextoAgente(herramientas, s.autenticada, conversacion, Canal.CHAT, reg, contexto)
         return await AdaptadorChat.dispatch_request(
             request,
             agent=agente,
             deps=ctx,
-            instructions=f"Registro: {reg}.",
+            instructions=f"Registro: {reg}. {contexto}".strip(),
             traza=traza,
             enriquecer=enriquecedor(s, reg),
         )
+
+    app.include_router(
+        crear_router(
+            demo=demo,
+            herramientas=herramientas,
+            sesion_de=sesion_de,
+            abrir=abrir,
+            runtime=runtime,
+            entorno=entorno,
+        )
+    )
 
     if web_dir is not None and web_dir.is_dir():
         app.mount("/", StaticFiles(directory=web_dir, html=True), name="web")

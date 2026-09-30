@@ -6,18 +6,27 @@ solo puede afirmar lo que llega como hecho verificado o regla de política (P6).
 """
 
 from latam_comun.dominio.tipos import (
+    AccionNoRealizada,
     AccionVerificada,
     Canal,
+    ColaDestino,
+    Compromiso,
     Confirmacion,
+    Conflicto,
     Decision,
     Dinero,
     EventoTraza,
+    Evidencia,
     HechoVerificado,
+    Identidad,
     Idioma,
     Interpretacion,
     Motivo,
     NivelAcr,
     PaqueteTraspaso,
+    Plazo,
+    PreguntaAbierta,
+    ReglaAplicada,
     ReglaDePolitica,
     RespuestaTipada,
     Ruta,
@@ -26,6 +35,15 @@ from latam_comun.dominio.tipos import (
 )
 
 __all__ = [
+    "AccionNoRealizada",
+    "ColaDestino",
+    "Compromiso",
+    "Conflicto",
+    "Evidencia",
+    "Identidad",
+    "Plazo",
+    "PreguntaAbierta",
+    "ReglaAplicada",
     "AccionVerificada",
     "Canal",
     "Confirmacion",
