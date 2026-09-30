@@ -324,4 +324,4 @@ D-14, D-15 y D-16 quedaron firmes (D-15 provisional solo en el uso de modelos ex
 - [00](00_Principios.md): P11 cubre el repositorio público y las solicitudes externas.
 - [Investigación 13](../Investigacion/13_Auditoria_del_dataset.md): segunda pasada con la sección 3.
 - Investigaciones 14 y 15: notas fechadas.
-- [Decisiones](Decisiones.md): D-14, D-15 y D-16 propuestas; D-09 en revisión.
+- [Decisiones](../../presidencia/decisiones.md): D-14, D-15 y D-16 propuestas; D-09 en revisión.

@@ -10,8 +10,8 @@ precedencia que hacen el conjunto consistente.
 
 ## 1. Cómo se leen las definiciones a partir de hoy
 
-1. **Precedencia.** Si dos textos se contradicen, gana el de más arriba: [Decisiones](../Diseno/Decisiones.md)
-   (D-01 a D-28), luego la [resolución 10](10_Resolucion_Presidencia.md), luego los hallazgos aceptados
+1. **Precedencia.** Si dos textos se contradicen, gana el de más arriba: [Decisiones](../decisiones.md)
+   (D-01 a D-28), luego la [resolución 10](10_resolucion.md), luego los hallazgos aceptados
    de [08](08_Desafio_Gobierno.md) y [09](09_Auditoria_de_definiciones.md), y al final las definiciones
    `01` a `06`. Una regla R-xxx contradicha por un texto superior queda sin efecto en ese punto.
 2. **Aceptación tácita.** Toda solicitud S-xxx sin respuesta escrita queda **aceptada** por la cara que la
@@ -65,14 +65,14 @@ humana.**
 
 ## 5. Pendientes que no puede cerrar el equipo
 
-1. Enviar las doce preguntas de [Preguntas_organizadores.md](../Diseno/Preguntas_organizadores.md).
+1. Enviar las doce preguntas de [Preguntas_organizadores.md](../preguntas_organizadores.md).
 2. Aprobar el gasto y abrir la facturación de Google Cloud.
 3. Conseguir voluntarios con consentimiento (idealmente un hablante nativo de portugués).
 4. Confirmar si el código se puede preparar antes del inicio oficial.
 
 ## 6. Qué sigue
 
-Con las reglas cerradas, el desarrollo arranca por el [backlog consolidado](../Diseno/08_Backlog.md) en el
-orden de la [hoja de ruta](../Diseno/07_Hoja_de_ruta.md): D0 empieza por TEC-0.1 (repositorio con esqueleto,
+Con las reglas cerradas, el desarrollo arranca por el [backlog consolidado](../backlog.md) en el
+orden de la [hoja de ruta](../hoja_de_ruta.md): D0 empieza por TEC-0.1 (repositorio con esqueleto,
 pre-commit, `justfile` y CI), AUD-4.1 y los subagentes de Gobierno, DAT-1.1 (espejo del bucket) y los
 *spikes* S1 a S5 en local.

@@ -17,7 +17,7 @@ la estructura del documento se conserva y cambian los escenarios.
 base; no se deben ajustar después de ver el resultado del conjunto retenido.
 
 
-> **Nota del 27 de septiembre de 2026 (Auditoría, H-AUD-22):** la matriz de trazabilidad vigente es la de [Auditoría](../Definiciones/06_Auditoria.md), sección 6.3; el componente aprendido es el de D-14, no el puntaje de riesgo.
+> **Nota del 27 de septiembre de 2026 (Auditoría, H-AUD-22):** la matriz de trazabilidad vigente es la de [Auditoría](../../auditoria/definicion.md), sección 6.3; el componente aprendido es el de D-14, no el puntaje de riesgo.
 
 ---
 

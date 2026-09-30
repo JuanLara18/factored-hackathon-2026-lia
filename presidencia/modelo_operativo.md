@@ -3,9 +3,9 @@
 **Cara:** Presidencia y Oficina de Entrega. **Versión:** 1 (26 de septiembre de 2026).
 **Propósito:** fijar las reglas del juego entre las caras de LATAM Bank antes de que cada una escriba sus
 definiciones: quién decide qué, por dónde se comunican, cómo se resuelve un desacuerdo y qué forma tiene
-cada documento. Se apoya en la [organización v2](../Diseno/04_Organizacion_y_roles.md), la
-[arquitectura](../Diseno/06_Arquitectura.md), la [hoja de ruta](../Diseno/07_Hoja_de_ruta.md) y los
-[principios](../Diseno/00_Principios.md).
+cada documento. Se apoya en la [organización v2](../docs/diseno/04_Organizacion_y_roles.md), la
+[arquitectura](../docs/diseno/06_Arquitectura.md), la [hoja de ruta](hoja_de_ruta.md) y los
+[principios](../docs/diseno/00_Principios.md).
 
 ---
 
@@ -52,7 +52,7 @@ artefacto no existe.
 | **Definición de cara** | las reglas, estándares e interfaces de un dominio | `Definiciones/` en el Drive | cada cara |
 | **Solicitud entre caras** | pedir algo a otra cara | sección "Interfaces" de la definición y, en desarrollo, un *issue* | quien pide |
 | **ADR** | registrar una decisión técnica con alternativas | `docs/adr/` en el repositorio | Tecnología, con el Comité de Plataforma |
-| **Decisión** | registrar cualquier decisión del proyecto | [Decisiones.md](../Diseno/Decisiones.md) | la cara dueña de la decisión |
+| **Decisión** | registrar cualquier decisión del proyecto | [Decisiones.md](decisiones.md) | la cara dueña de la decisión |
 | **Contrato** | fijar una interfaz: datos (ODCS), API (OpenAPI), tipos (Pydantic) | `contracts/` y `src/latam_bank/domain/` | el dueño del dato o del servicio |
 | **Acta** | registrar una sesión de comité con sus desafíos | `Diseno/Actas/` | quien preside |
 | **Informe de revisión** | lo que devuelve un revisor (subagente o persona) | junto a lo revisado | el revisor |
@@ -85,8 +85,8 @@ solicitud sin respuesta pasa a la revisión diaria.
 ### 3.3 Lenguaje común
 
 Se usan siempre los mismos nombres: rutas **R1 a R8**, escenarios de
-[01](../Diseno/01_Interacciones_y_criterios.md) (N, A, E, F, D, S, L, V), tipos del dominio de
-[06](../Diseno/06_Arquitectura.md), sección 5, métricas de 01, sección 5, principios **P1 a P13**,
+[01](../docs/diseno/01_Interacciones_y_criterios.md) (N, A, E, F, D, S, L, V), tipos del dominio de
+[06](../docs/diseno/06_Arquitectura.md), sección 5, métricas de 01, sección 5, principios **P1 a P13**,
 decisiones **D-xx**. Un término nuevo se define en la definición de la cara que lo introduce y se suma
 al glosario de la sección 9.
 
@@ -110,7 +110,7 @@ Cuando dos objetivos chocan, gana el de arriba:
 4. **Resultado del cliente** (resolución segura, traspaso útil).
 5. **Latencia y costo.**
 6. **Alcance y fecha.** Si falta tiempo se recorta alcance según el orden de
-   [07](../Diseno/07_Hoja_de_ruta.md), sección 6, nunca un principio.
+   [07](hoja_de_ruta.md), sección 6, nunca un principio.
 
 ### 4.3 El veto de Gobierno
 
@@ -199,7 +199,7 @@ una decisión firme, o deja una interfaz sin quien la entregue.
 | Término | Significado |
 |---|---|
 | Misión | el equipo orientado al resultado "cargo no reconocido" |
-| Ruta R1 a R8 | los finales posibles de una conversación ([01](../Diseno/01_Interacciones_y_criterios.md), sección 2) |
+| Ruta R1 a R8 | los finales posibles de una conversación ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 2) |
 | Retenido | conjunto de evaluación congelado, representativo y de estrés (D-16) |
 | Hecho verificado | dato producido por una herramienta, con fuente y hora |
 | Superficie | canal de entrada y salida (chat o voz) sin poder de decisión |

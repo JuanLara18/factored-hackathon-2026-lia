@@ -1,11 +1,11 @@
 # Desafío de Gobierno a la primera línea
 
 **Cara:** VP Gobierno. **Versión:** 1 (27 de septiembre de 2026). **Paso:** 2 del ciclo de iteración
-([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 7).
+([modelo operativo](../modelo_operativo.md), sección 7).
 **Qué se revisó:** el [consolidado](07_Consolidado.md) completo y, de
-[Clientes](01_VP_Clientes.md), [IA](02_VP_Inteligencia_Artificial.md), [Datos](03_VP_Datos.md) y
-[Tecnología](04_VP_Tecnologia.md), las secciones de reglas, seguridad, interfaces y decisiones propuestas,
-más búsquedas puntuales. La vara es la [definición de Gobierno](05_VP_Gobierno.md) (R-GOB-01 a R-GOB-93).
+[Clientes](../../clientes/definicion.md), [IA](../../ia/definicion.md), [Datos](../../datos/definicion.md) y
+[Tecnología](../../tecnologia/definicion.md), las secciones de reglas, seguridad, interfaces y decisiones propuestas,
+más búsquedas puntuales. La vara es la [definición de Gobierno](../../gobierno/definicion.md) (R-GOB-01 a R-GOB-93).
 Sin búsquedas web.
 
 ## 1. Resumen

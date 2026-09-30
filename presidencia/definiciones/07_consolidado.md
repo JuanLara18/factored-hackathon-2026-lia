@@ -136,7 +136,7 @@ Generado automáticamente desde `Definiciones/01` a `06` para la ronda de revisi
 | DP-CLI-10 | Espejo del tuteo en México solo por chat: si el cliente tutea, el sistema tutea; por defecto, usted |
 | DP-CLI-11 | Plantillas fuera de ventana sin montos, nombres, tarjetas ni enlaces |
 | DP-CLI-12 | Costo del minuto humano con cifras de Latinoamérica (bajo, central, alto) registradas en acta antes del retenido; la cifra de EE. UU. de US$7 a 14 por contacto solo como sensibilidad (discrepa de [04](04_VP_Tecnologia.md... |
-| DP-CLI-13 | La proyección de producción incluye el costo por mensaje de WhatsApp desde el 1 de octubre de 2026 (discrepa de [04](04_VP_Tecnologia.md), sección 7.4, "sin costo de mensajes") |
+| DP-CLI-13 | La proyección de producción incluye el costo por mensaje de WhatsApp desde el 1 de octubre de 2026 (discrepa de [04](../../tecnologia/definicion.md), sección 7.4, "sin costo de mensajes") |
 | DP-IA-01 | Cuatro familias: Google para el sistema, Anthropic para el generador, una tercera abierta para el simulador, una cuarta abierta para juez y verificador |
 | DP-IA-02 | Redacción deslexicalizada con renderizador por locale; comprensión sobre texto con marcadores; ningún valor del dataset a modelos externos |
 | DP-IA-03 | Comprensión en cascada: clasificador local primero, LLM solo como comparado y respaldo si gana; aclaración dirigida por par de motivos |
@@ -180,7 +180,7 @@ Generado automáticamente desde `Definiciones/01` a `06` para la ronda de revisi
 | DP-GOB-03 | Colombia, reversión del pago. 15 días hábiles de respuesta, canal del Defensor y la |
 | DP-GOB-04 | Nunca "fuera de plazo" automático. El escenario F5 termina siempre en R5. *Alternativa:* |
 | DP-GOB-05 | Regla de cómputo protectora de días y horas (R-GOB-14, R-GOB-15). *Alternativa:* |
-| DP-GOB-06 | Corrección del mapeo OWASP de [01](../Diseno/01_Interacciones_y_criterios.md): ASI03 |
+| DP-GOB-06 | Corrección del mapeo OWASP de [01](../../docs/diseno/01_Interacciones_y_criterios.md): ASI03 |
 | DP-GOB-07 | Reserva sellada del retenido y suite adversarial separada; los hallazgos del equipo rojo |
 | DP-GOB-08 | Marcadores en la frontera de todo modelo externo, con entidades numéricas extraídas por un |
 | DP-GOB-09 | `fraud_score` solo suma protección; zona gris desde un percentil de las legítimas en |

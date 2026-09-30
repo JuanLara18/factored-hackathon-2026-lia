@@ -1,7 +1,7 @@
 # Arquitectura de la solución (v1)
 
 **Propósito:** reunir en un solo lugar la arquitectura que salió de las investigaciones y del
-[registro de decisiones](Decisiones.md), para desarrollar desde aquí. Cada componente dice qué hace,
+[registro de decisiones](../../presidencia/decisiones.md), para desarrollar desde aquí. Cada componente dice qué hace,
 quién es dueño ([organización v2](04_Organizacion_y_roles.md)), si es IA o lógica determinista y por
 qué, y con qué se construye. El enunciado pide justificar *"where AI is appropriate, where deterministic
 logic is preferable"*: la sección 3 es esa justificación.

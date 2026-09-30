@@ -1,8 +1,8 @@
 # Backlog consolidado (v1)
 
 Generado desde la sección 8 de las definiciones `Definiciones/01` a `06`; el detalle (criterio de
-aceptación y dependencias) está en cada definición. Rige la [resolución 10](../Definiciones/10_Resolucion_Presidencia.md)
-cuando contradiga una historia. El orden de ejecución y el recorte siguen a [07](07_Hoja_de_ruta.md).
+aceptación y dependencias) está en cada definición. Rige la [resolución 10](definiciones/10_resolucion.md)
+cuando contradiga una historia. El orden de ejecución y el recorte siguen a [07](hoja_de_ruta.md).
 
 **Total:** 285 historias.
 
@@ -277,7 +277,7 @@ cuando contradiga una historia. El orden de ejecución y el recorte siguen a [07
 | GOB-3.2 | Voz derivada del texto por locale, con ruido del dataset y degradación telefónica, con el procedimiento fijado en F2 | D6 |
 | GOB-3.3 | Huella del retenido de voz en acta | D6 |
 | GOB-4.1 | Tabla MAESTRO con OWASP oficial | D2 |
-| GOB-4.2 | Corrección del mapeo de [01](../Diseno/01_Interacciones_y_criterios.md) | D2 |
+| GOB-4.2 | Corrección del mapeo de [01](../docs/diseno/01_Interacciones_y_criterios.md) | D2 |
 | GOB-4.3 | Catálogo AT-01 a AT-32 automatizado | D2 |
 | GOB-5.1 | Especificación de I-01 a I-18 | D3 |
 | GOB-5.2 | Máquina de estados de Hypothesis | D4 |

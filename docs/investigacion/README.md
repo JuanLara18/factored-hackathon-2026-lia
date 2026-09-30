@@ -79,4 +79,4 @@ si algo posterior la corrige, lleva una **nota fechada** al inicio en vez de ree
    compatible con SR 26-2, lo que da a Gobierno un lenguaje para defenderlo.
 9. **Lo que dijo la quinta ronda:** chat y voz son dos superficies del mismo motor; la voz principal va
    en cascada y se compara con un frontend nativo; la organización se ordena por la misión "cargo no
-   reconocido" con una Oficina de Entrega ([06](../Diseno/06_Arquitectura.md), [07](../Diseno/07_Hoja_de_ruta.md)).
+   reconocido" con una Oficina de Entrega ([06](../Diseno/06_Arquitectura.md), [07](../../presidencia/hoja_de_ruta.md)).

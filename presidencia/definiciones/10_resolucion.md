@@ -1,11 +1,11 @@
 # Resolución de la Presidencia (ronda 1)
 
 **Cara:** Presidencia y Oficina de Entrega. **Fecha:** 27 de septiembre de 2026.
-**Objeto:** paso 4 del ciclo ([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 7):
+**Objeto:** paso 4 del ciclo ([modelo operativo](../modelo_operativo.md), sección 7):
 resolver los hallazgos del [desafío de Gobierno](08_Desafio_Gobierno.md) y de la
 [auditoría de definiciones](09_Auditoria_de_definiciones.md), los doce choques entre decisiones
 propuestas y las ocho solicitudes dirigidas a la Presidencia (H-AUD-02). Las decisiones que salen de
-aquí quedan en [Decisiones.md](../Diseno/Decisiones.md) como D-22 a D-28.
+aquí quedan en [Decisiones.md](../decisiones.md) como D-22 a D-28.
 
 ---
 

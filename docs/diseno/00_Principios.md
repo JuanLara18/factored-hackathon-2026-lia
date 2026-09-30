@@ -151,7 +151,7 @@ revisiones.
   registros de ejecución, no en el razonamiento oculto del modelo.
 - **Cómo se garantiza:** un comando levanta todo; versiones fijadas de dependencias, modelos,
   prompts, política y datos en cada corrida; trazas OpenTelemetry por conversación; **registro de
-  decisiones** ([Decisiones.md](Decisiones.md)) con fecha, alternativas y principio que la guía; cada
+  decisiones** ([Decisiones.md](../../presidencia/decisiones.md)) con fecha, alternativas y principio que la guía; cada
   exigencia del enunciado mapeada a su evidencia.
 - **Lo viola:** un resultado que solo se obtiene en la máquina de alguien; una decisión que nadie
   recuerda por qué se tomó.

@@ -3,19 +3,19 @@
 **Cara:** VP Gobierno, segunda línea de defensa: Riesgo y riesgo de modelo; Seguridad y equipo rojo;
 Cumplimiento y privacidad; Protección al consumidor.
 **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión, lista para el desafío cruzado y la
-auditoría de completitud ([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 7).
+auditoría de completitud ([modelo operativo](../presidencia/modelo_operativo.md), sección 7).
 **Misión:** recepción de disputas por cargos no reconocidos, por chat y por voz, en español y portugués,
 sobre el dataset sintético LATAM Bank de México, Colombia y Argentina.
 **Propósito:** fijar las reglas del juego de gobierno de IA, política, ciberseguridad, privacidad, equidad
 y validación que toda la organización debe cumplir, decir cómo se verifica cada una y qué bloquea una
 compuerta. Gobierno protege dos cosas: **al cliente** y **la honestidad de la medición**.
 
-**Se apoya en:** los [principios](../Diseno/00_Principios.md) P1 a P13,
-[interacciones y criterios](../Diseno/01_Interacciones_y_criterios.md),
-[datos por capas](../Diseno/03_Datos_por_capas.md), [organización v2](../Diseno/04_Organizacion_y_roles.md),
-[cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md),
-[arquitectura](../Diseno/06_Arquitectura.md), [hoja de ruta](../Diseno/07_Hoja_de_ruta.md), las
-[decisiones](../Diseno/Decisiones.md) D-01 a D-21 (firmes), el enunciado completo y las investigaciones
+**Se apoya en:** los [principios](../docs/diseno/00_Principios.md) P1 a P13,
+[interacciones y criterios](../docs/diseno/01_Interacciones_y_criterios.md),
+[datos por capas](../docs/diseno/03_Datos_por_capas.md), [organización v2](../docs/diseno/04_Organizacion_y_roles.md),
+[cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md),
+[arquitectura](../docs/diseno/06_Arquitectura.md), [hoja de ruta](../presidencia/hoja_de_ruta.md), las
+[decisiones](../presidencia/decisiones.md) D-01 a D-21 (firmes), el enunciado completo y las investigaciones
 3, 4, 10, 12, 18, 20 y 21, con 6, 13, 14, 15, 17 y 19 como contexto. **No se abrió**
 `Documentos/Dataset_Diccionario_LATAM_Bank.pdf`: trae credenciales en texto plano, y no abrirlo es en sí
 mismo un control (R-GOB-70).
@@ -35,8 +35,8 @@ cliente**, declarada (D-13).
 
 **Cómo leer las reglas.** Cada regla lleva un código `R-GOB-nn`, un enunciado y su **verificación** (cómo
 se sabe si se cumple). La marca **[bloquea Fx]** indica que su incumplimiento impide firmar esa compuerta.
-Se usan los nombres del lenguaje común ([00](00_Presidencia_Modelo_operativo.md), sección 3.3): rutas R1 a
-R8, escenarios N, A, E, F, D, S, L y V, tipos del dominio de [06](../Diseno/06_Arquitectura.md), sección 5,
+Se usan los nombres del lenguaje común ([00](../presidencia/modelo_operativo.md), sección 3.3): rutas R1 a
+R8, escenarios N, A, E, F, D, S, L y V, tipos del dominio de [06](../docs/diseno/06_Arquitectura.md), sección 5,
 principios P1 a P13 y decisiones D-xx.
 
 ---
@@ -47,7 +47,7 @@ principios P1 a P13 y decisiones D-xx.
 
 Que nada llegue al cliente sin validación independiente, dentro del apetito de riesgo (R-GOB-01), seguro,
 conforme a la norma del país de su cuenta y justo con todos. Gobierno es la única cara con **veto de
-salida** ([04](../Diseno/04_Organizacion_y_roles.md), sección 5; [00](00_Presidencia_Modelo_operativo.md),
+salida** ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 5; [00](../presidencia/modelo_operativo.md),
 sección 4.3). Su trabajo no es construir: es **definir, desafiar, medir y firmar**.
 
 ### 1.2 Gerencias, artefactos y veto
@@ -61,7 +61,7 @@ sección 4.3). Su trabajo no es construir: es **definir, desafiar, medir y firma
 
 ### 1.3 Alcance
 
-| Dentro | Fuera, con derecho a objetar ([00](00_Presidencia_Modelo_operativo.md), sección 2) |
+| Dentro | Fuera, con derecho a objetar ([00](../presidencia/modelo_operativo.md), sección 2) |
 |---|---|
 | todo lo que el sistema **decide, dice o registra** frente al cliente, en chat y en voz | cómo se construye (primera línea) |
 | los datos, modelos, proveedores y plataforma que lo sostienen | la experiencia y los guiones (Clientes) |
@@ -74,7 +74,7 @@ sección 4.3). Su trabajo no es construir: es **definir, desafiar, medir y firma
 Gobierno no pertenece a la misión, no escribe código del núcleo y sus subagentes
 (`gobierno-riesgo-modelo`, `gobierno-seguridad`, `gobierno-cumplimiento`) arrancan en frío. Con una sola
 persona en la presidencia y en la primera línea, la independencia es **emulada**
-([04](../Diseno/04_Organizacion_y_roles.md), sección 10). Se sostiene con cinco hechos verificables:
+([04](../docs/diseno/04_Organizacion_y_roles.md), sección 10). Se sostiene con cinco hechos verificables:
 
 1. el retenido lo escribe el subagente de Riesgo y su huella queda en el acta de F2 antes de construir;
 2. el retenido se guarda **cifrado** y las sesiones de primera línea tienen **denegada** su lectura
@@ -101,7 +101,7 @@ El reporte final lo declara así, con esos cinco hechos como evidencia.
 
 ### 2.0 Términos que introduce esta definición
 
-Se suman al glosario común ([00](00_Presidencia_Modelo_operativo.md), sección 9).
+Se suman al glosario común ([00](../presidencia/modelo_operativo.md), sección 9).
 
 | Término | Significado |
 |---|---|
@@ -115,7 +115,7 @@ Se suman al glosario común ([00](00_Presidencia_Modelo_operativo.md), sección 
 | **Modo de operación** | `normal`, `solo_informacion`, `solo_humano` o `apagado`, conmutable por canal sin desplegar (R-GOB-10) |
 | **Zona gris de riesgo** | transacciones con `fraud_score` nulo o entre el umbral gris y 30; no cambian la ruta, marcan revisión humana (R-GOB-26) |
 | **acr0, acr1, acr2** | niveles de autenticación de la sesión con la forma de RFC 9470 (D-20): sin autenticar, consulta y acción (R-GOB-25) |
-| **Veto** | objeción escrita de Gobierno que impide liberar, con el riesgo concreto y lo que lo levantaría ([00](00_Presidencia_Modelo_operativo.md), sección 4.3) |
+| **Veto** | objeción escrita de Gobierno que impide liberar, con el riesgo concreto y lo que lo levantaría ([00](../presidencia/modelo_operativo.md), sección 4.3) |
 
 ### 2.1 Apetito de riesgo, frontera y transparencia
 
@@ -166,7 +166,7 @@ eso LATAM Bank adopta:
 | 1. Frontera | cuatro condiciones o se prohíbe | ficha de frontera (R-GOB-02) | `gobierno/ficha_gaicf.yaml` | Riesgo de modelo | F2 |
 | 2. Nivel de riesgo | cercanía a la decisión contra daño potencial | nivel por trabajador (R-GOB-05) | `agentes/registro.yaml` y ficha | Riesgo de modelo, con IA | F2 |
 | 3. Evidencia | calidad, relevancia y suficiencia de las entradas | contratos ODCS, `HechoVerificado` con fuente y hora, linaje | `contracts/`, platino | Datos; Gobierno verifica | F2 y F6 |
-| 4. Evaluación y monitoreo | exactitud, citas, completitud, alucinación, trazabilidad; revisión humana de lo crítico antes de liberar | retenido, métricas de [01](../Diseno/01_Interacciones_y_criterios.md), trazas, plan de monitoreo | `eval/`, platino | Riesgo de modelo | F6 |
+| 4. Evaluación y monitoreo | exactitud, citas, completitud, alucinación, trazabilidad; revisión humana de lo crítico antes de liberar | retenido, métricas de [01](../docs/diseno/01_Interacciones_y_criterios.md), trazas, plan de monitoreo | `eval/`, platino | Riesgo de modelo | F6 |
 
 | Función del NIST AI RMF | Qué hace LATAM Bank en la misión | Evidencia |
 |---|---|---|
@@ -255,7 +255,7 @@ herramientas, proveedores de voz o filtros se clasifica y se aprueba así:
 
 | Clase | Qué incluye | Qué exige | Aprueba |
 |---|---|---|---|
-| **A, material** | proveedor o modelo nuevo; prompt de un trabajador de nivel alto; regla, umbral o plantilla de plazo en `policy/v1`; herramienta nueva o con otros permisos; proveedor de reconocimiento o síntesis; configuración del filtro | regresión completa en desarrollo, suite adversarial y de invariantes; revalidación por acento si toca la voz; acta. Después de congelar el retenido, además se reporta en el informe final ([00](00_Presidencia_Modelo_operativo.md), sección 4.4) | Comité de Confianza |
+| **A, material** | proveedor o modelo nuevo; prompt de un trabajador de nivel alto; regla, umbral o plantilla de plazo en `policy/v1`; herramienta nueva o con otros permisos; proveedor de reconocimiento o síntesis; configuración del filtro | regresión completa en desarrollo, suite adversarial y de invariantes; revalidación por acento si toca la voz; acta. Después de congelar el retenido, además se reporta en el informe final ([00](../presidencia/modelo_operativo.md), sección 4.4) | Comité de Confianza |
 | **B, moderada** | prompt de un trabajador moderado; texto de plantilla sin cifras ni plazos; cambios de interfaz que tocan confirmaciones | regresión en desarrollo y suite adversarial; informe del revisor | Gobierno, revisor |
 | **C, menor** | refactor sin cambio de comportamiento, registros, documentación | pruebas de CI en verde | el dueño |
 | **E, emergencia** | cambio de modo, desactivar una herramienta, revertir a la versión anterior | se ejecuta de inmediato; acta de ratificación el mismo día | Tecnología ejecuta; Gobierno ratifica |
@@ -402,10 +402,10 @@ fechas junto a fines de semana y feriados de cada país.
 
 **R-GOB-15. Reloj, zona horaria y hora del reporte.** La **hora del reporte** es el primer turno en que el
 cliente identifica el cargo que no reconoce, tomada del reloj simulado `AS_OF`
-([03](../Diseno/03_Datos_por_capas.md), sección 5.1) y guardada con la zona horaria del país de la cuenta
+([03](../docs/diseno/03_Datos_por_capas.md), sección 5.1) y guardada con la zona horaria del país de la cuenta
 (`America/Mexico_City`, `America/Bogota`, `America/Argentina/Buenos_Aires`). Si el cliente vuelve horas
 después (D6) o cambia de canal (V6), la hora del reporte sigue siendo la primera. La hora del evento es la
-de la transacción, nunca `process_date` ([03](../Diseno/03_Datos_por_capas.md), sección 2.3). Como las
+de la transacción, nunca `process_date` ([03](../docs/diseno/03_Datos_por_capas.md), sección 2.3). Como las
 marcas del dataset no traen zona horaria, toda comparación cerca de un límite (48 horas, 90 días, 30 días,
 5 días hábiles) se resuelve con la hora que **favorece al cliente** dentro de un margen de 3 horas, la
 diferencia máxima entre los tres husos. **Verificación:** casos borde a 47, 48 y 49 horas; escenario D8.
@@ -428,7 +428,7 @@ fuera), más uno por producto y uno por idioma para su plantilla; se corren en `
 
 **R-GOB-19. Versión, huella y congelamiento.** `policy/v1` tiene huella en su manifiesto y se congela en
 F2 junto con el retenido. Un cambio posterior es de clase A, exige acta y se reporta
-([00](00_Presidencia_Modelo_operativo.md), sección 4.4). Cada caso del retenido lleva la versión de la
+([00](../presidencia/modelo_operativo.md), sección 4.4). Cada caso del retenido lleva la versión de la
 política con la que se etiquetó (investigación 4, *Policy Loopholes*). **Verificación:** la huella de la
 política en el manifiesto de la corrida oficial es la del acta; las etiquetas del retenido citan
 `policy/v1@<huella>`. **[bloquea F6]**
@@ -514,7 +514,7 @@ Brasil es una operación en el extranjero para MX-03 y AR-09.
 **R-GOB-23. Nunca se declara un reclamo fuera de plazo de forma automática.** Cuando una ventana del
 cliente (MX-01, AR-08, CO-04) parece vencida, el sistema explica la regla con su norma, no radica como si
 estuviera en plazo y **transfiere a revisión humana (R5)** con las fechas como hechos verificados; nunca
-termina en R6. El escenario F5 de [01](../Diseno/01_Interacciones_y_criterios.md) admitía R6 o R5; esta
+termina en R6. El escenario F5 de [01](../docs/diseno/01_Interacciones_y_criterios.md) admitía R6 o R5; esta
 regla elige R5 porque las llegadas tardías (D3), el desfase de fechas (D8), la fecha de corte desconocida y
 las excepciones legales vuelven la negación automática un riesgo de resultado materialmente incorrecto.
 **Verificación:** todos los casos F5 del retenido terminan en R5 con paquete; ninguno en R6.
@@ -585,7 +585,7 @@ El puntaje **nunca** se menciona al cliente, **nunca** retrasa la contención y 
 evidencia contra su palabra: un puntaje bajo no le quita nada a un cliente que dice que no hizo la compra.
 El umbral gris se fija en F2 con la partición de desarrollo (tabla de R-GOB-27). La regla se declara
 sintética y afectada por fuga: en la muestra, ninguna transacción legítima pasa de 30 y `fraud_score > 30`
-identifica fraude con precisión 1,0 ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.3); en
+identifica fraude con precisión 1,0 ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.3); en
 producción la reemplazaría el motor de fraude del banco. **Verificación:** prueba metamórfica: bajar el
 puntaje nunca cambia una ruta protectora por otra menos protectora; casos por banda en la suite de
 política. **[bloquea F6]**
@@ -601,13 +601,13 @@ anterior a la corrida oficial. **[bloquea F6]**
 | Monto de escalamiento, en USD a la fecha del evento, por país | percentil 90 | percentil 95 | percentil 99 | montos de la partición de desarrollo por país (Datos, S-GOB-19) |
 | Ventana de agregación contra el fraccionamiento | 60 días | 30 días | 15 días | supuesto declarado |
 | Compras previas no disputadas en el mismo comercio para marcar conflicto (E3) | 1 | 2 | 3 | Compelling Evidence 3.0 usa dos transacciones previas (investigación 6) |
-| Intentos de aclaración antes de escalar | 1 | 2 | 3 | [01](../Diseno/01_Interacciones_y_criterios.md), pregunta abierta 2 |
-| Turnos negativos antes de ofrecer humano (E5) | 2 | 3 | 4 | [01](../Diseno/01_Interacciones_y_criterios.md) |
+| Intentos de aclaración antes de escalar | 1 | 2 | 3 | [01](../docs/diseno/01_Interacciones_y_criterios.md), pregunta abierta 2 |
+| Turnos negativos antes de ofrecer humano (E5) | 2 | 3 | 4 | [01](../docs/diseno/01_Interacciones_y_criterios.md) |
 | Error tolerado en la curva de riesgo y cobertura de la comprensión | 1% | 2% | 5% | curva de desarrollo de IA-2, aprobada por Gobierno |
 | Confianza del reconocimiento bajo la cual se pide repetir o DTMF | fijada en el conjunto de voz de desarrollo | | | IA-4 |
 | Lectura de vuelta de cifras críticas en voz | siempre | siempre | siempre | D-18 |
 | Umbral gris de `fraud_score` | percentil 95 de las legítimas | percentil 99 de las legítimas | 30 (solo nulos en gris) | partición de desarrollo |
-| Reintentos por llamada a herramienta | 1 | 2 | 2 | D1 de [01](../Diseno/01_Interacciones_y_criterios.md) |
+| Reintentos por llamada a herramienta | 1 | 2 | 2 | D1 de [01](../docs/diseno/01_Interacciones_y_criterios.md) |
 
 **R-GOB-28. Urgencia: toda transferencia inmediata no reconocida es R4.** También lo son "me llamaron del
 banco", el acceso remoto al teléfono y cualquier mención de que alguien pidió códigos. El traspaso es
@@ -639,7 +639,7 @@ de la respuesta es igual al de la base.
 
 El enunciado define como inseguros las divulgaciones o acciones no autorizadas y los resultados
 materialmente incorrectos, con conteos y denominadores. La pregunta abierta 5 de
-[01](../Diseno/01_Interacciones_y_criterios.md) pedía una **lista cerrada** para que la medición sea
+[01](../docs/diseno/01_Interacciones_y_criterios.md) pedía una **lista cerrada** para que la medición sea
 determinista. Es esta:
 
 | Código | Resultado inseguro | Ejemplo | Detección | Escenarios |
@@ -660,7 +660,7 @@ determinista. Es esta:
 
 **No son resultados inseguros**, aunque se miden: un traspaso innecesario, una aclaración de más, el tono,
 la latencia y no resolver algo que se podía resolver. Van a precisión de escalamiento, turnos, rúbrica y
-operación ([01](../Diseno/01_Interacciones_y_criterios.md), sección 5).
+operación ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5).
 
 **R-GOB-32. La lista es cerrada.** Solo U1 a U13 cuentan como resultado inseguro; cambiar la lista después
 de congelar el retenido exige acta y se reporta. Un caso es inseguro si **cualquiera** de sus k corridas lo
@@ -690,7 +690,7 @@ referencia del derecho a revisión humana (investigación 3). **Verificación:**
 traspasan en el turno siguiente; U11 en cero; invariante I-08. **[bloquea F6]**
 
 **R-GOB-36. Contener primero, declarar la espera.** Si no hay humano disponible de inmediato (un solo
-especialista en fraude con portugués trabaja de noche; [05](../Diseno/05_Cobertura_del_enunciado.md),
+especialista en fraude con portugués trabaja de noche; [05](../docs/diseno/05_Cobertura_del_enunciado.md),
 sección 3.1), el sistema contiene lo que se puede contener (bloqueo, hora del reporte registrada), declara
 la espera esperada con los datos de la cola y nunca promete atención inmediata. **Verificación:**
 escenario E7; la plantilla de espera toma el dato de la cola (S-GOB-22).
@@ -712,7 +712,7 @@ realizadas con su verificación; preguntas abiertas; idioma y prioridad; y los *
 corriendo** (fecha límite de MX-06, ventana de CO-04). Se renderiza desde el objeto tipado, nunca desde un
 resumen libre (investigación 14). Separar hechos de interpretaciones es el control contra la
 sobreconfianza del humano en la IA (ASI09). **Verificación:** esquema de `PaqueteTraspaso`; completitud y
-exactitud de [01](../Diseno/01_Interacciones_y_criterios.md), sección 5.2; muestra humana.
+exactitud de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.2; muestra humana.
 
 **R-GOB-39. Nunca acusar.** El sistema nunca atribuye fraude, mentira o mala fe al cliente; las
 contradicciones se registran como conflictos y se escalan (E3); el puntaje de fraude nunca es argumento.
@@ -750,14 +750,14 @@ Consumidor Financiero y la Superintendencia Financiera (CO-02, CO-03); en Argent
 
 **R-GOB-44. Quejas sobre el agente.** Una queja del cliente sobre el propio asistente (información
 errada, mal trato) se registra como evento `queja_sobre_agente` con referencia a la traza y la revisa
-Protección al consumidor ([04](../Diseno/04_Organizacion_y_roles.md), sección 11). **Verificación:** el tipo
+Protección al consumidor ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11). **Verificación:** el tipo
 de evento existe en el esquema de trazas y tiene una prueba.
 
 ### 2.6 Equidad y atributos protegidos
 
 El enunciado pide comparar resultados por idioma y por segmentos **autorizados**, declarar las muestras
 pequeñas e investigar disparidades. El dataset trae género, fecha de nacimiento, estado civil, educación,
-segmento y acento detectado ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 1, punto 10).
+segmento y acento detectado ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 1, punto 10).
 
 **R-GOB-45. Qué se usa para decidir.** La entrada del motor (`ContextoDecision`) tiene solo: hechos de la
 transacción (monto, moneda, estado, comercio, fecha, canal, país), estado del producto y de la cuenta,
@@ -775,7 +775,7 @@ para desagregar resultados; nunca llegan al oro operacional ni a un prompt. **Ve
 del oro operacional no tiene esas columnas (S-GOB-17); la unión con resultados ocurre solo en platino.
 
 **R-GOB-47. Grupos y métricas desagregadas.** Todas las métricas de conversación de
-[01](../Diseno/01_Interacciones_y_criterios.md), sección 5.1, más resultados inseguros, traspasos
+[01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.1, más resultados inseguros, traspasos
 innecesarios, turnos y latencia, y en voz el error de reconocimiento y la retención frente a texto, se
 reportan por cada segmento autorizado con *n* e intervalo de Wilson. Un grupo con menos de 30 casos se
 marca "muestra insuficiente" y no sirve para concluir paridad. **Verificación:** tabla de equidad en
@@ -867,7 +867,7 @@ manifiesto del retenido cuenta casos por parte, ruta, idioma, variante, segmento
   muestra aleatoria de 60 casos o más; se reporta κ; los desacuerdos se marcan **ambiguos**, salen de la
   métrica principal y se reportan aparte (investigación 4). La persona que construye **no lee** el
   retenido: su κ contra el procedimiento se mide en el conjunto de desarrollo, y la limitación se declara
-  ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 1, punto 15).
+  ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 1, punto 15).
 - **Portugués:** revisión bilingüe y traducción inversa; limitación declarada.
 
 **Verificación:** el manifiesto registra familia del generador, porcentaje escrito a mano, resultado de la
@@ -891,8 +891,8 @@ solo uso de reserva por parte; una corrección posterior se reporta como "sin va
 **R-GOB-57. Suite adversarial de regresión, aparte del retenido.** Los hallazgos del equipo rojo van a
 `eval/cases/adversarial/`, que corre en desarrollo y en CI y se reporta como **suite adversarial
 posterior**, no como retenido, porque el sistema pudo corregirse contra ella. Agregar casos al retenido
-congelado exige acta y se reporta ([00](00_Presidencia_Modelo_operativo.md), sección 4.4). Esto precisa la
-aceptación de GOB-6 en [07](../Diseno/07_Hoja_de_ruta.md), que decía "hallazgos al conjunto de estrés".
+congelado exige acta y se reporta ([00](../presidencia/modelo_operativo.md), sección 4.4). Esto precisa la
+aceptación de GOB-6 en [07](../presidencia/hoja_de_ruta.md), que decía "hallazgos al conjunto de estrés".
 **Verificación:** reportes separados; la huella del retenido no cambia desde F2 salvo acta.
 
 **R-GOB-58. Corridas.** k = 3 por caso, versiones fijadas (R-GOB-08), semillas fijas donde aplique, la
@@ -902,7 +902,7 @@ seis versiones. **Verificación:** manifiesto de la corrida; tabla de pass^k.
 
 **R-GOB-59. Líneas base en el mismo retenido.** Reglas y palabras clave; LLM de un solo prompt sin flujo;
 "todo humano" simulado y etiquetado como simulación; y la línea base del proceso de reclamos
-([05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.2) solo como contexto. La resolución segura se
+([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.2) solo como contexto. La resolución segura se
 compara caso a caso contra la mejor línea base con McNemar. **Verificación:** mismos identificadores de
 caso; tabla de McNemar.
 
@@ -944,11 +944,11 @@ contaminación; (8) EIPD o consentimientos de voz faltantes; (9) una vulnerabili
 sin excepción aceptada; (10) una exigencia de la tabla 6.2 marcada como bloqueante sin cumplir. El veto
 va por escrito con el riesgo concreto y lo que lo levantaría; se levanta con corrección, validación en la
 reserva y acta del Comité de Confianza; la Presidencia no lo levanta por decreto
-([00](00_Presidencia_Modelo_operativo.md), sección 4.3). **Verificación:** acta de veto y acta de
+([00](../presidencia/modelo_operativo.md), sección 4.3). **Verificación:** acta de veto y acta de
 levantamiento.
 
 **R-GOB-65. Reporte de fallas y límites.** El reporte incluye la tabla de inseguros por código, las fallas
-por capa ([01](../Diseno/01_Interacciones_y_criterios.md), sección 6, punto 10) con las tres causas
+por capa ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 6, punto 10) con las tres causas
 principales y su corrección, lo simulado, lo no probado (teléfono real, clientes reales en portugués), la
 independencia emulada, la política sintética y los niveles de verificación normativa, con medición
 offline, simulación y proyección separadas (P3). **Verificación:** lista de Auditoría en F7.
@@ -967,7 +967,7 @@ secuestro del objetivo del agente, ASI02 mal uso y explotación de herramientas,
 privilegios, ASI04 vulnerabilidades de la cadena de suministro agéntica, ASI05 ejecución inesperada de
 código, ASI06 envenenamiento de memoria y contexto, ASI07 comunicación insegura entre agentes, ASI08
 fallas en cascada, ASI09 explotación de la confianza entre humano y agente, ASI10 agentes fuera de control.
-**Corrección a [01](../Diseno/01_Interacciones_y_criterios.md):** el acceso no autorizado estaba mapeado a
+**Corrección a [01](../docs/diseno/01_Interacciones_y_criterios.md):** el acceso no autorizado estaba mapeado a
 ASI04, que es cadena de suministro; corresponde a ASI03. La lista agéntica de la investigación 3 tampoco es
 la oficial. **Verificación:** cada caso adversarial lleva códigos oficiales y una prueba los valida contra
 la lista.
@@ -1001,7 +1001,7 @@ las salidas del modelo. Una detección **nunca bloquea al cliente**: restringe e
 efecto, respuesta por plantilla) y suma al historial de intentos adaptativos (S8). Su aporte se mide
 aparte: detección sobre la suite adversarial, falsos positivos sobre casos legítimos por idioma y
 variante, y ataques no detectados que igual contiene la arquitectura
-([01](../Diseno/01_Interacciones_y_criterios.md), sección 5.5). La configuración mínima está en la sección
+([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.5). La configuración mínima está en la sección
 4.3. **Verificación:** tabla de aporte del filtro en el informe de seguridad; umbrales del filtro fijados
 en desarrollo antes del retenido.
 
@@ -1061,7 +1061,7 @@ cambio de modo; análisis sin culpables; simulacro en F5 (ejercicio de mesa más
 guardarse; las de evaluación llevan huellas encadenadas (investigación 19); los registros de acceso a
 secretos y datos se guardan aparte, con bloqueo de retención en la nube o en un archivo de solo anexar en
 local. El campo de razonamiento de las salidas estructuradas sirve para depurar y **no** es evidencia de
-auditoría ([05](../Diseno/05_Cobertura_del_enunciado.md), sección 1, punto 19). **Verificación:** el
+auditoría ([05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 1, punto 19). **Verificación:** el
 escaneo de platino y de los registros no encuentra datos sensibles ni secretos (I-13, I-14); la cadena de
 huellas se verifica en F6.
 
@@ -1114,7 +1114,7 @@ agente por acento), qué se graba (frases de guion con datos ficticios, nunca da
 quién la procesa (el equipo y los proveedores de voz listados, si los organizadores lo permiten),
 retención y fecha de borrado, derecho a retirarse en cualquier momento, prohibición de clonar la voz y de
 usarla como biometría, almacenamiento cifrado fuera del repositorio y exclusión de menores. Auditoría
-verifica los consentimientos ([04](../Diseno/04_Organizacion_y_roles.md), sección 5). **Verificación:** un
+verifica los consentimientos ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 5). **Verificación:** un
 consentimiento firmado por grabación en el inventario; acta de borrado. **[bloquea F5]**
 
 **R-GOB-85. Retención y borrado verificable.** Rige la tabla de la sección 4.9.3. Al cierre, `just purge`
@@ -1164,7 +1164,7 @@ sustituto local del filtro), y un mismo proveedor no puede ser a la vez generado
 **Verificación:** el registro de proveedores muestra la alternativa y la fecha de su prueba.
 
 **R-GOB-93. Gasto con presupuesto y alertas.** La Presidencia decide el gasto con consulta a Gobierno por
-riesgo de terceros ([00](00_Presidencia_Modelo_operativo.md), sección 2). Todo servicio pago tiene
+riesgo de terceros ([00](../presidencia/modelo_operativo.md), sección 2). Todo servicio pago tiene
 presupuesto con alertas al 50, 90 y 100% y una cuota por sesión en el gateway (LLM10). **Verificación:**
 presupuestos configurados antes de la primera llamada paga; costo por caso en platino.
 
@@ -1242,7 +1242,7 @@ ecosistema de agentes. Los códigos OWASP son los oficiales (R-GOB-67).
 
 ### 4.2 Controles en Google Cloud
 
-Google Cloud es la plataforma de referencia ([00](00_Presidencia_Modelo_operativo.md), sección 6.3), pero
+Google Cloud es la plataforma de referencia ([00](../presidencia/modelo_operativo.md), sección 6.3), pero
 D-20 deja Model Armor sujeto a que haya Google Cloud y P13 exige reproducir todo en local. Por eso cada
 control tiene su equivalente local.
 
@@ -1382,7 +1382,7 @@ acta, vencimiento y control compensatorio.
 - **Calendario:** F2 (D2), catálogo escrito y automatizado; F5 (D7), día de equipo rojo en cuatro bloques
   de dos horas (inyección directa e indirecta; acceso, sesión e identidad; abuso del flujo; voz); D8 por la
   mañana, reprueba. Si falta tiempo, el día se reduce a correr el catálogo escrito (orden de recorte 6 de
-  [07](../Diseno/07_Hoja_de_ruta.md)).
+  [07](../presidencia/hoja_de_ruta.md)).
 - **Herramientas:** promptfoo (complementos de equipo rojo para OWASP LLM y agéntico), PyRIT (crescendo y
   cadenas multiturno), garak (sondas de codificación y ofuscación) y escenarios propios al estilo
   FraudBench (objetivo, lo que sabe el atacante, estado de la base, tácticas de presión); en voz, síntesis
@@ -1457,7 +1457,7 @@ Referencia de proceso: NIST SP 800-61, revisión 3 (2025), alineada con CSF 2.0 
 | **PB-4 Caída de proveedor**: modelo, reconocimiento, síntesis o Model Armor | tiempos agotados y errores por proveedor en las trazas | respaldo automático: plantillas y modelo local para lenguaje; otro proveedor o chat para voz; sustituto local para el filtro; sin respaldo, `solo_informacion` | volver al proveedor tras una prueba de humo | aviso honesto al cliente ("tenemos una falla; su caso queda guardado"); registro de la ventana de degradación |
 | **PB-5 Secreto expuesto**: llave del organizador, llaves de API | gitleaks; aviso externo; uso anómalo | rotar lo propio de inmediato; avisar a los organizadores para que roten su llave; retirar del repositorio y del historial | revisar los accesos del periodo expuesto | acta y análisis posterior |
 | **PB-6 Regresión o deriva del modelo** | caída de métricas en el canario diario; cambio de versión del proveedor | fijar o revertir la versión; `solo_informacion` si toca montos o plazos | revalidar en desarrollo; cambio de clase A con acta | informe de la deriva |
-| **PB-7 Saturación de la cola humana**, portugués de noche | espera estimada sobre el umbral | contener primero (bloqueo), registrar la hora, ofrecer devolver el contacto | Clientes ajusta capacidad; Gobierno revisa umbrales ([04](../Diseno/04_Organizacion_y_roles.md), sección 11) | mensaje de espera honesto; registro de promesas |
+| **PB-7 Saturación de la cola humana**, portugués de noche | espera estimada sobre el umbral | contener primero (bloqueo), registrar la hora, ofrecer devolver el contacto | Clientes ajusta capacidad; Gobierno revisa umbrales ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11) | mensaje de espera honesto; registro de promesas |
 
 **Simulacro en F5:** ejercicio de mesa de PB-1 y PB-2, y en vivo un cambio de modo (menos de un minuto) y
 PB-4 cortando la conexión con el proveedor de modelo.
@@ -1501,7 +1501,7 @@ huellas de voz y la revisión humana siempre está disponible.
 | Casos radicados en el servicio simulado | hasta el cierre | 10 años en Argentina (AR-07, primario); México y Colombia **a confirmar**, con 10 años como regla protectora de la evidencia del cliente | obligación regulatoria |
 | Trazas técnicas | hasta el cierre más 30 días | 30 días | operación |
 | Trazas y resultados de evaluación en platino, sin datos personales | hasta el cierre más 90 días | según Auditoría | evidencia ante el jurado |
-| Bronce, plata y oro con el dataset | durante el evento; borrado al cierre según los términos de uso (**a confirmar** con los organizadores) | bronce 30 días; el resto según el regulador ([03](../Diseno/03_Datos_por_capas.md), sección 8) | términos del organizador |
+| Bronce, plata y oro con el dataset | durante el evento; borrado al cierre según los términos de uso (**a confirmar** con los organizadores) | bronce 30 días; el resto según el regulador ([03](../docs/diseno/03_Datos_por_capas.md), sección 8) | términos del organizador |
 | Registros de auditoría de accesos | hasta el cierre más 90 días | un año como mínimo | investigación de incidentes |
 | Secretos propios | rotación al cierre | rotación cada 90 días | higiene |
 | Registros en proveedores de modelos y voz | según sus términos verificados, o retención cero | retención cero exigida por contrato | R-GOB-87 |
@@ -1568,7 +1568,7 @@ solo dato, y mientras tanto rigen R-GOB-87 y R-GOB-91.
 
 ### 5.2 Qué revisará Gobierno en el desafío a la primera línea
 
-Paso 2 del ciclo de iteración ([00](00_Presidencia_Modelo_operativo.md), sección 7):
+Paso 2 del ciclo de iteración ([00](../presidencia/modelo_operativo.md), sección 7):
 
 - **Clientes:** que ningún guion contenga plazos o reglas; derecho a un humano en todo estado; sin patrones
   oscuros; validación del portugués; lectura de vuelta en voz.
@@ -1887,7 +1887,7 @@ Estado: abierta
 
 ### 6.2 Criterios de liberación de una versión candidata (compuerta F6)
 
-Refinan los criterios de salida de [01](../Diseno/01_Interacciones_y_criterios.md), sección 7.
+Refinan los criterios de salida de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 7.
 
 | # | Criterio | Métrica y umbral | Conjunto | Bloquea |
 |---|---|---|---|---|
@@ -1961,7 +1961,7 @@ Presidencia aprueba el gasto; ninguna compra de detección de voz.
 
 ## 8. Backlog propuesto
 
-Amplía las épicas GOB-1 a GOB-7 de [07](../Diseno/07_Hoja_de_ruta.md) y agrega GOB-8 a GOB-12.
+Amplía las épicas GOB-1 a GOB-7 de [07](../presidencia/hoja_de_ruta.md) y agrega GOB-8 a GOB-12.
 
 | ID | Historia | Día | Depende de | Criterio de aceptación |
 |---|---|---|---|---|
@@ -1984,8 +1984,8 @@ Amplía las épicas GOB-1 a GOB-7 de [07](../Diseno/07_Hoja_de_ruta.md) y agrega
 | GOB-3.2 | Voz derivada del texto por locale, con ruido del dataset y degradación telefónica, con el procedimiento fijado en F2 | D6 | IA-6 | 128 casos |
 | GOB-3.3 | Huella del retenido de voz en acta | D6 | 3.2 | acta |
 | **GOB-4** | **Modelo de amenazas y casos adversariales** | | | |
-| GOB-4.1 | Tabla MAESTRO con OWASP oficial | D2 | [06](../Diseno/06_Arquitectura.md) | 38 amenazas, cada una con prueba |
-| GOB-4.2 | Corrección del mapeo de [01](../Diseno/01_Interacciones_y_criterios.md) | D2 | 4.1 | tabla de R-GOB-67 aplicada (DP-GOB-06) |
+| GOB-4.1 | Tabla MAESTRO con OWASP oficial | D2 | [06](../docs/diseno/06_Arquitectura.md) | 38 amenazas, cada una con prueba |
+| GOB-4.2 | Corrección del mapeo de [01](../docs/diseno/01_Interacciones_y_criterios.md) | D2 | 4.1 | tabla de R-GOB-67 aplicada (DP-GOB-06) |
 | GOB-4.3 | Catálogo AT-01 a AT-32 automatizado | D2 a D5 | 4.1 | corre en CI |
 | **GOB-5** | **Pruebas de propiedades de los invariantes** | | | |
 | GOB-5.1 | Especificación de I-01 a I-18 | D3 | TEC-1 | propiedades escritas |
@@ -2054,7 +2054,7 @@ Amplía las épicas GOB-1 a GOB-7 de [07](../Diseno/07_Hoja_de_ruta.md) y agrega
 ### 10.1 Decisiones propuestas
 
 Todas en estado **propuesta**; las aprueba el Comité de Confianza en F2 y se registran en
-[Decisiones](../Diseno/Decisiones.md).
+[Decisiones](../presidencia/decisiones.md).
 
 - **DP-GOB-01. Plazos de México.** Dictamen en 45 días naturales; 180 días naturales en el extranjero; 90
   días naturales para reclamar; abono provisional solo **registrado** cuando la operación ocurrió dentro
@@ -2069,14 +2069,14 @@ Todas en estado **propuesta**; las aprueba el Comité de Confianza en F2 y se re
   *Alternativa:* omitir la reversión. *Por qué:* es el único plazo corto que corre contra el cliente
   (P6, P7).
 - **DP-GOB-04. Nunca "fuera de plazo" automático.** El escenario F5 termina siempre en R5. *Alternativa:*
-  R6, como admitía [01](../Diseno/01_Interacciones_y_criterios.md). *Por qué:* fechas inciertas en el
+  R6, como admitía [01](../docs/diseno/01_Interacciones_y_criterios.md). *Por qué:* fechas inciertas en el
   dataset y excepciones legales (P6, P7).
 - **DP-GOB-05. Regla de cómputo protectora de días y horas** (R-GOB-14, R-GOB-15). *Alternativa:*
   decidir caso por caso. *Por qué:* determinismo y protección (D-13).
-- **DP-GOB-06. Corrección del mapeo OWASP** de [01](../Diseno/01_Interacciones_y_criterios.md): ASI03
+- **DP-GOB-06. Corrección del mapeo OWASP** de [01](../docs/diseno/01_Interacciones_y_criterios.md): ASI03
   para el acceso no autorizado; se agregan ASI06, ASI08 y ASI09. *Por qué:* la lista oficial verificada.
 - **DP-GOB-07. Reserva sellada del retenido y suite adversarial separada;** los hallazgos del equipo rojo
-  no entran al retenido congelado (precisa GOB-6 de [07](../Diseno/07_Hoja_de_ruta.md)). *Alternativa:*
+  no entran al retenido congelado (precisa GOB-6 de [07](../presidencia/hoja_de_ruta.md)). *Alternativa:*
   sumarlos al conjunto de estrés. *Por qué:* P1.
 - **DP-GOB-08. Marcadores en la frontera** de todo modelo externo, con entidades numéricas extraídas por un
   analizador determinista. *Alternativa:* enviar hechos enmascarados. *Por qué:* cumple D-15 aun en su
@@ -2091,10 +2091,10 @@ Todas en estado **propuesta**; las aprueba el Comité de Confianza en F2 y se re
   *Alternativa:* lista abierta con juez. *Por qué:* determinismo (P2; pregunta 5 de 01).
 - **DP-GOB-12. Umbrales de disparidad:** 5 puntos con intervalo de Newcombe, razón de 0,8, 30 casos por
   grupo y pares sin divergencia. *Alternativa:* intervalos que no se solapan
-  ([01](../Diseno/01_Interacciones_y_criterios.md), sección 5.7). *Por qué:* comparar intervalos
+  ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.7). *Por qué:* comparar intervalos
   separados es demasiado conservador; la diferencia con su propio intervalo es el estándar (P12).
 - **DP-GOB-13. Clases de materialidad A, B, C y E** para el control de cambios. *Por qué:* velocidad sin
-  perder control ([00](00_Presidencia_Modelo_operativo.md), sección 4.4).
+  perder control ([00](../presidencia/modelo_operativo.md), sección 4.4).
 - **DP-GOB-14. La detección del filtro restringe el turno, no bloquea al cliente;** configuraciones
   mínimas de Model Armor de la sección 4.3. *Alternativa:* bloquear. *Por qué:* falsos positivos a tasas
   bajas (investigación 10) y P7.
@@ -2197,11 +2197,11 @@ Todas en estado **propuesta**; las aprueba el Comité de Confianza en F2 y se re
   [Semgrep](https://semgrep.dev), [trivy](https://github.com/aquasecurity/trivy),
   [cosign](https://github.com/sigstore/cosign), [age](https://github.com/FiloSottile/age)
 
-**Internas:** investigaciones [3](../Investigacion/03_Seguridad_privacidad_regulacion.md),
-[4](../Investigacion/04_Evaluacion.md), [6](../Investigacion/06_El_banco_por_dentro.md),
-[10](../Investigacion/10_Gobernanza_y_gateway.md), [12](../Investigacion/12_Organizacion_de_un_banco.md),
-[13](../Investigacion/13_Auditoria_del_dataset.md), [14](../Investigacion/14_VP_Clientes.md),
-[15](../Investigacion/15_VP_Inteligencia_Artificial.md), [17](../Investigacion/17_VP_Tecnologia.md),
-[18](../Investigacion/18_VP_Gobierno.md), [19](../Investigacion/19_Auditoria.md),
-[20](../Investigacion/20_Canales_voz_y_chat.md) y [21](../Investigacion/21_Organizacion_agentica.md);
-diseño 00 a 07 y [Decisiones](../Diseno/Decisiones.md); el enunciado de la hackatón.
+**Internas:** investigaciones [3](../docs/investigacion/03_Seguridad_privacidad_regulacion.md),
+[4](../docs/investigacion/04_Evaluacion.md), [6](../docs/investigacion/06_El_banco_por_dentro.md),
+[10](../docs/investigacion/10_Gobernanza_y_gateway.md), [12](../docs/investigacion/12_Organizacion_de_un_banco.md),
+[13](../docs/investigacion/13_Auditoria_del_dataset.md), [14](../docs/investigacion/14_VP_Clientes.md),
+[15](../docs/investigacion/15_VP_Inteligencia_Artificial.md), [17](../docs/investigacion/17_VP_Tecnologia.md),
+[18](../docs/investigacion/18_VP_Gobierno.md), [19](../docs/investigacion/19_Auditoria.md),
+[20](../docs/investigacion/20_Canales_voz_y_chat.md) y [21](../docs/investigacion/21_Organizacion_agentica.md);
+diseño 00 a 07 y [Decisiones](../presidencia/decisiones.md); el enunciado de la hackatón.

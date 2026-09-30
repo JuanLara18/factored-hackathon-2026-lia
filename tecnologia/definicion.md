@@ -3,14 +3,14 @@
 **Cara:** VP Tecnología, con sus cuatro gerencias (Arquitectura; Plataforma del agente; Canales;
 Observabilidad, SRE y costo). **Versión:** 1 (27 de septiembre de 2026). **Estado:** primera versión,
 lista para el desafío de Gobierno y la auditoría de completitud
-([modelo operativo](00_Presidencia_Modelo_operativo.md), sección 7).
-**Se apoya en:** [principios](../Diseno/00_Principios.md), [interacciones](../Diseno/01_Interacciones_y_criterios.md),
-[datos por capas](../Diseno/03_Datos_por_capas.md), [organización](../Diseno/04_Organizacion_y_roles.md),
-[cobertura del enunciado](../Diseno/05_Cobertura_del_enunciado.md), [arquitectura](../Diseno/06_Arquitectura.md),
-[hoja de ruta](../Diseno/07_Hoja_de_ruta.md), [decisiones D-01 a D-21](../Diseno/Decisiones.md) y las
-investigaciones [2](../Investigacion/02_Arquitectura_y_control.md), [8](../Investigacion/08_IA_con_tipos_seguros.md),
-[10](../Investigacion/10_Gobernanza_y_gateway.md), [11](../Investigacion/11_Latencia_y_costo.md),
-[17](../Investigacion/17_VP_Tecnologia.md) y [20](../Investigacion/20_Canales_voz_y_chat.md).
+([modelo operativo](../presidencia/modelo_operativo.md), sección 7).
+**Se apoya en:** [principios](../docs/diseno/00_Principios.md), [interacciones](../docs/diseno/01_Interacciones_y_criterios.md),
+[datos por capas](../docs/diseno/03_Datos_por_capas.md), [organización](../docs/diseno/04_Organizacion_y_roles.md),
+[cobertura del enunciado](../docs/diseno/05_Cobertura_del_enunciado.md), [arquitectura](../docs/diseno/06_Arquitectura.md),
+[hoja de ruta](../presidencia/hoja_de_ruta.md), [decisiones D-01 a D-21](../presidencia/decisiones.md) y las
+investigaciones [2](../docs/investigacion/02_Arquitectura_y_control.md), [8](../docs/investigacion/08_IA_con_tipos_seguros.md),
+[10](../docs/investigacion/10_Gobernanza_y_gateway.md), [11](../docs/investigacion/11_Latencia_y_costo.md),
+[17](../docs/investigacion/17_VP_Tecnologia.md) y [20](../docs/investigacion/20_Canales_voz_y_chat.md).
 
 **Cómo leer este documento**
 
@@ -45,7 +45,7 @@ investigaciones [2](../Investigacion/02_Arquitectura_y_control.md), [8](../Inves
 ### 1.1 Mandato
 
 Que el sistema sea **correcto por construcción, observable, reproducible y barato**
-([organización](../Diseno/04_Organizacion_y_roles.md), sección 5). En la misión "cargo no reconocido",
+([organización](../docs/diseno/04_Organizacion_y_roles.md), sección 5). En la misión "cargo no reconocido",
 Tecnología construye y opera la plataforma sobre la que la misión entrega el resultado: el núcleo (motor
 de flujo, capa de herramientas, identidad, estado durable), las superficies de chat y de voz, el gateway de
 IA (con Gobierno), los servicios simulados, la observabilidad, la infraestructura, la entrega continua y el
@@ -54,7 +54,7 @@ entrena (modelos detrás del gateway); no decide ninguna de las dos cosas.
 
 ### 1.2 Qué es de Tecnología y qué no
 
-La numeración de componentes es la de [06](../Diseno/06_Arquitectura.md), sección 2.
+La numeración de componentes es la de [06](../docs/diseno/06_Arquitectura.md), sección 2.
 
 | # | Componente | Tecnología es | Otra cara es |
 |---|---|---|---|
@@ -101,7 +101,7 @@ La numeración de componentes es la de [06](../Diseno/06_Arquitectura.md), secci
 
 P4 (el código decide), P5 (seguridad por construcción), P6 (solo lo verificado), P9 (lo simple primero),
 P11 (privacidad y mínimo privilegio) y P13 (reproducible y trazable). En un choque, la regla de desempate del
-[modelo operativo](00_Presidencia_Modelo_operativo.md) (sección 4.2) pone latencia y costo en el quinto
+[modelo operativo](../presidencia/modelo_operativo.md) (sección 4.2) pone latencia y costo en el quinto
 puesto: nunca se compra latencia con seguridad ni con honestidad de la medición.
 
 ---
@@ -182,8 +182,8 @@ procesos que lo importan con distinto punto de entrada. Se separa en procesos so
 | R-TEC-10 | Configuración tipada con pydantic-settings; cada parámetro tiene un valor por defecto seguro; los secretos se leen por referencia (Secret Manager o archivo local ignorado), nunca desde el código ni la imagen. | prueba que falla si un campo marcado como secreto tiene valor por defecto; gitleaks sobre la imagen y el repositorio |
 | R-TEC-11 | Banderas declaradas y registradas en cada traza raíz: `LB_FLAG_STREAMING_CHAT`, `LB_FLAG_MODEL_ARMOR`, `LB_FLAG_VOZ_NATIVA`, `LB_FLAG_TELEFONO`, `LB_FLAG_LLM_SIMULADO`, `LB_FLAG_TODO_A_HUMANO`. | atributo `latam.flags` en el span raíz de cada turno |
 | R-TEC-12 | En `ci`, y por defecto en `local`, corre el LLM simulado: ninguna prueba automática depende de una API externa ni envía datos fuera de la máquina. | el CI no tiene secretos de proveedores; `pytest-socket` bloquea la red en pruebas unitarias |
-| R-TEC-13 | La nube no carga filas del organizador (ni derivados como el oro operacional) sin autorización registrada en [Decisiones](../Diseno/Decisiones.md) (D-15); mientras tanto `demo` usa el conjunto de demostración generado por el equipo, marcado `origen: equipo`. | el manifiesto del bucket de oro declara `origen`; el despliegue se niega a montar `origen: organizador` si `LB_AUTORIZACION_DATOS_NUBE` no cita una decisión |
-| R-TEC-14 | Todo el sistema lee el tiempo de un `Reloj` inyectado: `RelojSimulado(as_of=2026-06-17, t0)` avanza con el tiempo real desde `AS_OF` ([03](../Diseno/03_Datos_por_capas.md), sección 5.1); las pruebas usan `RelojCongelado` que se adelanta a mano. | atributo `latam.reloj.as_of` en cada traza; regla `banned-api` de R-TEC-32 |
+| R-TEC-13 | La nube no carga filas del organizador (ni derivados como el oro operacional) sin autorización registrada en [Decisiones](../presidencia/decisiones.md) (D-15); mientras tanto `demo` usa el conjunto de demostración generado por el equipo, marcado `origen: equipo`. | el manifiesto del bucket de oro declara `origen`; el despliegue se niega a montar `origen: organizador` si `LB_AUTORIZACION_DATOS_NUBE` no cita una decisión |
+| R-TEC-14 | Todo el sistema lee el tiempo de un `Reloj` inyectado: `RelojSimulado(as_of=2026-06-17, t0)` avanza con el tiempo real desde `AS_OF` ([03](../docs/diseno/03_Datos_por_capas.md), sección 5.1); las pruebas usan `RelojCongelado` que se adelanta a mano. | atributo `latam.reloj.as_of` en cada traza; regla `banned-api` de R-TEC-32 |
 
 ### 2.3 Infraestructura como código
 
@@ -232,7 +232,7 @@ insuficiente y una acción rechazada por el punto de decisión.
 
 ### 2.5 Estándares de ingeniería del repositorio
 
-**Estructura.** Extiende la de [06](../Diseno/06_Arquitectura.md), sección 8. El repositorio vive fuera del
+**Estructura.** Extiende la de [06](../docs/diseno/06_Arquitectura.md), sección 8. El repositorio vive fuera del
 Drive, en `C:\Users\LaraJ\Projects\factored-hackathon-2026`, con remoto en GitHub (D-03).
 
 ```
@@ -272,8 +272,8 @@ nube), `destroy-demo`. Datos e IA agregan las suyas (`data`, `data-test`, `eval`
 | R-TEC-38 | pre-commit con: ruff, ruff-format, gitleaks, detect-private-key, check-added-large-files (500 KB), check-yaml, check-toml, check-json, `no-commit-to-branch` sobre `main`, validación de `policy/` contra su esquema y un gancho propio que bloquea `data/`, `*.parquet` y `*.csv` fuera de `tests/fixtures/`. | `.pre-commit-config.yaml`; CI corre `pre-commit run --all-files` |
 | R-TEC-39 | Escaneo en cada PR: gitleaks, pip-audit sobre el lock exportado y OSV-Scanner; escaneo de la imagen publicada. Una vulnerabilidad crítica, o alta y explotable en nuestro uso, bloquea la fusión salvo excepción con fecha de vencimiento. | reportes del CI; registro de excepciones |
 | R-TEC-40 | Commits de **una línea** en estilo convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`, `ci:`, `build:`, `chore:`), en español, sin cuerpo ni remolques; una intención por commit; ramas cortas y PR a `main`. | comprobación en CI sobre los mensajes del PR (una línea, prefijo válido) |
-| R-TEC-41 | ADR en `docs/adr/` con formato MADR (contexto, opciones, decisión, consecuencias, estado y principio que la guía); toda D-xx técnica y toda DP-TEC aprobada tiene su ADR; el Comité de Plataforma los aprueba con acta. | índice de ADR enlazado desde [Decisiones](../Diseno/Decisiones.md) |
-| R-TEC-42 | Cada paquete de `src/latam_bank/` tiene un README corto (responsabilidad, contratos, límites); las APIs públicas llevan docstring en español; los tipos del dominio usan los nombres de [06](../Diseno/06_Arquitectura.md), sección 5. | lista de revisión del PR |
+| R-TEC-41 | ADR en `docs/adr/` con formato MADR (contexto, opciones, decisión, consecuencias, estado y principio que la guía); toda D-xx técnica y toda DP-TEC aprobada tiene su ADR; el Comité de Plataforma los aprueba con acta. | índice de ADR enlazado desde [Decisiones](../presidencia/decisiones.md) |
+| R-TEC-42 | Cada paquete de `src/latam_bank/` tiene un README corto (responsabilidad, contratos, límites); las APIs públicas llevan docstring en español; los tipos del dominio usan los nombres de [06](../docs/diseno/06_Arquitectura.md), sección 5. | lista de revisión del PR |
 | R-TEC-43 | Frontend en TypeScript con `strict: true`, ESLint, Prettier, Vitest y Playwright; los tipos de los componentes se **generan** desde el JSON Schema de los modelos Pydantic, nunca se redefinen a mano. | CI de `web/`; el archivo generado no difiere del versionado |
 | R-TEC-44 | La máquina limpia solo necesita git, Docker (con Compose), uv y just; `just setup demo` funciona en Linux y en Windows 11 con Docker Desktop y Git Bash, y el frontend se construye dentro de Docker. | prueba de Auditoría en F7 en ambos sistemas, con el tiempo registrado |
 
@@ -281,7 +281,7 @@ nube), `destroy-demo`. Datos e IA agregan las suyas (`data`, `data-test`, `eval`
 
 #### 2.6.1 Tipos del dominio
 
-Precisan los contratos de [06](../Diseno/06_Arquitectura.md), sección 5. Todos son modelos Pydantic v2
+Precisan los contratos de [06](../docs/diseno/06_Arquitectura.md), sección 5. Todos son modelos Pydantic v2
 inmutables (`frozen=True`), con validación estricta y sin `float` para dinero.
 
 | Tipo | Campos principales | Invariantes | Lo construye |
@@ -303,7 +303,7 @@ inmutables (`frozen=True`), con validación estricta y sin `float` para dinero.
 
 #### 2.6.2 Máquina de estados
 
-Los estados son los de [01](../Diseno/01_Interacciones_y_criterios.md), sección 4. El motor sigue el
+Los estados son los de [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 4. El motor sigue el
 patrón **núcleo funcional y cáscara imperativa**: `transicionar()` es pura y decide; la cáscara ejecuta los
 efectos, con sus llaves, y devuelve los resultados como eventos.
 
@@ -420,7 +420,7 @@ Migraciones con Alembic; acceso con SQLAlchemy 2 asíncrono y asyncpg; particion
 | ID | Regla | Cómo se verifica |
 |---|---|---|
 | R-TEC-45 | El estado de la conversación vive en `conversaciones.datos` como modelo Pydantic con `schema_version`; el historial de mensajes nunca es fuente de estado (P4). | propiedad: reconstruir el estado solo desde la base produce las mismas decisiones que el proceso vivo |
-| R-TEC-46 | Solo `transicionar()` cambia el estado, contra la tabla `TRANSICIONES`; una transición no listada lleva a `FALLA_SEGURA` y queda registrada. | máquina de estados de Hypothesis con eventos aleatorios; prueba que compara la tabla con [01](../Diseno/01_Interacciones_y_criterios.md), sección 4 |
+| R-TEC-46 | Solo `transicionar()` cambia el estado, contra la tabla `TRANSICIONES`; una transición no listada lleva a `FALLA_SEGURA` y queda registrada. | máquina de estados de Hypothesis con eventos aleatorios; prueba que compara la tabla con [01](../docs/diseno/01_Interacciones_y_criterios.md), sección 4 |
 | R-TEC-47 | Pedir un humano lleva a `TRASPASO` en el mismo turno desde cualquier estado; quedar fuera de alcance lleva a `ABSTENCION`; una falla de autorización lleva a `NEGADO`. | propiedades para E4, V11, F1 a F5 y S1 a S10 |
 | R-TEC-48 | Límites: 8 pasos por turno y, por conversación, 30 turnos del cliente, 12 llamadas al LLM, 60.000 tokens y 20 minutos de voz [S] (Gobierno confirma); al agotarse, traspaso con motivo "presupuesto" (OWASP LLM10). | pruebas; contadores en la traza raíz |
 | R-TEC-49 | Cada turno es una transacción de base: carga con versión (bloqueo optimista), transiciones, efectos pendientes y avance de versión; un conflicto de versión obliga a releer y reprocesar, como máximo 2 veces. | prueba de concurrencia: dos turnos simultáneos por chat y por voz producen un solo efecto |
@@ -436,7 +436,7 @@ Migraciones con Alembic; acceso con SQLAlchemy 2 asíncrono y asyncpg; particion
 
 #### 2.7.1 Catálogo de herramientas
 
-Los dominios BIAN salen de la [investigación 17](../Investigacion/17_VP_Tecnologia.md) y se confirman contra
+Los dominios BIAN salen de la [investigación 17](../docs/investigacion/17_VP_Tecnologia.md) y se confirman contra
 el [repositorio público de BIAN](https://github.com/bian-official/public) en F3 [A].
 
 | Herramienta | Firma (resumen) | Dominio BIAN [A] | Nivel `acr` | Confirmación | *Timeout* y reintentos | Verificación posterior |
@@ -453,7 +453,7 @@ el [repositorio público de BIAN](https://github.com/bian-official/public) en F3
 | `encolar_traspaso` | `(PaqueteTraspaso) -> HechoVerificado[TicketTraspaso]` | Customer Case Management | ninguno (humano siempre disponible, P7) | no | 1 s; 2 | relee el ticket |
 
 `CargoPropio` y `TarjetaPropia` solo se obtienen de un `HechoVerificado` producido con la misma sesión: no
-hay forma de construir el tipo para un recurso de otro cliente ([investigación 8](../Investigacion/08_IA_con_tipos_seguros.md)).
+hay forma de construir el tipo para un recurso de otro cliente ([investigación 8](../docs/investigacion/08_IA_con_tipos_seguros.md)).
 
 #### 2.7.2 Punto de decisión (PDP) propio
 
@@ -496,7 +496,7 @@ provisional de México es una tarea pendiente del back office.
 | R-TEC-62 | El oro operacional se abre en solo lectura y toda consulta filtra por el cliente de la sesión en la consulta misma (nunca leer todo y filtrar después); las escrituras van solo al esquema `bian` (D-08). | DuckDB con `read_only`; pruebas del constructor de consultas |
 | R-TEC-63 | La inyección de fallas (error, lentitud, tiempo agotado, datos corruptos) solo se activa por el plano de control con credencial de operador; en `demo` está apagada salvo durante la demostración de caída segura, y cada activación queda registrada. | llamada con sesión de cliente recibe 403; registro de auditoría |
 | R-TEC-64 | Después de toda acción la herramienta relee el estado y solo construye `AccionVerificada` si coincide; si no coincide, el efecto queda `incierto` y el flujo va a R8. | prueba con escritura exitosa y relectura distinta |
-| R-TEC-65 | Ningún movimiento de dinero: no existe herramienta de pagos; el abono provisional de México se registra como tarea pendiente dentro del caso, nunca como acción ejecutada ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 12). | catálogo de herramientas; verificación del escenario N6 |
+| R-TEC-65 | Ningún movimiento de dinero: no existe herramienta de pagos; el abono provisional de México se registra como tarea pendiente dentro del caso, nunca como acción ejecutada ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 12). | catálogo de herramientas; verificación del escenario N6 |
 
 ### 2.8 Identidad
 
@@ -571,7 +571,7 @@ ventana de 24 horas con el `Reloj`: fuera de la ventana solo salen plantillas de
 | R-TEC-76 | Montos, plazos, confirmaciones y el informe de acciones salen de **plantillas deterministas**, nunca del modelo. | la traza muestra el id de plantilla de esos bloques; prueba |
 | R-TEC-77 | La aprobación se acepta solo si el `nonce` existe, está vigente (5 minutos [S]), pertenece a la misma sesión y canal y no se usó; el monto que se muestra es el de la base. | pruebas de repetición, de otra sesión y de vencimiento |
 | R-TEC-78 | Cada componente tiene su degradación a WhatsApp probada (3 botones de 20 caracteres como máximo; listas de 10 filas como máximo) y el modo simulado respeta la ventana de 24 horas. | propiedades que generan componentes; prueba de interfaz del modo simulado |
-| R-TEC-79 | Primer texto visible con p50 menor a 1 s; turno completo con p50 menor a 2 s y p95 menor a 5 s ([06](../Diseno/06_Arquitectura.md), sección 6), medidos en el servidor y en el navegador. | spans; tiempos de Playwright |
+| R-TEC-79 | Primer texto visible con p50 menor a 1 s; turno completo con p50 menor a 2 s y p95 menor a 5 s ([06](../docs/diseno/06_Arquitectura.md), sección 6), medidos en el servidor y en el navegador. | spans; tiempos de Playwright |
 | R-TEC-80 | Seguridad del navegador: política de seguridad de contenido estricta sin scripts en línea, HSTS, token de sesión solo en memoria (nunca en `localStorage`), CORS limitado al origen propio, límite de 20 turnos por minuto por sesión y 60 solicitudes por minuto por IP [S]. | prueba de cabeceras; prueba de límite de tasa |
 
 ### 2.10 Superficie de voz (Pipecat en cascada)
@@ -685,11 +685,11 @@ decide si acepta el global.
 |---|---|---|
 | R-TEC-91 | Toda llamada a un modelo de lenguaje pasa por el gateway con la **clave virtual del trabajador** que la hace (comprensión, redacción, juez, simulador, generador); nada llama al proveedor directo. | IAM y `banned-api` (R-TEC-06, R-TEC-32); conciliación de los registros de gasto del gateway con los spans |
 | R-TEC-92 | El gateway redacta datos personales antes de cualquier modelo con Presidio y reconocedores propios para CURP, CC, DNI, CPF, número de tarjeta (con Luhn), CBU, CLABE, correo y teléfono; precisión y recuperación se miden sobre un conjunto etiquetado del equipo y Gobierno fija el umbral. | reporte de la prueba en CI |
-| R-TEC-93 | Model Armor en la nube es una capa **adicional** de entrada y salida, con su plantilla versionada en Terraform; como su filtro de inyección analiza hasta 512 tokens ([investigación 10](../Investigacion/10_Gobernanza_y_gateway.md)), se le envía el mensaje del cliente y las frases de salida, no el prompt completo. Su aporte se mide aparte: detectados, falsos positivos sobre casos legítimos y ataques no detectados que la arquitectura igual contuvo. | tabla de la investigación 10 en el reporte de seguridad |
+| R-TEC-93 | Model Armor en la nube es una capa **adicional** de entrada y salida, con su plantilla versionada en Terraform; como su filtro de inyección analiza hasta 512 tokens ([investigación 10](../docs/investigacion/10_Gobernanza_y_gateway.md)), se le envía el mensaje del cliente y las frases de salida, no el prompt completo. Su aporte se mide aparte: detectados, falsos positivos sobre casos legítimos y ataques no detectados que la arquitectura igual contuvo. | tabla de la investigación 10 en el reporte de seguridad |
 | R-TEC-94 | Límites por alias (tokens de prompt), presupuesto diario por clave virtual y tasa por minuto; excederlos devuelve un error tipado que el motor convierte en degradación (2.12). | configuración; prueba que agota el presupuesto |
 | R-TEC-95 | Sin caché semántica de respuestas (riesgo de entregar a un cliente la respuesta de otro, investigación 10); solo la caché de prompt del proveedor para el prefijo estable. | configuración; revisión |
 | R-TEC-96 | Los reintentos de modelo ocurren solo en el gateway (uno, ante 429 o 503, con espera exponencial y variación aleatoria); el cliente no reintenta, para no multiplicar la carga. | configuración; prueba que cuenta llamadas |
-| R-TEC-97 | Cada alias apunta a una versión fija del modelo, registrada en cada traza (`gen_ai.response.model`) y en cada corrida; cambiarla es un cambio de configuración con ADR corto y revalidación ([04](../Diseno/04_Organizacion_y_roles.md), sección 11). | atributo de la traza contra la configuración |
+| R-TEC-97 | Cada alias apunta a una versión fija del modelo, registrada en cada traza (`gen_ai.response.model`) y en cada corrida; cambiarla es un cambio de configuración con ADR corto y revalidación ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11). | atributo de la traza contra la configuración |
 | R-TEC-98 | El contenido de prompts y respuestas no se guarda en trazas por defecto; en `local` y `ci`, con datos del equipo, se puede activar ya redactado. | configuración por entorno; inspección de trazas de `demo` |
 
 ### 2.12 Confiabilidad
@@ -720,11 +720,11 @@ decide si acepta el global.
 | ID | Regla | Cómo se verifica |
 |---|---|---|
 | R-TEC-99 | Los *timeouts* son los de la tabla, viven en configuración y su suma en la ruta de un turno cabe en el presupuesto del canal. | prueba que suma los *timeouts* de la ruta crítica contra el presupuesto |
-| R-TEC-100 | Reintentos acotados: como máximo 2, solo ante fallas transitorias (conexión, 429, 502, 503, 504) y solo en operaciones idempotentes (lecturas y escrituras con llave); **nunca por lentitud** ([investigación 11](../Investigacion/11_Latencia_y_costo.md)); espera exponencial con variación aleatoria completa (base 100 ms, tope 1 s). | pruebas unitarias; escenario D1 con 2 reintentos como máximo en la traza |
+| R-TEC-100 | Reintentos acotados: como máximo 2, solo ante fallas transitorias (conexión, 429, 502, 503, 504) y solo en operaciones idempotentes (lecturas y escrituras con llave); **nunca por lentitud** ([investigación 11](../docs/investigacion/11_Latencia_y_costo.md)); espera exponencial con variación aleatoria completa (base 100 ms, tope 1 s). | pruebas unitarias; escenario D1 con 2 reintentos como máximo en la traza |
 | R-TEC-101 | Interruptor de circuito por dependencia con los parámetros de la tabla; su estado se ve en métricas y en la traza. | prueba de caos; métrica de interruptores abiertos |
 | R-TEC-102 | Escalera de degradación N0 a N6; ante la duda se baja un nivel y nunca se inventa (P6). | una prueba de inyección de fallas por nivel; demostración de uno en la demo |
-| R-TEC-103 | Caída segura (R8): ninguna afirmación falsa, reintento acotado, oferta de traspaso o de continuar después y estado persistido; la tasa de caída segura sobre fallas inyectadas es 100% ([01](../Diseno/01_Interacciones_y_criterios.md), sección 5.6). | métrica del arnés de evaluación |
-| R-TEC-104 | El interruptor "todo a humano" se activa sin desplegar (variable del servicio o fila de configuración leída cada 30 s) y lo usa Gobierno ante un incidente ([04](../Diseno/04_Organizacion_y_roles.md), sección 11). | simulacro en F5 |
+| R-TEC-103 | Caída segura (R8): ninguna afirmación falsa, reintento acotado, oferta de traspaso o de continuar después y estado persistido; la tasa de caída segura sobre fallas inyectadas es 100% ([01](../docs/diseno/01_Interacciones_y_criterios.md), sección 5.6). | métrica del arnés de evaluación |
+| R-TEC-104 | El interruptor "todo a humano" se activa sin desplegar (variable del servicio o fila de configuración leída cada 30 s) y lo usa Gobierno ante un incidente ([04](../docs/diseno/04_Organizacion_y_roles.md), sección 11). | simulacro en F5 |
 | R-TEC-105 | Sondas de arranque y de vida en cada servicio (`/salud/viva`; `/salud/lista` comprueba Postgres y dependencias críticas con 500 ms); apagado ordenado ante SIGTERM: termina los turnos en curso en 8 s o menos y, en voz, avisa al cliente y persiste el estado. | configuración de Cloud Run; prueba de SIGTERM |
 | R-TEC-106 | La suma de instancias máximas por el tamaño máximo del pool de cada servicio no pasa del 80% de `max_connections` de Cloud SQL; LiteLLM y Phoenix cuentan. | validación en las variables de Terraform |
 
@@ -746,7 +746,7 @@ botella** se identifica por el span que más crece.
 
 **Modelo de capacidad.** Por la ley de Little, conversaciones concurrentes = llegadas por segundo por
 duración. Con 50.000 llamadas al mes de 3 minutos y demanda plana en las 24 horas (así la trae el dataset,
-[05](../Diseno/05_Cobertura_del_enunciado.md), sección 3.1), hay unas 3,5 llamadas simultáneas en promedio y
+[05](../docs/diseno/05_Cobertura_del_enunciado.md), sección 3.1), hay unas 3,5 llamadas simultáneas en promedio y
 unas 7 en un pico de dos veces [S]: dos instancias de `lb-voz`. El límite real lo ponen las cuotas de los
 proveedores y el costo, no el cómputo.
 
@@ -789,7 +789,7 @@ proveedores y el costo, no el cómputo.
 | R-TEC-115 | Métricas: tasa, errores y duración por servicio; latencia por etapa; rutas; traspasos; bloqueos de filtros; reintentos; interruptores abiertos; costo por hora. Paneles en Cloud Monitoring (versionados en Terraform) y en Phoenix y `lb-staff` en local. | JSON de los paneles en el repositorio |
 | R-TEC-116 | Alertas de la nube: errores por encima de 2% durante 5 minutos; p95 del turno fuera del presupuesto durante 10 minutos; 429 del proveedor por encima de 5% durante 5 minutos; interruptor abierto; más de 3 bloqueos del filtro de salida en 10 minutos; gasto diario por encima del 20% del presupuesto. Destino: correo del equipo. | políticas de alerta en Terraform; alerta de prueba |
 | R-TEC-117 | Retención propuesta (Gobierno aprueba, S-TEC-03): trazas y logs 30 días; estado de conversaciones 90 días; desafíos OTP 24 horas; llaves de idempotencia 7 días; audio 0. | retención de los buckets de logs; trabajos de purga con prueba |
-| R-TEC-118 | Exportación a platino: `lb-exportar-trazas` convierte las trazas de cada corrida de evaluación en `trazas_resumen` (Parquet), sin contenido y con huella encadenada por conversación ([investigación 19](../Investigacion/19_Auditoria.md)); el reporte solo cita trazas exportadas. | script de verificación de la cadena; aceptación de Datos |
+| R-TEC-118 | Exportación a platino: `lb-exportar-trazas` convierte las trazas de cada corrida de evaluación en `trazas_resumen` (Parquet), sin contenido y con huella encadenada por conversación ([investigación 19](../docs/investigacion/19_Auditoria.md)); el reporte solo cita trazas exportadas. | script de verificación de la cadena; aceptación de Datos |
 
 ### 2.15 FinOps: costo por caso
 
@@ -927,7 +927,7 @@ streaming real, condiciones de retención de datos del proveedor y precio.
 | Google Text-to-Speech Chirp 3 HD | US$30 por millón de caracteres; primer millón gratis al mes | [V] |
 | Google Text-to-Speech Neural2 | US$16 por millón de caracteres; primer millón gratis | [V] |
 | Gemini 2.5 Flash TTS | US$0,50 por millón de tokens de texto y US$10 por millón de tokens de audio | [V] |
-| Deepgram, AssemblyAI, ElevenLabs, Cartesia, Soniox | exactitud según la [investigación 20](../Investigacion/20_Canales_voz_y_chat.md) (cifras de proveedor) | [P]; precios [A] en sus páginas antes de S1 |
+| Deepgram, AssemblyAI, ElevenLabs, Cartesia, Soniox | exactitud según la [investigación 20](../docs/investigacion/20_Canales_voz_y_chat.md) (cifras de proveedor) | [P]; precios [A] en sus páginas antes de S1 |
 
 Si un proveedor externo gana, su credencial va a Secret Manager, su llamada sale de `sa-voz` y su contrato de
 retención de datos pasa por Gobierno (riesgo de terceros).
@@ -937,8 +937,8 @@ retención de datos pasa por Gobierno (riesgo de terceros).
 | Tema | Decisión | Estado del arte y fuente | Alternativas y por qué no | Estado |
 |---|---|---|---|---|
 | Cómputo | Cloud Run (servicios y jobs) | contenedores sin servidores, escala a cero, WebSocket de hasta 60 minutos | GKE Autopilot (más operación para diez días); Compute Engine (solo si S1 exige WebRTC con UDP propio) | DP-TEC-09 |
-| Base operativa | Cloud SQL para PostgreSQL 16, `db-g1-small` en la demo (US$0,035 por hora; SSD US$0,17 por GiB al mes) [V] | Postgres es el estándar para estado transaccional; DuckDB admite un solo escritor ([05](../Diseno/05_Cobertura_del_enunciado.md), punto 8) | `db-f1-micro` (0,6 GB de memoria, estrecho para cuatro bases, US$0,0105 por hora) [V]; AlloyDB (prueba de 30 días, desproporcionado) [V]; Postgres en una VM (más operación). Los núcleos compartidos no tienen SLA [V] | D-20 |
-| Durabilidad del flujo | persistencia propia con *outbox* y llaves (sección 2.6) | PydanticAI integra DBOS y Temporal ([investigación 17](../Investigacion/17_VP_Tecnologia.md)) | DBOS si sobra tiempo (D-11); Temporal, demasiada infraestructura | D-11 |
+| Base operativa | Cloud SQL para PostgreSQL 16, `db-g1-small` en la demo (US$0,035 por hora; SSD US$0,17 por GiB al mes) [V] | Postgres es el estándar para estado transaccional; DuckDB admite un solo escritor ([05](../docs/diseno/05_Cobertura_del_enunciado.md), punto 8) | `db-f1-micro` (0,6 GB de memoria, estrecho para cuatro bases, US$0,0105 por hora) [V]; AlloyDB (prueba de 30 días, desproporcionado) [V]; Postgres en una VM (más operación). Los núcleos compartidos no tienen SLA [V] | D-20 |
+| Durabilidad del flujo | persistencia propia con *outbox* y llaves (sección 2.6) | PydanticAI integra DBOS y Temporal ([investigación 17](../docs/investigacion/17_VP_Tecnologia.md)) | DBOS si sobra tiempo (D-11); Temporal, demasiada infraestructura | D-11 |
 | Infraestructura como código | Terraform con estado en Cloud Storage | estándar de facto con proveedor oficial de Google | OpenTofu (equivalente, menos documentación de Google); Pulumi; scripts de `gcloud` (no declarativos) | DP-TEC-08 |
 | CI/CD | GitHub Actions con WIF | el repositorio ya vive en GitHub (D-03); federación sin llaves | Cloud Build (otra consola y otro formato; no aporta aquí) | DP-TEC-08 |
 | Frontend | React, TypeScript y Vite con `@ag-ui/client` | AG-UI es el protocolo abierto de 2026 para agentes e interfaces (D-19) | CopilotKit (suma un servidor de Node); Chainlit o Streamlit (sin componentes tipados ni aprobaciones como eventos) | DP-TEC-11 |
@@ -1225,7 +1225,7 @@ Estado: abierta
 | Vulnerabilidades | críticas o altas explotables sin excepción vigente | 0 | CI |
 | Reproducibilidad | `just setup demo` en máquina limpia | éxito en 30 minutos o menos [S], sin pasos fuera del README | Auditoría |
 | Reversión | tiempo desde la decisión hasta el tráfico en la revisión anterior | 2 minutos o menos | simulacro |
-| Aporte del filtro externo | detectados, falsos positivos en legítimos y ataques contenidos por la arquitectura | reportar ([investigación 10](../Investigacion/10_Gobernanza_y_gateway.md)) | conjunto de estrés |
+| Aporte del filtro externo | detectados, falsos positivos en legítimos y ataques contenidos por la arquitectura | reportar ([investigación 10](../docs/investigacion/10_Gobernanza_y_gateway.md)) | conjunto de estrés |
 
 | Compuerta | Criterio de aceptación de Tecnología |
 |---|---|
@@ -1337,7 +1337,7 @@ secretos, llaves y registro (≈ US$5). Total ≈ **US$660**.
 
 Lectura honesta: la telefonía es la línea mayor del costo automatizado (una troncal SIP propia la reduciría
 [A]); Apigee pesa a bajo volumen y se diluye a alto volumen. Y el costo que decide no es el de la plataforma:
-si el 30% de los casos pasa a un humano a US$7 a 14 por contacto de voz ([investigación 11](../Investigacion/11_Latencia_y_costo.md),
+si el 30% de los casos pasa a un humano a US$7 a 14 por contacto de voz ([investigación 11](../docs/investigacion/11_Latencia_y_costo.md),
 cifra de industria [P]), el traspaso suma US$2,1 a 4,2 por caso en promedio, entre 8 y 16 veces el costo de la
 plataforma. La palanca económica es la resolución segura y la calidad del traspaso, no la infraestructura.
 
@@ -1350,7 +1350,7 @@ plataforma. La palanca económica es la resolución segura y la calidad del tras
 | Evaluación de Apigee | 60 días sin costo | [V] |
 | Prueba de AlloyDB | 30 días (no se usa) | [V] |
 | Prueba de Twilio | US$15 | [V] |
-| Créditos de los organizadores | a preguntar (pregunta 8 de [05](../Diseno/05_Cobertura_del_enunciado.md)) | [A] |
+| Créditos de los organizadores | a preguntar (pregunta 8 de [05](../docs/diseno/05_Cobertura_del_enunciado.md)) | [A] |
 
 ### 7.6 Controles de gasto
 
@@ -1368,7 +1368,7 @@ plataforma. La palanca económica es la resolución segura y la calidad del tras
 
 ## 8. Backlog propuesto
 
-Las épicas TEC-1 a TEC-10 son las de la [hoja de ruta](../Diseno/07_Hoja_de_ruta.md), sección 3; TEC-0 y TEC-11 a
+Las épicas TEC-1 a TEC-10 son las de la [hoja de ruta](../presidencia/hoja_de_ruta.md), sección 3; TEC-0 y TEC-11 a
 TEC-17 son nuevas. Los días siguen el calendario de 07, sección 5. Una historia está terminada cuando cumple
 su criterio, está tipada, probada, con trazas y en `just test` (modelo operativo, sección 8).
 
@@ -1609,9 +1609,9 @@ balanceador.
 - [Configuración `exclude-newer` de uv](https://docs.astral.sh/uv/reference/settings/#exclude-newer)
 - [import-linter](https://import-linter.readthedocs.io/), [Schemathesis](https://schemathesis.readthedocs.io/), [Locust](https://locust.io/), [MADR](https://adr.github.io/madr/)
 
-**Documentos internos:** [investigación 2](../Investigacion/02_Arquitectura_y_control.md),
-[8](../Investigacion/08_IA_con_tipos_seguros.md), [10](../Investigacion/10_Gobernanza_y_gateway.md),
-[11](../Investigacion/11_Latencia_y_costo.md), [17](../Investigacion/17_VP_Tecnologia.md),
-[19](../Investigacion/19_Auditoria.md) y [20](../Investigacion/20_Canales_voz_y_chat.md); diseño
-[00](../Diseno/00_Principios.md) a [07](../Diseno/07_Hoja_de_ruta.md) y [Decisiones](../Diseno/Decisiones.md);
-[enunciado](../Documentos/Enunciado_Factored_Hackathon_2026.pdf).
+**Documentos internos:** [investigación 2](../docs/investigacion/02_Arquitectura_y_control.md),
+[8](../docs/investigacion/08_IA_con_tipos_seguros.md), [10](../docs/investigacion/10_Gobernanza_y_gateway.md),
+[11](../docs/investigacion/11_Latencia_y_costo.md), [17](../docs/investigacion/17_VP_Tecnologia.md),
+[19](../docs/investigacion/19_Auditoria.md) y [20](../docs/investigacion/20_Canales_voz_y_chat.md); diseño
+[00](../docs/diseno/00_Principios.md) a [07](../presidencia/hoja_de_ruta.md) y [Decisiones](../presidencia/decisiones.md);
+[enunciado](../docs/enunciado/Enunciado_Factored_Hackathon_2026.pdf).
