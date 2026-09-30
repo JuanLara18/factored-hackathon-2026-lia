@@ -8,6 +8,22 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ---
 
+## D-33 · Banco de punta a punta: banca en línea, casos compartidos y consola del experto (29 sep 2026)
+
+- **Decisión:** el sitio deja de ser informativo y se comporta como un banco. (1) Sitio público realista por país
+  (MX, CO, AR). (2) Banca en línea de demostración: el cliente entra con un cliente ficticio, ve productos y
+  movimientos reales del oro operacional, abre un movimiento y desde "No reconozco este cargo" llega el asistente
+  con esa transacción ya identificada (contexto fijado por el servidor, no por el modelo); ve sus reclamos y puede
+  bloquear su tarjeta. (3) Consola del experto humano: recibe los traspasos con el `PaqueteTraspaso` de la sección
+  2.5.2 de Clientes, toma el caso, escribe en el mismo hilo y lo resuelve con una etiqueta de corrección.
+  (4) Casos, bloqueos, traspasos y mensajes viven en Firestore (modo nativo, `nam5`), compartidos por el chat en
+  Cloud Run, el agente en Agent Runtime y la consola. El contrato está en `tecnologia/web/API_BANCA.md`.
+- **Alternativas:** memoria de cada proceso (los reclamos creados en Agent Runtime no se verían en el sitio);
+  Cloud SQL (costo fijo); BigQuery (no es para escrituras de transacción).
+- **Por qué:** el enunciado evalúa la experiencia de punta a punta y el traspaso a una persona con contexto;
+  Firestore cabe en el nivel gratuito a este volumen.
+- **Estado:** firme (instrucción de la presidencia humana).
+
 ## D-32 · El agente vive en Gemini Enterprise Agent Platform (29 sep 2026)
 
 - **Decisión:** con la facturación reabierta (presupuesto de COP 20.000 con alertas), el agente de disputas pasa a
