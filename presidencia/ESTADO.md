@@ -19,7 +19,7 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 
 ## BigQuery
 
-Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 objetos; ya no rige el tope de 10 GB del sandbox porque hay facturación, y el almacenamiento activo de este volumen cuesta centavos al mes. Las tablas vencen el **28 de noviembre de 2026**: para quitar el vencimiento hay que actualizar cada tabla con `bq update --expiration 0`, y los datasets traen 60 días por defecto para tablas nuevas):
+Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 objetos; ya no rige el tope de 10 GB del sandbox porque hay facturación, y el almacenamiento activo de este volumen cuesta centavos al mes. Las tablas ya no vencen: el vencimiento del sandbox se quitó el 30 sep en `latam_bank` y `latam_seguridad`, también como valor por defecto del dataset):
 
 | Capa | Tablas | Contenido |
 |---|---|---|

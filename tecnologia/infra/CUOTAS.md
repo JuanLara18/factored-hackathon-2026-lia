@@ -10,7 +10,6 @@ filas están listas para llenar; el estado `[A]` significa pendiente de confirma
 | Text-to-Speech | solicitudes por minuto | pendiente | consola de cuotas | solicitud de aumento en la consola de cuotas | [A] |
 | Model Armor | solicitudes por minuto | pendiente | consola de cuotas | solicitud de aumento en la consola de cuotas | [A] |
 | Cloud Run | instancias máximas por servicio; concurrencia por instancia | pendiente | documentación de límites de Cloud Run | solicitud de aumento en la consola de cuotas | [A] |
-| Cloud SQL | `max_connections` por defecto de la instancia | pendiente | `SHOW max_connections;` | bandera de base de datos | [A] |
 | Twilio | llamadas por segundo de la cuenta en pago por uso | pendiente | página de precios de Twilio | soporte de Twilio | [A] |
 
 Nota: la cuenta de prueba puede tener cuotas más bajas que las de una cuenta completa; anotar aquí la

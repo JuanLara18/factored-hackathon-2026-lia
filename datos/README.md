@@ -71,7 +71,7 @@ Hallazgo: solo `branches`, `daily_exchange_rates` y `marketing_campaigns` son id
 del organizador (verificado con `aws s3 ls` el 29 sep: 453 objetos; la descarga local está completa); el resto difiere en contenido con conteos de filas distintos en `call_center_interactions`, `campaign_sends`,
 `digital_events` y `transactions`.
 
-**Vencimiento.** Las tablas siguen con el vencimiento del sandbox, 2026-11-28 (la facturación ya está abierta, pero el vencimiento no se quitó; `bq update --expiration 0 <tabla>` lo retira). Fuente reproducible: el espejo local
+**Vencimiento.** Las tablas de `latam_bank` y `latam_seguridad` no vencen (se quitó el vencimiento heredado del sandbox el 30 sep; `latam_pruebas` conserva 7 días). Fuente reproducible: el espejo local
 (`aws s3 sync`) más el manifiesto, que dice qué archivos y qué huellas produjeron cada tabla; con eso se recarga y se verifica.
 `just inventario` deja `platino_inventario_insumos` (clase de procedencia, origen, `AS_OF`); la política de
 actualización está en `POLITICA_ACTUALIZACION.md`.

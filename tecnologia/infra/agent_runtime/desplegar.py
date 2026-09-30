@@ -8,8 +8,9 @@ Uso:
       # LATAM_AGENT_RUNTIME_RECURSO
 
 Empaqueta solo lo que el agente necesita (comun, gobierno con su política y tecnologia, sin pruebas ni
-web) en una carpeta `latam_paquete` que viaja como `extra_packages`. El agente queda con Agent Identity y
-el registro en Agent Registry es automático para los agentes desplegados con el SDK. Imprime el recurso.
+web) en una carpeta `latam_paquete` que viaja como `extra_packages`. El agente corre con la cuenta de servicio
+`latam-chat@` (Agent Identity exige que el proyecto esté en una organización) y el registro en Agent Registry
+es automático para los agentes desplegados con el SDK. Imprime el recurso.
 """
 
 from __future__ import annotations
