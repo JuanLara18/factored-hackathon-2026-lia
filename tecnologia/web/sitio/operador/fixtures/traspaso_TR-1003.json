@@ -1,0 +1,36 @@
+{
+  "id_traspaso": "TR-1003", "hilo_id": "H-c204", "caso_id": null, "prioridad": "P3",
+  "motivo": {"codigo": "CLIENTE_PIDE_PERSONA", "texto": "El cliente pidió hablar con una persona", "regla": {"id": "traspaso.pide_persona", "version": "policy/v1"}},
+  "cola_destino": {"idioma": "es", "especialidad": "servicio", "franja": "turno de tarde"},
+  "idioma": "es", "registro": "vos", "pais_cuenta": "AR",
+  "canal_actual": "chat", "canales_usados": ["chat"],
+  "creado_hace_s": 610, "estado": "en_cola", "tomado_por": null,
+  "identidad": null,
+  "que_hacer_primero": [
+    {"paso": "Preguntar en qué puede ayudar; el asistente no alcanzó a identificar el cargo.", "regla": "servicio.apertura@policy/v1"}
+  ],
+  "compromisos_comunicados": [
+    {"texto": "Ya pedí una persona.", "hora": "15:02"}
+  ],
+  "solicitud": {"cita": "Quiero hablar con una persona, esto no me sirve", "idioma": "es"},
+  "interpretacion": {"motivo": "pide persona", "urgencia": "baja", "entidades": [], "confianza": 0.66},
+  "hechos_verificados": [],
+  "acciones_realizadas": [],
+  "acciones_no_realizadas": [
+    {"accion": "Identificar el cargo", "motivo": "pidió persona antes de indicarlo"}
+  ],
+  "conflictos": [],
+  "preguntas_abiertas": [
+    {"pregunta": "¿Sobre qué movimiento es la consulta?", "a_quien": "cliente", "bloquea": true}
+  ],
+  "plazos_en_curso": [
+    {"regla": "Atención de P3 en vivo", "inicio": "15:02", "vence_en_s": 590}
+  ],
+  "evidencia": {"traza_url": "https://console.cloud.google.com/traces/list?traza=demo-1003", "reglas": ["traspaso.pide_persona@policy/v1"], "plantillas": ["tpl.aviso_traspaso_p3"]},
+  "transcripcion": [
+    {"autor": "cliente", "texto": "Hola, tengo un problema", "en": "15:01"},
+    {"autor": "asistente", "texto": "Con gusto lo ayudo. ¿Qué movimiento le preocupa?", "en": "15:01"},
+    {"autor": "cliente", "texto": "Quiero hablar con una persona, esto no me sirve", "en": "15:02"}
+  ],
+  "mensajes": []
+}

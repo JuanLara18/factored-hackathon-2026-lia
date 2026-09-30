@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consola del experto, LATAM Bank</title>
+<meta name="description" content="Cola de traspasos y paquete de contexto para la persona que atiende el caso.">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/operador.css">
+<script src="../config.js"></script>
+<script src="../assets/operador.js" defer></script>
+</head>
+<body class="consola">
+<a class="salto" href="#detalle">Ir al caso</a>
+<header class="op-barra">
+  <span class="op-marca">LATAM Bank <span class="op-marca-sub">Consola del experto</span></span>
+  <span id="op-modo" class="op-etiqueta oculto">Modo demostración local</span>
+  <span class="op-espacio"></span>
+  <span id="op-estado-cola" class="op-suave" role="status"></span>
+  <button type="button" id="op-salir" class="op-boton op-secundario oculto">Salir</button>
+</header>
+<p id="op-anuncio" class="visualmente-oculto" role="status" aria-live="polite"></p>
+
+<main id="op-ingreso" class="op-ingreso">
+  <h1>Ingreso del experto</h1>
+  <p class="op-suave">Ingrese el código de demostración. La consola no muestra nombres, documentos ni números completos de tarjeta.</p>
+  <form id="op-form-ingreso" novalidate>
+    <label for="op-codigo">Código de demostración</label>
+    <input id="op-codigo" name="codigo" type="password" autocomplete="off" required>
+    <p id="op-error-ingreso" class="op-error" role="alert"></p>
+    <button type="submit" class="op-boton">Entrar</button>
+  </form>
+</main>
+
+<div id="op-app" class="op-app oculto">
+  <section class="op-cola" aria-labelledby="op-t-cola">
+    <div class="op-cola-cab">
+      <h1 id="op-t-cola">Cola de traspasos</h1>
+      <button type="button" id="op-refrescar" class="op-boton op-secundario">Actualizar</button>
+    </div>
+    <p id="op-error-cola" class="op-error" role="alert"></p>
+    <ul id="op-lista" class="op-lista" aria-label="Traspasos por prioridad y antigüedad"></ul>
+  </section>
+
+  <section id="detalle" class="op-detalle" tabindex="-1">
+    <p id="op-vacio" class="op-vacio">Seleccione un traspaso de la cola.</p>
+    <article id="op-caso" class="oculto" aria-labelledby="op-caso-titulo"></article>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "id_traspaso": "TR-1001", "hilo_id": "H-7f3a", "caso_id": "CS-20931", "prioridad": "P1",
+  "motivo": {"codigo": "FRAUDE_EN_CURSO", "texto": "Fraude en curso: siguen llegando cargos después del bloqueo pedido", "regla": {"id": "traspaso.fraude_en_curso", "version": "policy/v1"}},
+  "cola_destino": {"idioma": "es", "especialidad": "fraude", "franja": "turno de tarde"},
+  "idioma": "es", "registro": "usted", "pais_cuenta": "CO",
+  "canal_actual": "chat", "canales_usados": ["chat"],
+  "creado_hace_s": 95, "estado": "en_cola", "tomado_por": null,
+  "identidad": {"nivel": "acr2", "metodo": "OTP por SMS", "hora": "10:41"},
+  "que_hacer_primero": [
+    {"paso": "Confirmar que la tarjeta sigue bloqueada y revisar los cargos posteriores.", "regla": "fraude.contencion@policy/v1"},
+    {"paso": "Reportar los dos cargos nuevos a la red para intentar retenerlos.", "regla": "fraude.red@policy/v1"}
+  ],
+  "compromisos_comunicados": [
+    {"texto": "Ya pedí una persona del equipo de fraude; le escribirá en este mismo chat.", "hora": "10:43"},
+    {"texto": "Su tarjeta terminada en 4821 quedó bloqueada.", "hora": "10:42"}
+  ],
+  "solicitud": {"cita": "Me siguen llegando cargos de una tienda en línea que no conozco y ya bloqueé la tarjeta", "idioma": "es"},
+  "interpretacion": {"motivo": "fraude con tarjeta en curso", "urgencia": "alta", "entidades": ["tarjeta terminada en 4821", "comercio en línea"], "confianza": 0.91},
+  "hechos_verificados": [
+    {"texto": "Tarjeta terminada en 4821 en estado bloqueada", "fuente": "productos", "hora": "10:42"},
+    {"texto": "Dos cargos de USD 89,90 y USD 212,00 del comercio en línea ECOM-STORE, posteriores al bloqueo", "fuente": "transacciones", "hora": "10:44"},
+    {"texto": "Sin reclamo abierto por estos cargos", "fuente": "casos", "hora": "10:44"}
+  ],
+  "acciones_realizadas": [
+    {"accion": "Bloqueo de la tarjeta terminada en 4821", "resultado": "estado releído: bloqueada", "hora": "10:42"}
+  ],
+  "acciones_no_realizadas": [
+    {"accion": "Radicar reclamo por los dos cargos nuevos", "motivo": "el cliente pidió persona antes de confirmar"}
+  ],
+  "conflictos": [],
+  "preguntas_abiertas": [
+    {"pregunta": "¿Los cargos son anteriores o posteriores a la hora del bloqueo en la red?", "a_quien": "red", "bloquea": true},
+    {"pregunta": "¿El cliente compartió algún código con un tercero?", "a_quien": "cliente", "bloquea": false}
+  ],
+  "plazos_en_curso": [
+    {"regla": "Atención de P1 en vivo", "inicio": "10:43", "vence_en_s": 25}
+  ],
+  "evidencia": {"traza_url": "https://console.cloud.google.com/traces/list?traza=demo-1001", "reglas": ["traspaso.fraude_en_curso@policy/v1", "fraude.contencion@policy/v1"], "plantillas": ["tpl.aviso_traspaso_p1", "tpl.bloqueo_confirmado"]},
+  "transcripcion": [
+    {"autor": "cliente", "texto": "Me siguen llegando cargos de una tienda en línea que no conozco", "en": "10:40"},
+    {"autor": "asistente", "texto": "Lamento eso. Puedo bloquear su tarjeta terminada en 4821 ahora. ¿Confirma?", "en": "10:41"},
+    {"autor": "cliente", "texto": "Sí, bloquéela", "en": "10:41"},
+    {"autor": "asistente", "texto": "Su tarjeta terminada en 4821 quedó bloqueada.", "en": "10:42"},
+    {"autor": "cliente", "texto": "Y llegaron dos cargos más, pásame con alguien", "en": "10:43"}
+  ],
+  "mensajes": []
+}
