@@ -13,9 +13,9 @@ import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse, Response
 from latam_comun.dominio import Canal, Confirmacion
 
@@ -113,6 +113,11 @@ async def _json(request: Request) -> dict[str, Any]:
     return cuerpo if isinstance(cuerpo, dict) else {}  # pyright: ignore[reportUnknownVariableType]
 
 
+# El cuerpo se lee antes del handler; los handlers son síncronos y FastAPI los corre en hilos, así las
+# consultas a BigQuery y Firestore no bloquean el bucle de eventos (con una instancia, bloqueaban a todos).
+CuerpoJson = Annotated[dict[str, Any], Depends(_json)]
+
+
 def contexto_reclamo(tx: Transaccion) -> str:
     """Lo que el servidor le fija al agente sobre el reclamo; el modelo no elige ni cambia al cliente."""
     return (
@@ -202,8 +207,8 @@ def crear_router(
         return salida
 
     @router.post("/api/banca/ingresar")
-    async def ingresar(request: Request) -> Response:
-        cuerpo = await _json(request)
+    def ingresar(request: Request, cuerpo_json: CuerpoJson) -> Response:
+        cuerpo = cuerpo_json
         indice = cuerpo.get("indice")
         if not isinstance(indice, int) or isinstance(indice, bool) or not 0 <= indice < len(demo.clientes):
             return _error("cliente_desconocido", 400)
@@ -316,11 +321,11 @@ def crear_router(
         return JSONResponse(_movimiento(s, tx, _casos_abiertos(s.autenticada.cliente_id)))
 
     @router.post("/api/banca/movimientos/{tx_ref}/reclamar")
-    async def reclamar(tx_ref: str, request: Request) -> Response:
+    def reclamar(tx_ref: str, request: Request, cuerpo_json: CuerpoJson) -> Response:
         s = _requiere_sesion(request)
         if isinstance(s, JSONResponse):
             return s
-        cuerpo = await _json(request)
+        cuerpo = cuerpo_json
         cliente = s.autenticada.cliente_id
         tx = _movimientos(s).get(tx_ref)
         if tx is None:
@@ -404,11 +409,11 @@ def crear_router(
         return JSONResponse(salida)
 
     @router.post("/api/banca/tarjetas/{producto_ref}/bloqueo")
-    async def bloqueo(producto_ref: str, request: Request) -> Response:
+    def bloqueo(producto_ref: str, request: Request, cuerpo_json: CuerpoJson) -> Response:
         s = _requiere_sesion(request)
         if isinstance(s, JSONResponse):
             return s
-        cuerpo = await _json(request)
+        cuerpo = cuerpo_json
         if cuerpo.get("confirmo") is not True:
             return _error("confirmacion_requerida", 400)
         cliente = s.autenticada.cliente_id
@@ -446,13 +451,13 @@ def crear_router(
         )
 
     @router.post("/api/banca/conversaciones/{conversacion}/mensajes")
-    async def escribir(conversacion: str, request: Request) -> Response:
+    def escribir(conversacion: str, request: Request, cuerpo_json: CuerpoJson) -> Response:
         s = _requiere_sesion(request)
         if isinstance(s, JSONResponse):
             return s
         if _propia(s, conversacion) is None:
             return _error("conversacion_desconocida", 404)
-        texto = str((await _json(request)).get("texto", "")).strip()
+        texto = str(cuerpo_json.get("texto", "")).strip()
         if not texto or len(texto) > MAX_TEXTO:
             return _error("texto_invalido", 400)
         t = banco.traspaso_de_conversacion(conversacion)
@@ -473,7 +478,7 @@ def crear_router(
         return entrada[0]
 
     @router.post("/api/operador/ingresar")
-    async def operador_ingresar(request: Request) -> Response:
+    def operador_ingresar(request: Request, cuerpo_json: CuerpoJson) -> Response:
         esperado = env.get(VARIABLE_CODIGO, "")
         if not esperado:
             return _error("operador_no_configurado", 503)
@@ -482,7 +487,7 @@ def crear_router(
             numeracion.fallos, numeracion.desde = 0, ahora
         if numeracion.fallos >= MAX_FALLOS_CODIGO:
             return _error("demasiados_intentos", 429)
-        codigo = str((await _json(request)).get("codigo", ""))
+        codigo = str(cuerpo_json.get("codigo", ""))
         if not hmac.compare_digest(codigo.encode(), esperado.encode()):
             numeracion.fallos += 1
             return _error("codigo", 401)
@@ -560,27 +565,27 @@ def crear_router(
         return t
 
     @router.post("/api/operador/traspasos/{identificador}/mensaje")
-    async def operador_mensaje(identificador: str, request: Request) -> Response:
+    def operador_mensaje(identificador: str, request: Request, cuerpo_json: CuerpoJson) -> Response:
         o = _operador(request)
         if isinstance(o, JSONResponse):
             return o
         t = _mio(identificador, o)
         if isinstance(t, JSONResponse):
             return t
-        texto = str((await _json(request)).get("texto", "")).strip()
+        texto = str(cuerpo_json.get("texto", "")).strip()
         if not texto or len(texto) > MAX_TEXTO:
             return _error("texto_invalido", 400)
         return JSONResponse({"id": banco.agregar_mensaje(t.conversacion_id, "persona", texto)})
 
     @router.post("/api/operador/traspasos/{identificador}/resolver")
-    async def resolver(identificador: str, request: Request) -> Response:
+    def resolver(identificador: str, request: Request, cuerpo_json: CuerpoJson) -> Response:
         o = _operador(request)
         if isinstance(o, JSONResponse):
             return o
         t = _mio(identificador, o)
         if isinstance(t, JSONResponse):
             return t
-        cuerpo = await _json(request)
+        cuerpo = cuerpo_json
         resultado = str(cuerpo.get("resultado", ""))
         if resultado not in RESULTADOS:
             return _error("resultado_invalido", 400)

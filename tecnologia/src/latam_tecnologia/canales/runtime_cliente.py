@@ -218,7 +218,9 @@ async def flujo_agui(
                     llamada("FichaTransaccion", json.dumps({k: str(v) for k, v in dict(ev["datos"]).items()}))
                 elif tipo == "aprobacion":
                     for a in ev["aprobaciones"]:
-                        texto, expira = enriquecer(f"int-{a['id']}", a["herramienta"], dict(a["args"]))
+                        texto, expira = await asyncio.to_thread(
+                            enriquecer, f"int-{a['id']}", a["herramienta"], dict(a["args"])
+                        )
                         interrupciones.append(
                             Interrupt(
                                 id=f"int-{a['id']}",

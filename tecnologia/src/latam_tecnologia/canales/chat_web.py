@@ -15,10 +15,10 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any, cast
 
 from ag_ui.core import RunFinishedInterruptOutcome
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -170,6 +170,14 @@ def origenes_cors(entorno: dict[str, str] | None) -> list[str]:
     return [o.strip() for o in valor.split(",") if o.strip()] or list(ORIGENES_SITIO)
 
 
+async def _cuerpo_crudo(request: Request) -> bytes:
+    """Lee el cuerpo antes del handler: los handlers síncronos corren en hilos y no bloquean el bucle."""
+    return await request.body()
+
+
+CuerpoCrudo = Annotated[bytes, Depends(_cuerpo_crudo)]
+
+
 def crear_app(
     *,
     demo: Demo | None = None,
@@ -268,8 +276,8 @@ def crear_app(
         return s
 
     @app.post("/api/sesion")
-    async def abrir_sesion(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
-        cuerpo = _cuerpo(await request.body())
+    def abrir_sesion(request: Request, crudo: CuerpoCrudo) -> Response:  # pyright: ignore[reportUnusedFunction]
+        cuerpo = _cuerpo(crudo)
         indice = cuerpo.get("cliente", 0)
         if not isinstance(indice, int) or isinstance(indice, bool) or not 0 <= indice < len(demo.clientes):
             return JSONResponse({"error": "cliente_desconocido"}, status_code=400)
@@ -288,12 +296,12 @@ def crear_app(
         return str(pedida) if pedida in s.contextos else None
 
     @app.post("/api/traspaso")
-    async def traspaso(request: Request) -> Response:  # pyright: ignore[reportUnusedFunction]
+    def traspaso(request: Request, crudo: CuerpoCrudo) -> Response:  # pyright: ignore[reportUnusedFunction]
         s = sesion_de(request)
         if s is None:
             return JSONResponse({"error": "sesion"}, status_code=401)
         reg = registro_de(request, s)
-        cuerpo = _cuerpo(await request.body())
+        cuerpo = _cuerpo(crudo)
         conversacion = conversacion_de(s, cuerpo.get("conversacion"))
         if conversacion is None:
             return JSONResponse({"error": "conversacion"}, status_code=403)

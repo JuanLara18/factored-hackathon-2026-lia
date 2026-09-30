@@ -402,3 +402,31 @@ def test_tarjeta_en_espanol_y_montos_de_mexico() -> None:
     assert not es_tarjeta("Cuenta Ahorro") and not es_tarjeta(None)
     assert monto("1250", "USD", "MX") == "1,250.00"
     assert monto("1250", "COP", "CO") == "1.250,00"
+
+
+def test_handlers_con_io_bloqueante_no_corren_en_el_bucle() -> None:
+    """Con una instancia, un handler async que consulta BigQuery o Firestore congela a todos los demás."""
+    import inspect
+
+    from fastapi.routing import APIRoute
+
+    app = _cliente_web(RuntimeEnProceso()).app
+    sincronos = {
+        "/api/sesion",
+        "/api/traspaso",
+        "/api/banca/ingresar",
+        "/api/banca/resumen",
+        "/api/banca/movimientos/{tx_ref}/reclamar",
+        "/api/banca/reclamos",
+        "/api/banca/tarjetas/{producto_ref}/bloqueo",
+        "/api/banca/conversaciones/{conversacion}/mensajes",
+        "/api/operador/ingresar",
+        "/api/operador/traspasos/{identificador}/mensaje",
+        "/api/operador/traspasos/{identificador}/resolver",
+    }
+    todas: list[Any] = []
+    for r in app.routes:  # FastAPI reciente guarda los routers incluidos como `_IncludedRouter`
+        todas += list(getattr(getattr(r, "original_router", None), "routes", [])) or [r]
+    rutas = [r for r in todas if isinstance(r, APIRoute) and r.path in sincronos]
+    assert {r.path for r in rutas} == sincronos
+    assert [r.path for r in rutas if inspect.iscoroutinefunction(r.endpoint)] == []
