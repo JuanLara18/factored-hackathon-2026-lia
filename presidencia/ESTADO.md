@@ -75,7 +75,14 @@ Reportes: `tecnologia/web/QA_2026-09-30.md` (QA en navegador real, suite en `tes
 `ia/evaluacion/reportes/geap_2026-09-30.md`. Lo principal: enlaces de `/banca` que salían del banco, bloqueo de tarjetas,
 saldos (tabla nueva `oro_operacional_saldos_productos`, solo para la banca), montos de México, tiempos máximos hacia el
 agente, turnos vacíos como falla, ids de mensaje ordenables, tablas de BigQuery sin vencimiento, Terraform alineado y
-enlaces de la documentación.
+enlaces de la documentación. Después del despliegue apareció uno más: los handlers async con consultas a BigQuery y
+Firestore bloqueaban el bucle de eventos de la única instancia (la banca tardaba más de 20 s bajo carga); ahora son
+síncronos y corren en hilos, con prueba de regresión.
+
+**Verificación en producción (30 sep):** la suite de Playwright (`tests/e2e/`) contra https://latam-bank-hackaton-2026.web.app
+pasa entera (70 pruebas, 1 omitida), incluido el recorrido reclamo, persona, experto y resolución; los únicos avisos del
+log son los 401 que las pruebas provocan a propósito. El primer acceso tras un rato sin uso tarda unos segundos por el
+arranque en frío; para el día de la demo conviene `--min-instances 1` en Cloud Run (costo de unos centavos por hora).
 
 ## Banco de punta a punta (D-33), en producción
 
