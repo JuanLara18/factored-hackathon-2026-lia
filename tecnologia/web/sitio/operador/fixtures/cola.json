@@ -1,0 +1,5 @@
+[
+  {"id_traspaso": "TR-1001", "prioridad": "P1", "motivo": "FRAUDE_EN_CURSO", "motivo_texto": "Fraude en curso: siguen llegando cargos", "pais": "CO", "idioma": "es", "registro": "usted", "canal": "chat", "creado_hace_s": 95, "estado": "en_cola", "tomado_por": null},
+  {"id_traspaso": "TR-1002", "prioridad": "P2", "motivo": "MONTO_SOBRE_UMBRAL", "motivo_texto": "Monto sobre el umbral, con conflicto con el historial", "pais": "MX", "idioma": "es", "registro": "usted", "canal": "chat", "creado_hace_s": 240, "estado": "en_cola", "tomado_por": null},
+  {"id_traspaso": "TR-1003", "prioridad": "P3", "motivo": "CLIENTE_PIDE_PERSONA", "motivo_texto": "El cliente pidió hablar con una persona", "pais": "AR", "idioma": "es", "registro": "vos", "canal": "chat", "creado_hace_s": 610, "estado": "en_cola", "tomado_por": null}
+]

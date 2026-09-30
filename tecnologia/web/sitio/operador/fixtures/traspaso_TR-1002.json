@@ -1,0 +1,44 @@
+{
+  "id_traspaso": "TR-1002", "hilo_id": "H-91bc", "caso_id": null, "prioridad": "P2",
+  "motivo": {"codigo": "MONTO_SOBRE_UMBRAL", "texto": "El monto disputado supera el umbral y lo declarado difiere del registro", "regla": {"id": "traspaso.monto_umbral", "version": "policy/v1"}},
+  "cola_destino": {"idioma": "es", "especialidad": "disputas", "franja": "turno de tarde"},
+  "idioma": "es", "registro": "usted", "pais_cuenta": "MX",
+  "canal_actual": "chat", "canales_usados": ["chat"],
+  "creado_hace_s": 240, "estado": "en_cola", "tomado_por": null,
+  "identidad": {"nivel": "acr2", "metodo": "OTP por SMS", "hora": "09:12"},
+  "que_hacer_primero": [
+    {"paso": "Revisar las tres compras previas en el comercio antes de radicar.", "regla": "disputa.historial@policy/v1"}
+  ],
+  "compromisos_comunicados": [
+    {"texto": "Por el valor, lo revisa una persona del equipo.", "hora": "09:16"},
+    {"texto": "Recibirá una respuesta dentro de 48 horas hábiles.", "hora": "09:16"}
+  ],
+  "solicitud": {"cita": "Nunca compré en esa tienda y me cobraron 500 dólares", "idioma": "es"},
+  "interpretacion": {"motivo": "compra no reconocida", "urgencia": "media", "entidades": ["comercio TECHMART", "monto alto"], "confianza": 0.74},
+  "hechos_verificados": [
+    {"texto": "Cargo por 350,00 USD del comercio TECHMART", "fuente": "transacciones", "hora": "09:14"},
+    {"texto": "3 compras anteriores no disputadas en este comercio en 90 días", "fuente": "transacciones", "hora": "09:14"},
+    {"texto": "Tarjeta terminada en 7710 en estado activa", "fuente": "productos", "hora": "09:14"}
+  ],
+  "acciones_realizadas": [],
+  "acciones_no_realizadas": [
+    {"accion": "Radicar reclamo", "motivo": "monto sobre el umbral y conflicto con el historial"}
+  ],
+  "conflictos": [
+    {"tipo": "Compras previas en el mismo comercio", "declarado": "nunca compré ahí", "registro": "3 compras anteriores no disputadas en este comercio en 90 días (transacciones, 09:14)"},
+    {"tipo": "Monto", "declarado": "me cobraron 500", "registro": "cargo por 350,00 USD (transacciones, 09:14)"}
+  ],
+  "preguntas_abiertas": [
+    {"pregunta": "¿Alguien más usa la tarjeta?", "a_quien": "cliente", "bloquea": false},
+    {"pregunta": "¿Existe un reembolso parcial pendiente del comercio?", "a_quien": "back office", "bloquea": true}
+  ],
+  "plazos_en_curso": [
+    {"regla": "Respuesta en México", "inicio": "09:16", "vence_en_s": 172200}
+  ],
+  "evidencia": {"traza_url": "https://console.cloud.google.com/traces/list?traza=demo-1002", "reglas": ["traspaso.monto_umbral@policy/v1"], "plantillas": ["tpl.aviso_traspaso_p2", "tpl.conflicto_historial"]},
+  "transcripcion": [
+    {"autor": "cliente", "texto": "Nunca compré en esa tienda y me cobraron 500 dólares", "en": "09:13"},
+    {"autor": "asistente", "texto": "Veo un cargo de 350,00 USD. Por el valor, lo revisa una persona del equipo.", "en": "09:16"}
+  ],
+  "mensajes": []
+}
