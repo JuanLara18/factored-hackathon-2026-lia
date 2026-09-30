@@ -42,6 +42,9 @@ class AlmacenMemoria:
         conversacion_id, _, _ = self._efectos[llave]
         self._efectos[llave] = (conversacion_id, "hecho", accion)
 
+    def liberar_efecto(self, llave: str) -> None:
+        self._efectos.pop(llave, None)
+
     def estado_efecto(self, llave: str) -> tuple[str, AccionVerificada | None] | None:
         registro = self._efectos.get(llave)
         return None if registro is None else (registro[1], registro[2])
@@ -120,6 +123,11 @@ class AlmacenPostgres:
         self._con.execute(
             "update efectos set estado = 'hecho', resultado = %s where llave_idempotencia = %s",
             (Jsonb(accion.model_dump(mode="json")), llave),
+        )
+
+    def liberar_efecto(self, llave: str) -> None:
+        self._con.execute(
+            "delete from efectos where llave_idempotencia = %s and estado = 'en_curso'", (llave,)
         )
 
     def estado_efecto(self, llave: str) -> tuple[str, AccionVerificada | None] | None:

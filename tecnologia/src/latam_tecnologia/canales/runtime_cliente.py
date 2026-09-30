@@ -7,8 +7,10 @@ conserva lo suyo: vencimiento de la aprobación, texto de la plantilla y filtro 
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+import logging
 import re
 import secrets
 from collections.abc import AsyncIterator, Callable
@@ -36,10 +38,19 @@ from latam_tecnologia.canales.frases import SegmentadorFrases, filtrar_frase
 from latam_tecnologia.runtime.agente import crear_cliente_sdk
 
 VARIABLE_RECURSO = "LATAM_AGENT_RUNTIME_RECURSO"
+TIEMPO_TURNO_S = 90.0  # tope de un turno completo; pasado, el cliente recibe el aviso y puede reintentar
+MENSAJE_FALLA = (
+    "No pude continuar en este momento. Intenta de nuevo en unos minutos o pide una persona del equipo."
+)
+log = logging.getLogger(__name__)
 PLANTILLA_RESPALDO = "Voy a revisar esto con un asesor para darte una respuesta correcta."
 _RECURSO = re.compile(r"^projects/([^/]+)/locations/([^/]+)/reasoningEngines/([^/]+)$")
 
 Enriquecedor = Callable[[str, str, dict[str, Any]], tuple[str, str]]
+
+
+class AgenteNoDisponible(Exception):
+    """No se pudo abrir la sesión del agente (red, permisos o cuota)."""
 
 
 class ClienteRuntime(Protocol):
@@ -90,13 +101,17 @@ class ClienteAgentRuntime:
         return self._cliente
 
     def crear_sesion(self, *, user_id: str, session_id: str, estado: dict[str, str]) -> None:
-        c = self._c()
-        sesiones = getattr(c, "sessions", None) or c.agent_engines.sessions
-        sesiones.create(
-            name=self.recurso,
-            user_id=user_id,
-            config={"session_id": session_id, "session_state": estado, "ttl": "86400s"},
-        )
+        try:
+            c = self._c()
+            sesiones = getattr(c, "sessions", None) or c.agent_engines.sessions
+            sesiones.create(
+                name=self.recurso,
+                user_id=user_id,
+                config={"session_id": session_id, "session_state": estado, "ttl": "86400s"},
+            )
+        except Exception as error:
+            log.warning("no se pudo crear la sesión del agente (%s)", type(error).__name__)
+            raise AgenteNoDisponible from error
 
     async def turno(
         self,
@@ -125,6 +140,11 @@ def _evento(e: BaseEvent) -> str:
     return EventEncoder().encode(e)
 
 
+def _cerrar_texto(abierto: bool, mensaje_id: str) -> list[str]:
+    """Si ya se abrió un mensaje de texto, lo cierra para que el cliente no quede con uno a medias."""
+    return [_evento(TextMessageEndEvent(message_id=mensaje_id))] if abierto else []
+
+
 async def flujo_agui(
     cliente: ClienteRuntime,
     *,
@@ -135,9 +155,15 @@ async def flujo_agui(
     registro: str,
     enriquecer: Enriquecedor,
     traza: list[str],
+    al_fallar: Callable[[], None] | None = None,
 ) -> AsyncIterator[str]:
     """Traduce los eventos del agente a AG-UI: texto por frase filtrada y aprobación como interrupción."""
     run_id = f"run-{secrets.token_hex(6)}"
+
+    def fallo() -> None:
+        if al_fallar is not None:  # el turno no se completó: quien lo pidió puede reintentar
+            al_fallar()
+
     yield _evento(RunStartedEvent(thread_id=thread_id, run_id=run_id))
     mensaje_id = f"m-{secrets.token_hex(6)}"
     seg, bloqueado, abierto = SegmentadorFrases(), False, False
@@ -171,44 +197,58 @@ async def flujo_agui(
         )
 
     try:
-        async for ev in cliente.turno(
-            user_id=user_id,
-            session_id=thread_id,
-            mensaje=mensaje,
-            aprobaciones=aprobaciones,
-            registro=registro,
-        ):
-            tipo = ev.get("tipo")
-            if tipo == "texto":
-                for delta in frases(seg.alimentar(str(ev["delta"]))):
-                    if not abierto:
-                        abierto = True
-                        yield _evento(TextMessageStartEvent(message_id=mensaje_id))
-                    yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
-            elif tipo == "herramienta":
-                llamada(str(ev.get("nombre")), "{}")
-            elif tipo == "ficha":
-                llamada("FichaTransaccion", json.dumps({k: str(v) for k, v in dict(ev["datos"]).items()}))
-            elif tipo == "aprobacion":
-                for a in ev["aprobaciones"]:
-                    texto, expira = enriquecer(f"int-{a['id']}", a["herramienta"], dict(a["args"]))
-                    interrupciones.append(
-                        Interrupt(
-                            id=f"int-{a['id']}",
-                            reason="tool_call",
-                            message=texto,
-                            tool_call_id=a["id"],
-                            expires_at=expira,
-                            metadata={"herramienta": a["herramienta"], "vigencia_s": 300},
+        async with asyncio.timeout(TIEMPO_TURNO_S):
+            async for ev in cliente.turno(
+                user_id=user_id,
+                session_id=thread_id,
+                mensaje=mensaje,
+                aprobaciones=aprobaciones,
+                registro=registro,
+            ):
+                tipo = ev.get("tipo")
+                if tipo == "texto":
+                    for delta in frases(seg.alimentar(str(ev["delta"]))):
+                        if not abierto:
+                            abierto = True
+                            yield _evento(TextMessageStartEvent(message_id=mensaje_id))
+                        yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
+                elif tipo == "herramienta":
+                    llamada(str(ev.get("nombre")), "{}")
+                elif tipo == "ficha":
+                    llamada("FichaTransaccion", json.dumps({k: str(v) for k, v in dict(ev["datos"]).items()}))
+                elif tipo == "aprobacion":
+                    for a in ev["aprobaciones"]:
+                        texto, expira = enriquecer(f"int-{a['id']}", a["herramienta"], dict(a["args"]))
+                        interrupciones.append(
+                            Interrupt(
+                                id=f"int-{a['id']}",
+                                reason="tool_call",
+                                message=texto,
+                                tool_call_id=a["id"],
+                                expires_at=expira,
+                                metadata={"herramienta": a["herramienta"], "vigencia_s": 300},
+                            )
                         )
-                    )
-            elif tipo == "error":
-                traza.append(f"runtime_error {ev.get('codigo')}")
-                yield _evento(RunErrorEvent(message="No pude continuar.", code=str(ev.get("codigo"))))
-                return
+                elif tipo == "error":
+                    traza.append(f"runtime_error {ev.get('codigo')}")
+                    fallo()
+                    for cierre in _cerrar_texto(abierto, mensaje_id):
+                        yield cierre
+                    yield _evento(RunErrorEvent(message=MENSAJE_FALLA, code=str(ev.get("codigo"))))
+                    return
+    except TimeoutError:
+        traza.append("runtime_tiempo_agotado")
+        fallo()
+        for cierre in _cerrar_texto(abierto, mensaje_id):
+            yield cierre
+        yield _evento(RunErrorEvent(message=MENSAJE_FALLA, code="tiempo"))
+        return
     except Exception as error:  # red, permisos o cuota: el cliente no ve detalles
         traza.append(f"runtime_falla {type(error).__name__}")
-        yield _evento(RunErrorEvent(message="No pude continuar.", code="runtime"))
+        fallo()
+        for cierre in _cerrar_texto(abierto, mensaje_id):
+            yield cierre
+        yield _evento(RunErrorEvent(message=MENSAJE_FALLA, code="runtime"))
         return
     for delta in frases(seg.vaciar()):
         if not abierto:

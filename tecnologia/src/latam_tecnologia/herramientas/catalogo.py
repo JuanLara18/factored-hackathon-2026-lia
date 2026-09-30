@@ -26,6 +26,13 @@ NUM_BLOQUEAR_TARJETA = 50
 NUM_ESCALAR = 100
 
 
+NO_DISPUTABLES = ("declined", "failed", "reversed")  # ESC-02 de policy/v1
+
+
+class NoDisputable(Exception):
+    """El movimiento está en un estado que no admite disputa (rechazado, fallido o revertido)."""
+
+
 class AccesoDenegado(Exception):
     """Sesión vencida, nivel insuficiente o recurso que no es del cliente de la sesión."""
 
@@ -120,6 +127,8 @@ class Herramientas:
         transaccion = self._lectura.transaccion(sesion.cliente_id, transaccion_id)
         if transaccion is None:
             raise AccesoDenegado("la transacción no es del cliente de la sesión")
+        if (transaccion.estado or "").lower() in NO_DISPUTABLES:
+            raise NoDisputable(transaccion.estado)
         cliente = sesion.cliente_id
 
         def ejecutor(llave: str) -> AccionVerificada:

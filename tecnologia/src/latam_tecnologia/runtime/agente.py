@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import importlib
 import importlib.util
+import logging
 import os
 import sys
 from collections.abc import AsyncIterator, Callable, Iterator
@@ -23,6 +24,7 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 ESTADO_REQUERIDO = ("cliente_id", "nivel", "expira", "conversacion_id")
+log = logging.getLogger(__name__)
 AUTOR = "agente"
 DENEGADA = "El cliente no aprobó esta acción."
 
@@ -143,22 +145,18 @@ def _buscar_paquete() -> str | None:
     return None
 
 
-def _dinero(monto: Any) -> str:
-    entero, _, dec = f"{float(monto):,.2f}".partition(".")
-    return f"{entero.replace(',', '.')},{dec}"
-
-
 def construir_ficha(tx: dict[str, Any]) -> dict[str, str]:
     """Ficha de la transacción consultada, armada en el servidor: tarjeta enmascarada, sin PII."""
     import re
 
+    from latam_tecnologia.banca.vista import fecha_texto, monto
     from latam_tecnologia.canales.textos import describir_comercio, estado_transaccion
 
     return {
         "comercio": describir_comercio(tx["comercio"], tx.get("tipo")),
-        "monto": _dinero(tx["monto"]["monto"]),
+        "monto": monto(tx["monto"]["monto"], str(tx["monto"]["moneda"])),
         "moneda": str(tx["monto"]["moneda"]),
-        "fecha": str(tx["event_ts"])[:10],
+        "fecha": fecha_texto(tx["event_ts"]),
         "estado": estado_transaccion(tx["estado"]),
         "tarjeta_final": re.sub(r"\D", "", str(tx["product_id"])).rjust(4, "0")[-4:],
     }
@@ -372,18 +370,31 @@ class AgenteDisputasRuntime:
             self._banco.agregar_transcripcion(conversacion_id, "cliente", enmascarar(mensaje))
         respuesta: list[str] = []
         instrucciones = f"Registro: {registro}."
-        async with self._agente.run_stream(
-            mensaje,
-            deps=ctx,
-            message_history=historial,
-            deferred_tool_results=resultados,
-            instructions=instrucciones,
-        ) as corrida:
-            async for delta in corrida.stream_text(delta=True):
-                respuesta.append(delta)
-                yield {"tipo": "texto", "delta": delta}
-            salida = await corrida.get_output()
-            nuevos = corrida.new_messages()
+        salida: Any = None
+        nuevos: list[Any] = []
+        for intento in (1, 2):
+            try:
+                async with self._agente.run_stream(
+                    mensaje,
+                    deps=ctx,
+                    message_history=historial,
+                    deferred_tool_results=resultados,
+                    instructions=instrucciones,
+                ) as corrida:
+                    async for delta in corrida.stream_text(delta=True):
+                        respuesta.append(delta)
+                        yield {"tipo": "texto", "delta": delta}
+                    salida = await corrida.get_output()
+                    nuevos = corrida.new_messages()
+                break
+            except Exception as error:
+                # El modelo a veces llama una herramienta con un nombre que no existe (`default_api.*`) y el
+                # endpoint lo corta con ContentFilterError. Nada quedó guardado: si aún no se dijo nada, se
+                # reintenta una vez; si no, el canal recibe un error claro en lugar de una traza.
+                log.warning("turno fallido en el modelo (%s), intento %d", type(error).__name__, intento)
+                if respuesta or intento == 2:
+                    yield {"tipo": "error", "codigo": "modelo"}
+                    return
         if respuesta:
             self._banco.agregar_transcripcion(conversacion_id, "asistente", enmascarar("".join(respuesta)))
         self._sesiones.agregar(  # type: ignore[union-attr]
