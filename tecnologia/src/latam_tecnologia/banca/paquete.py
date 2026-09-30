@@ -214,11 +214,13 @@ def construir_paquete(
             )
         )
 
-    pais = (tx.pais if tx and tx.pais else None) or (PAIS_POR_MONEDA.get(tx.monto.moneda) if tx else None)
+    # País de la cuenta (el de la conversación, que viene de la vista segura); el del movimiento puede ser
+    # otro (compras en el exterior) y la moneda no lo dice (en México se opera en USD).
+    pais = conv.pais if conv is not None and conv.pais else None
+    if pais is None:
+        pais = (tx.pais if tx and tx.pais else None) or (PAIS_POR_MONEDA.get(tx.monto.moneda) if tx else None)
     if pais is None and productos and productos[0].moneda:
         pais = PAIS_POR_MONEDA.get(productos[0].moneda)
-    if pais is None and conv is not None:
-        pais = conv.pais
 
     try:
         texto_compromiso = textos.plantilla("traspaso.chat", registro, rango_espera="unos minutos")

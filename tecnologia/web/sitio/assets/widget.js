@@ -153,7 +153,7 @@
     if (textoUsuario) burbuja("usuario", textoUsuario);
     let texto;
     try {
-      const r = await B.llamar("/api/traspaso", { metodo: "POST" });
+      const r = await B.llamar("/api/traspaso", { metodo: "POST", cuerpo: { conversacion: est.conversacion } });
       texto = r.texto || "Ya avisamos a una persona. Le responderá en esta misma conversación.";
       est.traspaso = true;
     } catch (e) {

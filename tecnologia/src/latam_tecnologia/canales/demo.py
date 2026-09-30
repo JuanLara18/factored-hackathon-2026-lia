@@ -23,7 +23,7 @@ from latam_tecnologia.servicios.almacen import AlmacenMemoria
 
 log = logging.getLogger(__name__)
 VIGENCIA_SESION = timedelta(minutes=30)
-MAX_CLIENTES_DEMO = 3
+MAX_CLIENTES_DEMO = 6
 
 
 def _tx(tid: str, pid: str, dia: int, monto: str, comercio: str, cat: str) -> Transaccion:
@@ -70,10 +70,23 @@ def _clientes_bigquery(proyecto: str) -> tuple[LecturaOro, list[str]] | None:
         from latam_tecnologia.herramientas.bigquery import LecturaBigQuery
 
         cliente = bigquery.Client(project=proyecto, location="US")
-        sql = (
-            f"select customer_id from `{proyecto}.latam_bank.oro_operacional_transacciones_recientes`"
-            f" group by customer_id order by customer_id limit {MAX_CLIENTES_DEMO}"
-        )
+        # Clientes con historia para la demo: muchos movimientos, varios con comercio, repartidos por país.
+        base = f"`{proyecto}.latam_bank"
+        sql = f"""
+            with ricos as (
+              select t.customer_id, any_value(v.country) as pais, count(*) as n,
+                     countif(t.merchant_name is not null) as con_comercio
+              from {base}.oro_operacional_transacciones_recientes` t
+              join {base}.oro_operacional_vista_cliente_segura` v using (customer_id)
+              where v.country in ('MX', 'CO', 'AR')
+              group by t.customer_id
+              having n >= 15 and con_comercio >= 8
+            )
+            select customer_id from ricos
+            qualify row_number() over (partition by pais order by con_comercio desc, customer_id) <= 2
+            order by case pais when 'MX' then 1 when 'CO' then 2 else 3 end, con_comercio desc
+            limit {MAX_CLIENTES_DEMO}
+        """
         filas: list[Any] = list(cliente.query(sql, location="US").result())
         ids = [str(f["customer_id"]) for f in filas]
         if not ids:

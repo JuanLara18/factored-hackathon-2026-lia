@@ -50,6 +50,24 @@ TIPOS_PRODUCTO = {
     "checking": "Cuenta corriente",
     "loan": "Préstamo",
 }
+# El oro operacional ya trae el tipo en español ("Tarjeta Crédito"); se normaliza a la forma del sitio.
+TIPOS_PRODUCTO_ES = {
+    "tarjeta crédito": "Tarjeta de crédito",
+    "tarjeta débito": "Tarjeta débito",
+    "cuenta ahorro": "Cuenta de ahorros",
+    "cuenta corriente": "Cuenta corriente",
+    "préstamo personal": "Préstamo personal",
+    "préstamo hipotecario": "Crédito hipotecario",
+    "inversión": "Inversión",
+    "seguro": "Seguro",
+}
+
+
+def etiqueta_producto(tipo: str | None) -> str:
+    clave = (tipo or "").strip().lower()
+    return TIPOS_PRODUCTO.get(clave) or TIPOS_PRODUCTO_ES.get(clave) or (tipo or "Producto").strip()
+
+
 ESTADOS_PRODUCTO = {
     "active": "activa",
     "blocked": "bloqueada",
@@ -192,7 +210,7 @@ def crear_router(
             {
                 "producto_ref": pref,
                 "tipo": p.tipo,
-                "etiqueta": TIPOS_PRODUCTO.get((p.tipo or "").lower(), "Producto"),
+                "etiqueta": etiqueta_producto(p.tipo),
                 "final": final(p.product_id),
                 "estado": _estado_producto(cliente, p),
                 "moneda": p.moneda,
