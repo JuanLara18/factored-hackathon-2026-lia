@@ -111,15 +111,20 @@ class Demo:
             self.banco = BancoMemoria(self.reloj)
 
     def pais_de(self, cliente_id: str) -> str:
-        """País de la cuenta: el de la moneda de sus productos o el de su último movimiento."""
+        """País de la cuenta.
+
+        El de la vista segura si la lectura lo ofrece; si no, el de la moneda de sus productos
+        o el de su último movimiento.
+        """
         if cliente_id not in self.paises:
-            pais = None
-            for p in self.lectura.productos(cliente_id):
+            leer_pais = getattr(self.lectura, "pais_cuenta", None)
+            pais: str | None = leer_pais(cliente_id) if callable(leer_pais) else None
+            for p in () if pais else self.lectura.productos(cliente_id):
                 pais = PAIS_POR_MONEDA.get(p.moneda or "")
                 if pais:
                     break
             if pais is None:
-                for t in self.lectura.transacciones_recientes(cliente_id, 1):
+                for t in self.lectura.transacciones_recientes(cliente_id, 1):  # respaldo sin vista segura
                     pais = t.pais or PAIS_POR_MONEDA.get(t.monto.moneda)
             self.paises[cliente_id] = pais or "CO"
         return self.paises[cliente_id]

@@ -102,6 +102,15 @@ class LecturaBigQuery:
             for f in filas
         )
 
+    def pais_cuenta(self, cliente_id: str) -> str | None:
+        """País de la cuenta (vista segura, sin PII). No sale de la moneda: en México se opera en USD."""
+        filas = self._consultar(
+            f"select country from {self._prefijo}.oro_operacional_vista_cliente_segura"
+            " where customer_id = @cliente limit 1",
+            cliente=cliente_id,
+        )
+        return str(filas[0]["country"]) if filas and filas[0]["country"] else None
+
     def ficha_transaccion(self, cliente_id: str, transaction_id: str) -> dict[str, Any] | None:
         """Contrato pendiente de Datos: si la tabla no existe todavía, no hay ficha."""
         if self.transaccion(cliente_id, transaction_id) is None:
