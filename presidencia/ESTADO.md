@@ -69,6 +69,17 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 4. Meta (WhatsApp) y Twilio en modo de prueba, si se quieren canales reales; preguntas a los organizadores.
 5. Mover el proyecto a la organización si se quiere Agent Identity en lugar de la cuenta `latam-chat@`.
 
+## En curso: barrido de errores (30 sep)
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/qa-web-bugs` | `../fh-qa-web` | QA en navegador real (Playwright) de sitio, banca, widget y consola en producción; corrige el front |
+| `feature/qa-backend-bugs` | `../fh-qa-api` | errores reales de los logs, seguridad y correctitud de API, chat y runtime, con pruebas de regresión |
+| `feature/qa-agente-gemini-nativo` | `../fh-qa-ia` | dbt a `uvx`, proveedor nativo de Google (Gemini 3), nueva evaluación en GEAP |
+| `feature/qa-datos-infra-docs` | `../fh-qa-docs` | validación de datos, Terraform alineado con lo desplegado, documentación y enlaces |
+
+Al terminar: fusionar, redesplegar agente, chat y sitio, y repetir el recorrido de punta a punta.
+
 ## Banco de punta a punta (D-33), en producción
 
 - **Sitio público** https://latam-bank-hackaton-2026.web.app: marca, selector MX/CO/AR, productos, ayuda, seguridad,
