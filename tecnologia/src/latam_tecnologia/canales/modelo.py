@@ -14,6 +14,8 @@ from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
+from latam_tecnologia.banca.vista import fecha_texto
+from latam_tecnologia.banca.vista import monto as monto_pais
 from latam_tecnologia.canales.geap import VARIABLE_MODELO, VARIABLE_PROYECTO, crear_modelo_geap, usa_geap
 from latam_tecnologia.canales.textos import describir_comercio, estado_transaccion, plantilla
 
@@ -45,9 +47,8 @@ def _partes(messages: list[ModelMessage]) -> tuple[str, list[ToolReturnPart], li
     return ultimo, tras, todos
 
 
-def _dinero(monto: str) -> str:
-    entero, _, dec = f"{float(monto):,.2f}".partition(".")
-    return f"{entero.replace(',', '.')},{dec}"
+def _dinero(monto: str, moneda: str | None = None) -> str:
+    return monto_pais(monto, moneda)
 
 
 def _trozos(texto: str, n: int = 24) -> list[str]:
@@ -96,8 +97,8 @@ def crear_modelo_guionado() -> FunctionModel:
                 reg,
                 cargo="cargo",
                 comercio=describir_comercio(tx["comercio"], tx.get("tipo")),
-                fecha=str(tx["event_ts"])[:10],
-                monto=_dinero(monto),
+                fecha=fecha_texto(tx["event_ts"]),
+                monto=_dinero(monto, str(tx["monto"]["moneda"])),
                 moneda=str(tx["monto"]["moneda"]),
             )
             for t in _trozos(texto):
@@ -105,9 +106,9 @@ def crear_modelo_guionado() -> FunctionModel:
             digitos = re.sub(r"\D", "", str(tx["product_id"])).rjust(4, "0")[-4:]
             ficha = {
                 "comercio": describir_comercio(tx["comercio"], tx.get("tipo")),
-                "monto": _dinero(monto),
+                "monto": _dinero(monto, str(tx["monto"]["moneda"])),
                 "moneda": tx["monto"]["moneda"],
-                "fecha": str(tx["event_ts"])[:10],
+                "fecha": fecha_texto(tx["event_ts"]),
                 "estado": estado_transaccion(tx["estado"]),
                 "tarjeta_final": digitos,
             }

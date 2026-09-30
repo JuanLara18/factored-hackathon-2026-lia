@@ -95,7 +95,8 @@ def construir_paquete(
         hechos.append(
             HechoVerificado(
                 valor=(
-                    f"Cargo de {monto(tx.monto.monto)} {tx.monto.moneda} en {_descripcion(tx)} el "
+                    f"Cargo de {monto(tx.monto.monto, tx.monto.moneda)} {tx.monto.moneda} "
+                    f"en {_descripcion(tx)} el "
                     f"{fecha(tx.event_ts)} a las {hora(tx.event_ts)}, estado {tx.estado or NO_DISPONIBLE}"
                     f" (movimiento {ref('tx', cliente, tx.transaction_id)})"
                 ),
