@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -18,18 +18,33 @@ _CORREO = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)+")
 _NUMERO_LARGO = re.compile(r"(?<![\w])(?:\d[ -]?){6,}\d(?![\w])")
 
 
-def monto(valor: Decimal | float | str) -> str:
-    """`128482.28` como `128.482,28`."""
+def monto(valor: Decimal | float | str, moneda: str | None = None) -> str:
+    """`128482.28` como `128.482,28` (es-CO y es-AR); en pesos mexicanos, `128,482.28` (es-MX)."""
     entero, _, dec = f"{Decimal(str(valor)):,.2f}".partition(".")
+    if moneda == "MXN":
+        return f"{entero}.{dec}"
     return f"{entero.replace(',', '.')},{dec}"
 
 
+def en_utc(t: datetime) -> datetime:
+    """Una marca sin zona se toma como UTC (así se guarda); nunca como hora local del servidor."""
+    return t.replace(tzinfo=UTC) if t.tzinfo is None else t
+
+
 def hora(t: datetime) -> str:
-    return t.astimezone(BOGOTA).strftime("%H:%M")
+    return en_utc(t).astimezone(BOGOTA).strftime("%H:%M")
 
 
 def fecha(t: datetime) -> str:
-    return t.astimezone(BOGOTA).strftime("%Y-%m-%d")
+    return en_utc(t).astimezone(BOGOTA).strftime("%Y-%m-%d")
+
+
+def fecha_texto(marca: object) -> str:
+    """Fecha de Bogotá de una marca ISO (texto o fecha); si no se puede leer, sus diez primeros caracteres."""
+    try:
+        return fecha(marca if isinstance(marca, datetime) else datetime.fromisoformat(str(marca)))
+    except ValueError:
+        return str(marca)[:10]
 
 
 def enmascarar(texto: str, limite: int = 500) -> str:

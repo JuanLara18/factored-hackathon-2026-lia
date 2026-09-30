@@ -48,7 +48,8 @@ class RegistroConversacion(_Registro):
     transaccion_id: str | None = None
     solicitud: str | None = None
     creada_en: datetime
-    transcripcion: list[Mensaje] = Field(default_factory=list[Mensaje])  # enmascarada
+    transcripcion: list[Mensaje] = Field(default_factory=list[Mensaje])  # enmascarada, las últimas
+    turnos_guardados: int = 0  # todos los turnos guardados; `transcripcion` conserva solo los últimos
 
 
 class Traspaso(_Registro):

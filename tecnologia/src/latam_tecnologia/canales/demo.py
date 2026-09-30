@@ -149,6 +149,8 @@ class Demo:
     def abrir(self, indice: int, registro: str) -> Sesion:
         cliente_id = self.clientes[indice]
         ahora = self.reloj()
+        for vencida in [i for i, s in self.sesiones.items() if not s.autenticada.vigente(ahora)]:
+            del self.sesiones[vencida]  # las sesiones vencidas no se quedan en memoria
         id_sesion = secrets.token_urlsafe(16)
         conversacion_id = f"c-{secrets.token_hex(6)}"
         self.almacen.crear_conversacion(

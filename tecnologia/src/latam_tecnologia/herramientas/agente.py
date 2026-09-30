@@ -9,7 +9,7 @@ from pydantic import TypeAdapter
 from pydantic_ai import Agent, DeferredToolRequests, RunContext
 from pydantic_ai.models import Model
 
-from latam_tecnologia.herramientas.catalogo import Herramientas
+from latam_tecnologia.herramientas.catalogo import Herramientas, NoDisputable
 from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 
@@ -79,14 +79,17 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
         d = ctx.deps
         transaccion = d.herramientas.transaccion(d.sesion, transaction_id).valor
         provisional = transaccion is not None and d.herramientas.credito_provisional(transaccion)
-        accion, _ = d.herramientas.abrir_disputa(
-            d.sesion,
-            d.conversacion_id,
-            transaction_id,
-            motivo,
-            _confirmacion(ctx, "abrir_disputa"),
-            credito_provisional=provisional,
-        )
+        try:
+            accion, _ = d.herramientas.abrir_disputa(
+                d.sesion,
+                d.conversacion_id,
+                transaction_id,
+                motivo,
+                _confirmacion(ctx, "abrir_disputa"),
+                credito_provisional=provisional,
+            )
+        except NoDisputable as no:
+            return f"No se abrió la disputa: el movimiento está {no} y por su estado no admite reclamo."
         tras = None if transaccion is None else d.herramientas.escalar_tras_radicar(transaccion)
         if tras is None:
             return accion.resultado_releido

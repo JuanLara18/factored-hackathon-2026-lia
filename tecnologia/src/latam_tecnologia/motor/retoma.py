@@ -66,6 +66,10 @@ class Almacen(Protocol):
 
     def completar_efecto(self, llave: str, accion: AccionVerificada) -> None: ...
 
+    def liberar_efecto(self, llave: str) -> None:
+        """Borra una reserva cuyo efecto falló con error, para que el reintento pueda ejecutarlo."""
+        ...
+
     def estado_efecto(self, llave: str) -> tuple[str, AccionVerificada | None] | None: ...
 
     def acciones_hechas(self, conversacion_id: str) -> tuple[AccionVerificada, ...]: ...
@@ -95,7 +99,13 @@ def ejecutar_una_vez(
         raise ValueError("la confirmación no corresponde a la acción")
     llave = llave_efecto(conversacion_id, numero_transicion, tipo, recurso)
     if almacen.reservar_efecto(llave, conversacion_id, numero_transicion, tipo):
-        accion = ejecutor(llave)
+        try:
+            accion = ejecutor(llave)
+        except Exception:
+            # Los efectos del banco son idempotentes por su propia llave: reintentar es seguro. Sin esto, una
+            # caída de Firestore dejaba la reserva "en curso" y todo reintento fallaba con EfectoIncierto.
+            almacen.liberar_efecto(llave)
+            raise
         almacen.completar_efecto(llave, accion)
         return accion, True
     registro = almacen.estado_efecto(llave)

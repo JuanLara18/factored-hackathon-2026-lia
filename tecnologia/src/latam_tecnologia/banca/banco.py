@@ -226,7 +226,10 @@ class BancoMemoria:
             return
         turnos = [*actual.transcripcion, mensaje_nuevo(autor, texto, self._reloj())]
         self._conversaciones[conversacion_id] = actual.model_copy(
-            update={"transcripcion": turnos[-LIMITE_TRANSCRIPCION:]}
+            update={
+                "transcripcion": turnos[-LIMITE_TRANSCRIPCION:],
+                "turnos_guardados": actual.turnos_guardados + 1,
+            }
         )
 
     def agregar_mensaje(self, conversacion_id: str, autor: str, texto: str) -> str:
@@ -281,8 +284,8 @@ class BancoMemoria:
         self, id_traspaso: str, resultado: str, etiqueta: dict[str, Any] | str | None, nota: str | None
     ) -> Traspaso | None:
         t = self._traspasos.get(id_traspaso)
-        if t is None:
-            return None
+        if t is None or t.estado == "resuelto":
+            return t  # resolver dos veces (reintento o dos pestañas) no pisa la primera resolución
         nuevo = t.model_copy(
             update={
                 "estado": "resuelto",

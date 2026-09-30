@@ -62,17 +62,17 @@ class BancoFirestore:
     ) -> str:
         caso_ref = id_caso(cliente_id, transaccion_id)
         documento = self._db.collection("casos").document(caso_ref)
-        existente = documento.get()
-        if existente.exists and existente.to_dict().get("estado") == "abierto":
-            return caso_ref
         caso = caso_nuevo(cliente_id, transaccion_id, monto, motivo, credito_provisional, self._reloj())
-        try:
-            if existente.exists:  # caso cerrado: se reabre uno nuevo sobre el mismo documento
-                documento.set(caso.model_dump(mode="json"))
-            else:
-                documento.create(caso.model_dump(mode="json"))
-        except AlreadyExists:
-            pass  # otra instancia lo abrió en este instante: el crédito lo concedió ella
+
+        def _abrir(transaccion: Any) -> None:
+            existente = documento.get(transaction=transaccion)
+            if existente.exists and existente.to_dict().get("estado") == "abierto":
+                return  # otra instancia lo abrió antes: el crédito lo concedió ella
+            # caso cerrado: se reabre uno nuevo sobre el mismo documento
+            transaccion.set(documento, caso.model_dump(mode="json"))
+
+        transaccional: Any = getattr(firestore, "transactional")  # noqa: B009
+        transaccional(_abrir)(self._db.transaction())
         return caso_ref
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
@@ -141,11 +141,25 @@ class BancoFirestore:
             self._conv(conversacion_id).update({"solicitud": texto})
 
     def agregar_transcripcion(self, conversacion_id: str, autor: str, texto: str) -> None:
-        actual = self.conversacion(conversacion_id)
-        if actual is None:
-            return
-        turnos = [*actual.transcripcion, mensaje_nuevo(autor, texto, self._reloj())][-LIMITE_TRANSCRIPCION:]
-        self._conv(conversacion_id).update({"transcripcion": [t.model_dump(mode="json") for t in turnos]})
+        documento = self._conv(conversacion_id)
+        nuevo = mensaje_nuevo(autor, texto, self._reloj())
+
+        def _agregar(transaccion: Any) -> None:
+            d = documento.get(transaction=transaccion)
+            if not d.exists:
+                return
+            actual = RegistroConversacion.model_validate(d.to_dict())
+            turnos = [*actual.transcripcion, nuevo][-LIMITE_TRANSCRIPCION:]
+            transaccion.update(
+                documento,
+                {
+                    "transcripcion": [t.model_dump(mode="json") for t in turnos],
+                    "turnos_guardados": actual.turnos_guardados + 1,
+                },
+            )
+
+        transaccional: Any = getattr(firestore, "transactional")  # noqa: B009
+        transaccional(_agregar)(self._db.transaction())  # dos turnos a la vez no se pisan
 
     def agregar_mensaje(self, conversacion_id: str, autor: str, texto: str) -> str:
         mensaje = mensaje_nuevo(autor, texto, self._reloj())
@@ -237,9 +251,16 @@ class BancoFirestore:
         self, id_traspaso: str, resultado: str, etiqueta: dict[str, Any] | str | None, nota: str | None
     ) -> Traspaso | None:
         documento = self._db.collection("traspasos").document(id_traspaso)
-        if not documento.get().exists:
-            return None
-        documento.update(
-            {"estado": "resuelto", "resultado": resultado, "etiqueta_correccion": etiqueta, "nota": nota}
-        )
+
+        def _resolver(transaccion: Any) -> None:
+            d = documento.get(transaction=transaccion)
+            if not d.exists or d.to_dict()["estado"] == "resuelto":
+                return  # ya resuelto: la primera resolución es la que vale
+            transaccion.update(
+                documento,
+                {"estado": "resuelto", "resultado": resultado, "etiqueta_correccion": etiqueta, "nota": nota},
+            )
+
+        transaccional: Any = getattr(firestore, "transactional")  # noqa: B009
+        transaccional(_resolver)(self._db.transaction())
         return self.traspaso(id_traspaso)
