@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LATAM Bank, reclamos por cargos</title>
-<meta name="description" content="Resuelva un cargo que no reconoce con un asistente de inteligencia artificial y con una persona cuando la necesite.">
+<title>LATAM Bank, banca para personas</title>
+<meta name="description" content="Banca de demostración para personas: cuentas, tarjetas y un asistente de inteligencia artificial que le ayuda con un cargo que no reconoce.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
@@ -12,65 +12,103 @@
 <body>
 <a class="salto" href="#principal">Ir al contenido</a>
 <header class="cabecera">
-  <div class="contenedor">
-    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
+  <div class="contenedor cabecera-fila">
+    <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
     <nav class="nav" aria-label="Principal">
-      <a href="index.html" aria-current="page">Inicio</a>
+      <a href="index.html" aria-current="page">Personas</a>
+      <a href="productos.html">Productos</a>
       <a href="reclamos.html">Reclamos</a>
-      <a href="transparencia.html">Transparencia</a>
-      <a href="privacidad.html">Privacidad</a>
-      <a href="chat.html">Chat</a>
+      <a href="seguridad.html">Seguridad</a>
+      <a href="ayuda.html">Ayuda</a>
+      <span class="nav-pronto">Empresas <small>próximamente</small></span>
     </nav>
+    <div class="cabecera-acciones">
+      <label class="pais" for="pais"><span class="visualmente-oculto">País</span>
+        <select id="pais" aria-label="País"><option value="MX">México</option><option value="CO">Colombia</option><option value="AR">Argentina</option></select>
+      </label>
+      <a class="boton primario" href="banca/index.html">Banca en línea</a>
+    </div>
   </div>
 </header>
 <main id="principal">
   <section class="hero">
-    <div class="contenedor">
-      <p class="sobretitulo">Reclamos por cargos</p>
-      <h1>¿No reconoce un cargo? Resuélvalo en minutos, con la IA y con una persona cuando la necesite</h1>
-      <p class="entrada">Un asistente de inteligencia artificial revisa el cargo con usted, le explica cada paso y le pide su confirmación antes de hacer cualquier cambio. Si prefiere hablar con una persona, puede pedirlo en cualquier momento.</p>
-      <div class="acciones">
-        <a class="boton primario" href="chat.html">Probar el chat</a>
-        <a class="boton" href="reclamos.html">Cómo funciona un reclamo</a>
+    <div class="contenedor hero-rejilla">
+      <div>
+        <p class="sobretitulo">Banca para personas</p>
+        <h1>Su dinero, claro y a su alcance</h1>
+        <p class="entrada">Consulte sus cuentas y tarjetas, y resuelva un <span data-p="cargo">cargo</span> que no reconoce con un asistente de inteligencia artificial y con una persona cuando la necesite.</p>
+        <div class="acciones">
+          <a class="boton primario grande" href="banca/index.html">Entrar a Banca en línea</a>
+          <a class="boton grande" href="reclamos.html">Cómo funciona un reclamo</a>
+        </div>
+        <p class="nota sep-s">Demostración con clientes ficticios. Los montos se expresan en <span data-p="moneda">pesos</span>.</p>
       </div>
+      <img class="hero-arte" src="assets/ilustracion-inicio.svg" width="520" height="420" alt="Ilustración de una tarjeta protegida por un escudo con una marca de verificación">
     </div>
   </section>
   <section class="seccion" aria-labelledby="como">
     <div class="contenedor">
-      <h2 id="como">Cómo funciona, en tres pasos</h2>
+      <p class="sobretitulo">Reclamos</p>
+      <h2 id="como">Así se resuelve un <span data-p="cargo">cargo</span> que no reconoce</h2>
       <ol class="rejilla pasos">
-        <li class="tarjeta"><h3>Cuéntenos qué cargo no reconoce</h3><p>El asistente le muestra sus cargos recientes para que identifique el que le preocupa.</p></li>
-        <li class="tarjeta"><h3>La IA revisa y le propone un paso</h3><p>Puede abrir un reclamo o bloquear su tarjeta. Nada cambia hasta que usted lo confirme.</p></li>
-        <li class="tarjeta"><h3>Una persona, cuando la necesite</h3><p>Usted la pide, o el caso lo requiere. La persona retoma su caso sin que tenga que repetir nada.</p></li>
+        <li class="tarjeta"><h3>Identifique el <span data-p="cargo">cargo</span></h3><p>En Banca en línea abra el movimiento y elija “No reconozco este cargo”. El asistente ya sabe cuál es.</p></li>
+        <li class="tarjeta"><h3>La IA revisa y propone un paso</h3><p>Puede abrir un reclamo o bloquear su tarjeta. Nada cambia hasta que usted lo confirme.</p></li>
+        <li class="tarjeta"><h3>Una persona, cuando la necesite</h3><p>Usted la pide o el caso lo requiere. La persona retoma su caso sin que repita nada.</p></li>
       </ol>
+      <p class="mas"><a href="reclamos.html">Ver el proceso completo</a></p>
+    </div>
+  </section>
+  <section class="seccion fondo-suave" aria-labelledby="seg">
+    <div class="contenedor dos-col">
+      <div>
+        <p class="sobretitulo">Seguridad</p>
+        <h2 id="seg">El banco nunca le pide su clave</h2>
+        <p class="entrada">Ni por chat, ni por teléfono, ni por WhatsApp. Tampoco le pide mover dinero para “proteger” su cuenta. Si alguien lo hace, no es LATAM Bank.</p>
+        <p><a href="seguridad.html">Conozca cómo reconocer un engaño</a></p>
+      </div>
+      <ul class="lista-marcas">
+        <li><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><div><h3>Usted confirma cada cambio</h3><p>El asistente explica qué va a pasar y espera su confirmación.</p></div></li>
+        <li><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg><div><h3>Tarjeta siempre enmascarada</h3><p>Solo se muestran sus últimos cuatro dígitos.</p></div></li>
+        <li><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.500 3.500-6 7-6s6.500 2.500 7 6"/></svg><div><h3>Una persona a un clic</h3><p>El botón para hablar con una persona está siempre visible.</p></div></li>
+      </ul>
     </div>
   </section>
   <section class="seccion" aria-labelledby="canales">
     <div class="contenedor">
+      <p class="sobretitulo">Canales</p>
       <h2 id="canales">Elija cómo hablar con nosotros</h2>
       <ul class="rejilla">
-        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><h3>Chat web</h3><p>Disponible en esta demostración, con el mismo asistente y la misma opción de pasar con una persona.</p><span class="estado">Disponible</span></li>
-        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4a8 8 0 0 0-6.9 12L4 20l4.2-1.1A8 8 0 1 0 12 4z"/><path d="M9.2 9c.3 2.6 2.4 4.9 5.6 5.8l1-1.4-2-1-.9.8c-.9-.4-1.6-1.100-2-2l.8-.9-1-2z"/></svg><h3>WhatsApp</h3><p>Los mismos pasos en su celular, con mensajes cortos y botones.</p><span class="estado">En pruebas</span></li>
-        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4h3l1.5 4-2 1.300a11 11 0 0 0 5.200 5.200l1.300-2 4 1.500v3a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/></svg><h3>Teléfono</h3><p>Una conversación por voz, con la opción de repetir o de hablar con una persona.</p><span class="estado">En preparación</span></li>
+        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><h3>Banca en línea y chat</h3><p>El asistente vive dentro de su banca y también en un chat independiente.</p><span class="estado">Disponible</span></li>
+        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4a8 8 0 0 0-6.9 12L4 20l4.2-1.1A8 8 0 1 0 12 4z"/><path d="M9.5 9.5c.4 2.2 2.100 3.900 4.500 4.600"/></svg><h3>WhatsApp</h3><p>Los mismos pasos en su celular, con mensajes cortos. Número de prueba.</p><span class="estado">En pruebas</span></li>
+        <li class="tarjeta"><svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4h3l1.5 4-2 1.3a11 11 0 0 0 5.2 5.2l1.3-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4 6a2 2 0 0 1 2-2z"/></svg><h3>Teléfono</h3><p>Una conversación por voz, con la opción de hablar con una persona. Línea de prueba.</p><span class="estado">En preparación</span></li>
       </ul>
+      <p class="mas"><a href="contacto.html">Ver datos de contacto</a></p>
     </div>
   </section>
-  <section class="seccion" aria-labelledby="claro">
+  <section class="seccion fondo-suave" aria-labelledby="claro">
     <div class="contenedor texto">
+      <p class="sobretitulo">Transparencia</p>
       <h2 id="claro">Hablamos claro</h2>
-      <p>El asistente le dice cuándo es una inteligencia artificial, qué hizo y qué no hizo. No promete resultados que no puede cumplir. Puede leer cómo funciona en la página de <a href="transparencia.html">transparencia</a>.</p>
+      <p>El asistente le dice que es una inteligencia artificial, qué hizo y qué no hizo. No promete resultados que no puede cumplir, y la decisión sobre su reclamo la toma el equipo del banco. No mostramos sellos ni certificaciones que no tenemos: este es un banco de demostración.</p>
+      <p><a href="transparencia.html">Lea cómo funciona el asistente</a></p>
     </div>
   </section>
 </main>
 <footer class="pie">
   <div class="contenedor">
-    <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026</p>
-    <nav aria-label="Información">
-      <a href="reclamos.html">Reclamos</a>
-      <a href="transparencia.html">Transparencia</a>
-      <a href="privacidad.html">Privacidad</a>
-    </nav>
+    <div class="pie-rejilla">
+      <div class="pie-marca">
+        <a class="marca" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 8v13a1 1 0 0 0 1 1h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.4" fill="#5eead4"/></svg><span>LATAM Bank</span></a>
+        <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026. Nada de este sitio es una oferta real y ninguna acción mueve dinero.</p>
+      </div>
+      <nav aria-label="Productos y ayuda"><h2>Para usted</h2>
+        <a href="productos.html">Productos</a><a href="ayuda.html">Centro de ayuda</a><a href="contacto.html">Contacto</a><a href="banca/index.html">Banca en línea</a></nav>
+      <nav aria-label="Información legal"><h2>Información</h2>
+        <a href="reclamos.html">Reclamos</a><a href="seguridad.html">Seguridad</a><a href="transparencia.html">Transparencia</a><a href="privacidad.html">Privacidad</a></nav>
+    </div>
+    <p class="pie-legal">Demostración sin valor legal. Los textos legales y de privacidad están pendientes de revisión por el área de Gobierno.</p>
   </div>
 </footer>
+<script src="assets/pais.js" defer></script>
 </body>
 </html>
