@@ -1,90 +1,109 @@
-import httpx
+import asyncio
+from collections.abc import Callable
+from typing import Any
+
 import pytest
+from google import genai
+from google.genai import errors as errores_genai
 from latam_tecnologia.canales import geap
-from latam_tecnologia.canales.geap import ModeloGeap
-from openai import AsyncOpenAI
-from pydantic_ai import Agent
+from latam_tecnologia.canales.geap import LlamadaMalformada, ModeloGeap, es_malformada, es_transitorio
 from pydantic_ai.exceptions import ModelHTTPError
-from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.settings import ModelSettings
 
 
-def _cuerpo(finish: str, texto: str = "hola") -> dict[str, object]:
-    return {
-        "id": "x",
-        "object": "chat.completion",
-        "created": 0,
-        "model": "google/gemini-2.5-flash-lite",
-        "choices": [
-            {"index": 0, "finish_reason": finish, "message": {"role": "assistant", "content": texto}}
-        ],
-        "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
-    }
+def _malformada() -> ModelResponse:
+    return ModelResponse(
+        parts=[], finish_reason="error", provider_details={"finish_reason": "MALFORMED_FUNCTION_CALL"}
+    )
+
+
+def _ok() -> ModelResponse:
+    return ModelResponse(parts=[TextPart("hola")], finish_reason="stop")
 
 
 @pytest.fixture(autouse=True)
 def _sin_espera(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(geap, "ESPERA_REINTENTO", 0)
+    geap.MEDIDOR.reiniciar()
 
 
-def _agente(respuestas: list[httpx.Response]) -> tuple[Agent[None, str], list[int]]:
-    llamadas: list[int] = []
-
-    def manejar(request: httpx.Request) -> httpx.Response:
-        llamadas.append(1)
-        return respuestas[min(len(llamadas), len(respuestas)) - 1]
-
-    cliente = httpx.AsyncClient(transport=httpx.MockTransport(manejar))
-    sdk = AsyncOpenAI(base_url="https://ejemplo.test/v1", api_key="x", http_client=cliente, max_retries=0)
-    proveedor = OpenAIProvider(openai_client=sdk)
-    return Agent(ModeloGeap("google/gemini-2.5-flash-lite", provider=proveedor)), llamadas
+def _modelo() -> ModeloGeap:
+    cliente = genai.Client(api_key="x")
+    return ModeloGeap("gemini-2.5-flash-lite", provider=GoogleProvider(client=cliente))
 
 
-def test_reintenta_una_vez_la_llamada_malformada() -> None:
-    agente, llamadas = _agente(
-        [
-            httpx.Response(200, json=_cuerpo("malformed_function_call", "")),
-            httpx.Response(200, json=_cuerpo("stop")),
-        ]
-    )
-    assert agente.run_sync("hola").output == "hola"
-    assert len(llamadas) == 2
+def _guion(
+    monkeypatch: pytest.MonkeyPatch, pasos: list[Callable[[], ModelResponse]]
+) -> list[ModelSettings | None]:
+    ajustes: list[ModelSettings | None] = []
+
+    async def falso(
+        self: Any, messages: Any, model_settings: ModelSettings | None, params: Any
+    ) -> ModelResponse:
+        ajustes.append(model_settings)
+        return pasos[min(len(ajustes), len(pasos)) - 1]()
+
+    monkeypatch.setattr(GoogleModel, "request", falso)
+    return ajustes
 
 
-def test_el_reintento_sube_la_temperatura() -> None:
-    temperaturas: list[float | None] = []
-
-    def manejar(request: httpx.Request) -> httpx.Response:
-        import json
-
-        temperaturas.append(json.loads(request.content).get("temperature"))
-        if len(temperaturas) == 1:
-            return httpx.Response(200, json=_cuerpo("malformed_function_call", ""))
-        return httpx.Response(200, json=_cuerpo("stop"))
-
-    cliente = httpx.AsyncClient(transport=httpx.MockTransport(manejar))
-    sdk = AsyncOpenAI(base_url="https://ejemplo.test/v1", api_key="x", http_client=cliente, max_retries=0)
-    agente = Agent(ModeloGeap("google/x", provider=OpenAIProvider(openai_client=sdk)))
-    agente.run_sync("hola", model_settings={"temperature": 0.0})
-    assert temperaturas == [0.0, geap.TEMPERATURA_REINTENTO]
+def _pide(modelo: ModeloGeap, ajustes: ModelSettings | None = None) -> ModelResponse:
+    return asyncio.run(modelo.request([], ajustes, geap.ModelRequestParameters()))
 
 
-def test_reintenta_una_vez_un_5xx() -> None:
-    agente, llamadas = _agente(
-        [httpx.Response(503, json={"error": {"message": "no"}}), httpx.Response(200, json=_cuerpo("stop"))]
-    )
-    assert agente.run_sync("hola").output == "hola"
-    assert len(llamadas) == 2
+def _falla(error: Exception) -> Callable[[], ModelResponse]:
+    def f() -> ModelResponse:
+        raise error
+
+    return f
 
 
-def test_no_reintenta_mas_de_una_vez() -> None:
-    agente, llamadas = _agente([httpx.Response(500, json={"error": {"message": "no"}})])
+def test_reintenta_una_vez_la_llamada_malformada(monkeypatch: pytest.MonkeyPatch) -> None:
+    ajustes = _guion(monkeypatch, [_malformada, _ok])
+    r = _pide(_modelo(), {"temperature": 0.0})
+    assert r.parts[0] == TextPart("hola")
+    assert len(ajustes) == 2
+    assert ajustes[0] == {"temperature": 0.0}
+    assert ajustes[1] == {"temperature": geap.TEMPERATURA_REINTENTO}
+    assert geap.MEDIDOR.llamadas == 2 and geap.MEDIDOR.reintentos == 1
+
+
+def test_reintenta_una_vez_un_5xx(monkeypatch: pytest.MonkeyPatch) -> None:
+    ajustes = _guion(monkeypatch, [_falla(ModelHTTPError(503, "m", None)), _ok])
+    _pide(_modelo())
+    assert len(ajustes) == 2
+
+
+def test_no_reintenta_mas_de_una_vez(monkeypatch: pytest.MonkeyPatch) -> None:
+    ajustes = _guion(monkeypatch, [_malformada])
+    with pytest.raises(LlamadaMalformada):
+        _pide(_modelo())
+    assert len(ajustes) == 2
+
+
+def test_no_reintenta_un_error_del_cliente(monkeypatch: pytest.MonkeyPatch) -> None:
+    ajustes = _guion(monkeypatch, [_falla(ModelHTTPError(400, "m", None))])
     with pytest.raises(ModelHTTPError):
-        agente.run_sync("hola")
-    assert len(llamadas) == 2
+        _pide(_modelo())
+    assert len(ajustes) == 1
 
 
-def test_no_reintenta_un_error_del_cliente() -> None:
-    agente, llamadas = _agente([httpx.Response(400, json={"error": {"message": "mal"}})])
-    with pytest.raises(ModelHTTPError):
-        agente.run_sync("hola")
-    assert len(llamadas) == 1
+def test_clasifica_errores_de_google_y_malformadas() -> None:
+    assert es_transitorio(errores_genai.ServerError(500, {"error": {"message": "x"}}))
+    assert es_transitorio(errores_genai.ClientError(429, {"error": {"message": "x"}}))
+    assert not es_transitorio(errores_genai.ClientError(400, {"error": {"message": "x"}}))
+    assert es_malformada(_malformada())
+    con_llamada = ModelResponse(
+        parts=[ToolCallPart("t", {})], provider_details={"finish_reason": "MALFORMED_FUNCTION_CALL"}
+    )
+    assert not es_malformada(con_llamada)
+    assert not es_malformada(_ok())
+
+
+def test_fabrica_usa_vertex_global() -> None:
+    modelo, nombre = geap.crear_modelo_geap({"LATAM_GCP_PROJECT": "p"})
+    assert nombre == f"geap:{geap.MODELO_DEFECTO}"
+    assert modelo.client.vertexai is True
