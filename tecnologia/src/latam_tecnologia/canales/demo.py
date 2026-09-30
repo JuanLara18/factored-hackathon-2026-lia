@@ -118,7 +118,8 @@ class Demo:
         """
         if cliente_id not in self.paises:
             leer_pais = getattr(self.lectura, "pais_cuenta", None)
-            pais: str | None = leer_pais(cliente_id) if callable(leer_pais) else None
+            leido: object = leer_pais(cliente_id) if callable(leer_pais) else None
+            pais = leido if isinstance(leido, str) and leido else None
             for p in () if pais else self.lectura.productos(cliente_id):
                 pais = PAIS_POR_MONEDA.get(p.moneda or "")
                 if pais:
