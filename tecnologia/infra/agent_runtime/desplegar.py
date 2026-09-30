@@ -51,6 +51,7 @@ DISTRIBUCIONES = (
     "httpx",
     "google-auth",
     "google-cloud-bigquery",
+    "google-cloud-firestore",
     "opentelemetry-sdk",
     "opentelemetry-exporter-gcp-trace",
     "psycopg",
