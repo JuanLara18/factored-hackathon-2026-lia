@@ -1,0 +1,12 @@
+{
+  "movimientos": [
+    {"tx_ref": "t1", "fecha": "2026-09-28", "hora": "21:14", "descripcion": "Tienda en línea Nimbus", "categoria": "Compras", "tipo": "compra", "canal": "comercio en línea", "monto": "482.900,00", "moneda": "COP", "estado": "aprobada", "pais": "US", "es_extranjera": true, "tarjeta_final": "4821", "reclamable": true, "caso_ref": null},
+    {"tx_ref": "t2", "fecha": "2026-09-28", "hora": "13:02", "descripcion": "Restaurante El Fogón", "categoria": "Restaurantes", "tipo": "compra", "canal": "punto de venta", "monto": "96.400,00", "moneda": "COP", "estado": "aprobada", "pais": "CO", "es_extranjera": false, "tarjeta_final": "4821", "reclamable": true, "caso_ref": null},
+    {"tx_ref": "t3", "fecha": "2026-09-27", "hora": "08:41", "descripcion": "Supermercado Central", "categoria": "Supermercado", "tipo": "compra", "canal": "punto de venta", "monto": "218.350,00", "moneda": "COP", "estado": "aprobada", "pais": "CO", "es_extranjera": false, "tarjeta_final": "9037", "reclamable": true, "caso_ref": null},
+    {"tx_ref": "t4", "fecha": "2026-09-27", "hora": "07:55", "descripcion": "Servicio de streaming Lumen", "categoria": "Suscripciones", "tipo": "compra", "canal": "comercio en línea", "monto": "39.900,00", "moneda": "COP", "estado": "pendiente", "pais": "CO", "es_extranjera": false, "tarjeta_final": "4821", "reclamable": true, "caso_ref": null},
+    {"tx_ref": "t5", "fecha": "2026-09-25", "hora": "19:30", "descripcion": "Cajero automático", "categoria": "Efectivo", "tipo": "retiro", "canal": "cajero", "monto": "300.000,00", "moneda": "COP", "estado": "aprobada", "pais": "CO", "es_extranjera": false, "tarjeta_final": "9037", "reclamable": false, "caso_ref": null},
+    {"tx_ref": "t6", "fecha": "2026-09-24", "hora": "16:20", "descripcion": "Hotel Costa Azul", "categoria": "Viajes", "tipo": "compra", "canal": "comercio en línea", "monto": "1.150.000,00", "moneda": "COP", "estado": "rechazada", "pais": "MX", "es_extranjera": true, "tarjeta_final": "4821", "reclamable": false, "caso_ref": null},
+    {"tx_ref": "t7", "fecha": "2026-09-22", "hora": "11:05", "descripcion": "Farmacia La Salud", "categoria": "Salud", "tipo": "compra", "canal": "punto de venta", "monto": "74.200,00", "moneda": "COP", "estado": "aprobada", "pais": "CO", "es_extranjera": false, "tarjeta_final": "4821", "reclamable": true, "caso_ref": "c1"}
+  ],
+  "siguiente": null
+}

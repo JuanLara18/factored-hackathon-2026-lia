@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis reclamos, LATAM Bank</title>
+<meta name="description" content="Estado de sus reclamos por cargos: historial, devolución provisional y plazo de respuesta.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/banca.css">
+</head>
+<body data-pagina="reclamos">
+<a class="salto" href="#principal">Ir al contenido</a>
+<div class="bn-demo"><div class="contenedor"><p><strong>Demostración</strong></p><p>Clientes y movimientos ficticios. LATAM Bank no es un banco real.</p><p id="modo-local" class="oculto">Datos de ejemplo locales, sin servidor.</p></div></div>
+<header class="cabecera">
+  <div class="contenedor">
+    <a class="marca" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
+    <nav class="nav" aria-label="Banca en línea">
+      <a href="index.html">Mis productos</a>
+      <a href="reclamos.html" aria-current="page">Mis reclamos</a>
+      <a href="../transparencia.html">Transparencia</a>
+    </nav>
+    <div id="zona-sesion"></div>
+  </div>
+</header>
+<main id="principal">
+  <div class="contenedor bn-pagina">
+    <h1>Mis reclamos</h1>
+    <p class="bn-sub">Aquí ve en qué va cada reclamo, si le devolvimos el monto de forma provisional y hasta cuándo le responderemos.</p>
+    <div id="sin-sesion" class="bn-vacio oculto"><h2>Ingrese para ver sus reclamos</h2><p>Esta página muestra los reclamos del cliente de demostración con el que ingresó.</p><a class="boton primario" href="index.html">Ingresar a la demostración</a></div>
+    <div id="reclamos-zona"><ul id="reclamos" class="bn-reclamos" aria-label="Reclamos"></ul></div>
+  </div>
+</main>
+<footer class="pie">
+  <div class="contenedor">
+    <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026</p>
+    <nav aria-label="Información">
+      <a href="../reclamos.html">Cómo funciona un reclamo</a>
+      <a href="../privacidad.html">Privacidad</a>
+    </nav>
+  </div>
+</footer>
+<p id="anuncio" class="visualmente-oculto" role="status" aria-live="assertive"></p>
+<script src="../config.js"></script>
+<script src="../assets/banca.js" defer></script>
+<script src="../assets/widget.js" defer></script>
+</body>
+</html>
