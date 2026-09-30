@@ -76,12 +76,16 @@ async function api(metodo, ruta, cuerpo) {
     throw new ErrorApi("No hay conexión con el servicio.", 0);
   }
   if (r.status === 404 || r.status === 501) throw new ErrorApi("Este servicio todavía no está disponible.", r.status);
-  if (r.status === 401 || r.status === 403) throw new ErrorApi("La sesión no es válida. Ingrese de nuevo.", r.status);
+  if (r.status === 401 || r.status === 403) {
+    if (ruta === "/api/operador/ingresar") throw new ErrorApi("El código no es correcto.", r.status);
+    if (est.sesion) { salir(); $("op-error-ingreso").textContent = "Su sesión venció. Ingrese de nuevo."; }
+    throw new ErrorApi("La sesión no es válida. Ingrese de nuevo.", r.status);
+  }
   if (!r.ok) throw new ErrorApi("El servicio respondió con un error (" + r.status + ").", r.status);
   try { return await r.json(); } catch (e) { return {}; }
 }
 async function fixture(nombre) {
-  const r = await fetch("fixtures/" + nombre);
+  const r = await fetch("/operador/fixtures/" + nombre);
   if (!r.ok) throw new ErrorApi("Falta la muestra " + nombre + ".", r.status);
   return r.json();
 }

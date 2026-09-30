@@ -41,6 +41,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/e2e/*" = ["E501"]
+
 [tool.pyright]
 typeCheckingMode = "strict"
 include = ["comun/src", "clientes/src", "ia/src", "datos/src", "tecnologia/src", "gobierno/src"]

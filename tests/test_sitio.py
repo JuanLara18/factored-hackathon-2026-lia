@@ -175,9 +175,21 @@ def test_banca_estructura_enlaces_y_lenguaje(pagina: Path) -> None:
     for ref in p.enlaces + p.recursos:
         if re.match(r"^(https?:|mailto:|#)", ref):
             continue
-        assert (pagina.parent / ref.split("#")[0]).resolve().is_file(), f"{pagina.name}: {ref} no existe"
+        destino = (
+            SITIO / ref.split("#")[0].lstrip("/")
+            if ref.startswith("/")
+            else pagina.parent / ref.split("#")[0]
+        )
+        assert destino.resolve().is_file(), f"{pagina.name}: {ref} no existe"
     texto = " ".join(p.texto)
     assert [f.pattern for f in frases_prohibidas(cargar_estilo(), "plantilla") if f.search(texto)] == []
+
+
+@pytest.mark.parametrize("pagina", BANCA, ids=lambda p: f"banca/{p.name}")
+def test_banca_enlaces_a_banca_son_absolutos(pagina: Path) -> None:
+    """Con cleanUrls sin barra final, /banca resuelve contra la raiz: index.html relativo iria al inicio."""
+    p = _leer(pagina)
+    assert [r for r in p.enlaces if r in ("index.html", "reclamos.html")] == []
 
 
 def test_banca_fixtures_siguen_el_contrato() -> None:
