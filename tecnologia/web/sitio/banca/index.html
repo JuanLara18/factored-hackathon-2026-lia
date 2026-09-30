@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banca en línea, LATAM Bank</title>
+<meta name="description" content="Demostración de banca en línea: productos, movimientos y reclamos de clientes ficticios.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/banca.css">
+</head>
+<body data-pagina="inicio">
+<a class="salto" href="#principal">Ir al contenido</a>
+<div class="bn-demo"><div class="contenedor"><p><strong>Demostración</strong></p><p>Clientes y movimientos ficticios. LATAM Bank no es un banco real.</p><p id="modo-local" class="oculto">Datos de ejemplo locales, sin servidor.</p></div></div>
+<header class="cabecera">
+  <div class="contenedor">
+    <a class="marca" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
+    <nav class="nav" aria-label="Banca en línea">
+      <a href="index.html" aria-current="page">Mis productos</a>
+      <a href="reclamos.html">Mis reclamos</a>
+      <a href="../transparencia.html">Transparencia</a>
+    </nav>
+    <div id="zona-sesion"></div>
+  </div>
+</header>
+<main id="principal">
+  <div class="contenedor bn-pagina">
+    <h1 class="visualmente-oculto">Banca en línea</h1>
+    <section id="ingreso" class="bn-ingreso oculto" aria-labelledby="ingreso-titulo">
+      <p class="sobretitulo">Demostración</p>
+      <h2 id="ingreso-titulo">Ingrese a la banca en línea</h2>
+      <p class="nota">Elija un cliente ficticio para recorrer la demostración. No se pide ninguna clave ni dato personal.</p>
+      <div id="ingreso-cuerpo"></div>
+    </section>
+    <div id="tablero" class="oculto">
+      <h2 id="saludo" class="bn-saludo">Hola</h2>
+      <p class="bn-sub">Estos son sus productos y sus últimos movimientos.</p>
+      <h2 id="t-productos">Sus productos</h2>
+      <ul id="productos" class="bn-productos" aria-labelledby="t-productos"></ul>
+      <h2 id="t-mov">Movimientos recientes</h2>
+      <div class="bn-filtros" role="search" aria-label="Buscar movimientos">
+        <div><label for="f-texto">Buscar</label><input id="f-texto" type="search" placeholder="Comercio, categoría o monto" autocomplete="off"></div>
+        <div><label for="f-producto">Producto</label><select id="f-producto"><option value="">Todos los productos</option></select></div>
+        <div><label for="f-estado">Estado</label><select id="f-estado"><option value="">Todos</option><option value="aprobada">Aprobada</option><option value="pendiente">Pendiente</option><option value="rechazada">Rechazada</option></select></div>
+      </div>
+      <p id="cuenta-resultados" class="bn-cuenta" role="status"></p>
+      <div id="movimientos"></div>
+      <div id="mas" class="bn-mas oculto"><button type="button">Ver más movimientos</button></div>
+    </div>
+    <dialog id="detalle" aria-labelledby="detalle-titulo">
+      <div class="bn-detalle-cab"><h2 id="detalle-titulo"></h2><button id="detalle-cerrar" type="button">Cerrar</button></div>
+      <div id="detalle-cuerpo"></div>
+    </dialog>
+    <dialog id="confirmar" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
+      <h2 id="confirmar-titulo">Bloquear tarjeta</h2>
+      <p id="confirmar-texto"></p>
+      <div class="acciones"><button id="confirmar-si" type="button" class="primario">Bloquear tarjeta</button><button id="confirmar-no" type="button">Cancelar</button></div>
+    </dialog>
+  </div>
+</main>
+<footer class="pie">
+  <div class="contenedor">
+    <p>LATAM Bank es un banco ficticio creado para el Factored AI &amp; Data Hackathon 2026</p>
+    <nav aria-label="Información">
+      <a href="../reclamos.html">Cómo funciona un reclamo</a>
+      <a href="../privacidad.html">Privacidad</a>
+    </nav>
+  </div>
+</footer>
+<p id="anuncio" class="visualmente-oculto" role="status" aria-live="assertive"></p>
+<script src="../config.js"></script>
+<script src="../assets/banca.js" defer></script>
+<script src="../assets/widget.js" defer></script>
+</body>
+</html>

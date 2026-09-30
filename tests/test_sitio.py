@@ -155,3 +155,60 @@ def test_ayuda_tiene_buscador_y_preguntas_clave() -> None:
 def test_chat_apunta_a_banca_en_linea() -> None:
     html = (SITIO / "chat.html").read_text(encoding="utf-8")
     assert "El asistente vive en Banca en línea" in html
+
+
+BANCA = sorted((SITIO / "banca").glob("*.html"))
+
+
+def test_hay_paginas_de_banca() -> None:
+    assert {"index.html", "reclamos.html"} <= {p.name for p in BANCA}
+
+
+@pytest.mark.parametrize("pagina", BANCA, ids=lambda p: f"banca/{p.name}")
+def test_banca_estructura_enlaces_y_lenguaje(pagina: Path) -> None:
+    p = _leer(pagina)
+    assert p.lang == "es"
+    assert p.titulo and p.viewport
+    assert p.h1 == 1
+    assert not p.script_en_linea
+    assert not p.estilo_en_linea
+    for ref in p.enlaces + p.recursos:
+        if re.match(r"^(https?:|mailto:|#)", ref):
+            continue
+        assert (pagina.parent / ref.split("#")[0]).resolve().is_file(), f"{pagina.name}: {ref} no existe"
+    texto = " ".join(p.texto)
+    assert [f.pattern for f in frases_prohibidas(cargar_estilo(), "plantilla") if f.search(texto)] == []
+
+
+def test_banca_fixtures_siguen_el_contrato() -> None:
+    fx = SITIO / "banca" / "fixtures"
+    resumen = json.loads((fx / "resumen.json").read_text(encoding="utf-8"))
+    assert {"producto_ref", "tipo", "etiqueta", "final", "estado", "moneda", "saldo", "limite"} <= set(
+        resumen["productos"][0]
+    )
+    movs = json.loads((fx / "movimientos.json").read_text(encoding="utf-8"))["movimientos"]
+    campos = {
+        "tx_ref",
+        "fecha",
+        "hora",
+        "descripcion",
+        "categoria",
+        "tipo",
+        "canal",
+        "monto",
+        "moneda",
+        "estado",
+        "pais",
+        "es_extranjera",
+        "tarjeta_final",
+        "reclamable",
+        "caso_ref",
+    }
+    assert all(campos <= set(m) for m in movs)
+    reclamos = json.loads((fx / "reclamos.json").read_text(encoding="utf-8"))
+    assert {"caso_ref", "tx_ref", "estado", "credito_provisional", "plazo", "historial"} <= set(reclamos[0])
+
+
+def test_banca_scripts_sin_innerhtml() -> None:
+    for nombre in ("banca.js", "widget.js"):
+        assert "innerHTML" not in (SITIO / "assets" / nombre).read_text(encoding="utf-8")

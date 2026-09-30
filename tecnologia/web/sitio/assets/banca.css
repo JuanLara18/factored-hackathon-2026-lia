@@ -1,0 +1,130 @@
+/* Banca en línea de demostración. Usa los tokens de site.css; nada en línea (CSP). */
+.bn-num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.bn-demo { background: var(--acento-tenue); color: var(--texto); border-bottom: 1px solid var(--borde); font-size: .875rem; }
+.bn-demo .contenedor { padding-block: .5rem; display: flex; flex-wrap: wrap; gap: .25rem 1rem; align-items: center; }
+.bn-demo p { margin: 0; }
+.bn-demo strong { text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; }
+#zona-sesion { display: flex; align-items: center; gap: .75rem; }
+.bn-quien { font-size: .9rem; color: var(--suave); }
+.bn-enlace { min-height: 44px; padding: .25rem .5rem; border: 0; background: none; color: var(--acento); text-decoration: underline; font-weight: 500; }
+.bn-pagina { padding-block: 2rem 5rem; }
+.bn-pagina h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem); margin-bottom: .25rem; }
+.bn-pagina h2 { font-size: 1.2rem; margin: 2.25rem 0 1rem; }
+.bn-sub { color: var(--suave); margin: 0 0 1.5rem; }
+
+/* Ingreso */
+.bn-ingreso { max-width: 26rem; margin: 2rem auto; border: 1px solid var(--borde); border-radius: var(--radio); padding: 1.75rem; background: var(--fondo); }
+.bn-pagina .bn-ingreso h2 { font-size: 1.6rem; margin: 0 0 .75rem; }
+.bn-pagina h2.bn-saludo { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem); margin: 0 0 .25rem; }
+.bn-ingreso .campo select, .bn-filtros select, .bn-filtros input { width: 100%; min-height: 44px; padding: .5rem .75rem; font: inherit; color: var(--texto);
+  background: var(--fondo); border: 1px solid var(--borde-fuerte); border-radius: 8px; }
+.bn-msg-error { color: var(--error); margin: .75rem 0 0; min-height: 1.5rem; }
+
+/* Productos */
+.bn-productos { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; list-style: none; padding: 0; margin: 0; }
+.bn-producto { border: 1px solid var(--borde); border-radius: 14px; padding: 1.25rem; background: var(--fondo); }
+.bn-producto.bn-bloqueado { background: var(--superficie); }
+.bn-producto-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; }
+.bn-producto h3 { font-size: 1rem; margin: 0; }
+.bn-final { font-size: 1.05rem; letter-spacing: .12em; color: var(--suave); margin: .75rem 0 1rem; }
+.bn-cifras, .bn-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: .75rem 1.25rem; margin: 0; }
+.bn-cifras dt, .bn-datos dt { color: var(--suave); font-size: .8125rem; }
+.bn-cifras dd, .bn-datos dd { margin: 0; font-weight: 600; }
+.bn-cifras dd { font-size: 1.05rem; white-space: nowrap; }
+
+/* Insignias: siempre con texto, el color solo refuerza */
+.bn-insignia { display: inline-block; font-size: .75rem; font-weight: 600; padding: .1rem .6rem; border-radius: 999px; border: 1px solid var(--borde-fuerte); color: var(--texto); background: var(--superficie); white-space: nowrap; }
+.bn-ok { border-color: #1f7a4d; }
+.bn-aviso { border-color: #b45309; }
+.bn-mal { border-color: var(--error); color: var(--error); }
+@media (prefers-color-scheme: dark) { .bn-ok { border-color: #5fc38d; } .bn-aviso { border-color: #fbbf24; } }
+
+/* Movimientos */
+.bn-filtros { display: grid; grid-template-columns: 2fr 1.3fr 1fr; gap: .75rem; margin-bottom: .5rem; }
+.bn-filtros label { display: block; font-size: .8125rem; font-weight: 600; margin-bottom: .25rem; color: var(--suave); }
+.bn-cuenta { color: var(--suave); font-size: .875rem; margin: .5rem 0 0; }
+.bn-grupo h3 { font-size: .875rem; color: var(--suave); font-weight: 600; margin: 1.5rem 0 .5rem; letter-spacing: 0; }
+.bn-grupo h3::first-letter { text-transform: uppercase; }
+.bn-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; }
+.bn-lista li + li { border-top: 1px solid var(--borde); }
+.bn-fila { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 1rem; padding: .9rem 1.1rem; text-align: left; border: 0; border-radius: 0;
+  background: var(--fondo); font-weight: 400; min-height: 4.25rem; }
+.bn-fila:hover { background: var(--superficie); }
+.bn-fila-txt { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
+.bn-fila-desc { font-weight: 600; overflow-wrap: anywhere; }
+.bn-fila-meta { color: var(--suave); font-size: .8125rem; }
+.bn-fila-marcas { display: flex; flex-wrap: wrap; gap: .35rem; margin: .25rem 0 0; }
+.bn-monto { font-weight: 600; white-space: nowrap; }
+.bn-mas { display: flex; justify-content: center; margin-top: 1.25rem; }
+
+/* Vacíos, errores y esqueletos */
+.bn-vacio, .bn-error { border: 1px dashed var(--borde-fuerte); border-radius: 12px; padding: 2rem 1.25rem; text-align: center; grid-column: 1 / -1; }
+.bn-error { border-style: solid; border-color: var(--error); }
+.bn-vacio h2, .bn-vacio h3, .bn-error h3 { font-size: 1.05rem; margin: 0 0 .5rem; }
+.bn-vacio p, .bn-error p { color: var(--suave); max-width: 32rem; margin: 0 auto 1rem; }
+.bn-esq { border-radius: 12px; background: linear-gradient(90deg, var(--superficie) 25%, var(--borde) 50%, var(--superficie) 75%); background-size: 200% 100%; animation: bn-brillo 1.4s linear infinite; }
+.bn-esq-tarjeta { height: 8.5rem; }
+.bn-esq-fila { height: 4.25rem; margin-bottom: .5rem; }
+.bn-esq-linea { height: 2.75rem; margin-bottom: .75rem; }
+@keyframes bn-brillo { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .bn-esq { animation: none; } }
+
+/* Detalle como panel lateral */
+#detalle { margin: 0 0 0 auto; max-width: 27rem; width: 100%; height: 100%; max-height: 100%; border-radius: 0; border: 0; border-left: 1px solid var(--borde);
+  padding: 1.5rem; overflow-y: auto; }
+.bn-detalle-cab { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+.bn-detalle-cab h2 { font-size: 1.3rem; margin: 0; overflow-wrap: anywhere; }
+.bn-detalle-monto { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; margin: 0 0 .5rem; }
+.bn-acciones-detalle { display: flex; flex-direction: column; gap: .75rem; margin-top: 1.75rem; }
+.bn-acciones-detalle .boton, .bn-acciones-detalle button { width: 100%; }
+.bn-resultado { margin: 1rem 0 0; min-height: 1.5rem; font-weight: 600; }
+#confirmar { max-width: 28rem; }
+#confirmar h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
+
+/* Reclamos */
+.bn-reclamos { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.25rem; }
+.bn-reclamo { border: 1px solid var(--borde); border-radius: 14px; padding: 1.25rem; }
+.bn-pagina .bn-reclamo h2 { font-size: 1.1rem; margin: 0; }
+.bn-reclamo h3 { font-size: .9rem; margin: 1.25rem 0 .75rem; color: var(--suave); }
+.bn-linea { list-style: none; margin: 0; padding: 0 0 0 .5rem; border-left: 2px solid var(--borde); }
+.bn-linea li { position: relative; padding: 0 0 1rem 1.25rem; }
+.bn-linea li:last-child { padding-bottom: 0; }
+.bn-punto { position: absolute; left: -.72rem; top: .35rem; width: .8rem; height: .8rem; border-radius: 50%; background: var(--acento); border: 2px solid var(--fondo); }
+.bn-evento { margin: 0; font-weight: 600; }
+.bn-linea .nota { margin: 0; }
+
+/* Asistente flotante */
+.bw-lanzador { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 30; border-radius: 999px; padding-inline: 1.5rem; color: var(--acento-texto); background: var(--acento); border-color: var(--acento);
+  box-shadow: 0 6px 20px rgb(0 0 0 / .22); }
+.bw-panel { position: fixed; right: 1.25rem; bottom: 5rem; z-index: 30; width: min(24rem, calc(100vw - 2.5rem)); height: min(34rem, calc(100vh - 7rem)); display: flex; flex-direction: column;
+  background: var(--fondo); border: 1px solid var(--borde-fuerte); border-radius: 16px; box-shadow: 0 12px 40px rgb(0 0 0 / .25); overflow: hidden; }
+.bw-cab { display: flex; justify-content: space-between; align-items: center; padding: .5rem .5rem .5rem 1rem; border-bottom: 1px solid var(--borde); }
+.bw-cab h2 { font-size: 1rem; margin: 0; }
+.bw-cerrar { border: 0; background: none; text-decoration: underline; }
+.bw-sub { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .75rem; padding: .5rem 1rem; background: var(--superficie); border-bottom: 1px solid var(--borde); }
+.bw-ia { margin: 0; font-size: .8125rem; font-weight: 600; color: var(--suave); }
+.bw-persona { min-height: 44px; padding: .25rem .9rem; font-size: .875rem; }
+.bw-log { flex: 1; overflow-y: auto; padding: .75rem 1rem; }
+.bw-msg { margin: .5rem 0; padding: .6rem .85rem; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borde); max-width: 92%; overflow-wrap: anywhere; }
+.bw-msg.usuario { margin-left: auto; background: var(--acento-tenue); border-color: transparent; }
+.bw-msg.persona { border-color: var(--acento); }
+.bw-msg.error { border-color: var(--error); }
+.bw-autor { display: block; font-size: .75rem; font-weight: 700; color: var(--suave); margin-bottom: .15rem; }
+.bw-ficha { margin: .75rem 0; padding: .9rem; border: 1px solid var(--borde); border-radius: 12px; }
+.bw-ficha h3 { font-size: 1rem; margin: 0 0 .5rem; }
+.bw-ficha dl { display: grid; grid-template-columns: auto 1fr; gap: .2rem 1rem; margin: 0 0 .75rem; }
+.bw-ficha dt { color: var(--suave); }
+.bw-ficha dd { margin: 0; font-weight: 600; }
+.bw-estado { margin: 0; padding: 0 1rem; min-height: 1.25rem; }
+.bw-form { display: flex; gap: .5rem; padding: .75rem 1rem 1rem; border-top: 1px solid var(--borde); }
+.bw-form input { flex: 1; min-width: 0; min-height: 44px; padding: .4rem .75rem; font: inherit; color: var(--texto); background: var(--fondo); border: 1px solid var(--borde-fuerte); border-radius: 8px; }
+
+@media (max-width: 40rem) {
+  .bn-filtros { grid-template-columns: 1fr; }
+  #detalle { max-width: none; border-left: 0; }
+  .bn-fila { align-items: flex-start; }
+  .bw-panel { right: 0; bottom: 0; width: 100vw; height: 100dvh; border-radius: 0; border: 0; }
+  .bw-lanzador { right: .75rem; bottom: .75rem; }
+}
+#detalle-cuerpo .bn-datos { margin-top: 1.25rem; }
+.bn-reclamo .bn-datos { margin-top: 1rem; }
