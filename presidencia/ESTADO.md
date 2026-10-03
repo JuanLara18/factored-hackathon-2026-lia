@@ -113,7 +113,6 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 |---|---|---|
 | `feature/clientes-cli-1-5-portugues` | `../fh-pt` | plantillas pt (você), selector de idioma en banca y widget, ambigüedad multilingüe, escenarios pt en GEAP |
 | `feature/ia-ia-2-clasificador-motivo` | `../fh-ml` | componente aprendido con etiquetas válidas, partición temporal, línea base de reglas, métricas y umbral de abstención |
-| `feature/datos-dat-2-analisis-problema` | `../fh-eda` | análisis de motivos, demanda, capacidad, calidad y priorización; `presidencia/reporte/01_problema.md` y línea base de negocio |
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
@@ -126,7 +125,7 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
    motivo/intención (IA-2.x) con etiquetas válidas (semilla humana IA-1.1 o etiquetas derivadas de `complaints`),
    partición temporal sin fuga, línea base de reglas y métricas con umbrales justificados; o el experimento de
    `fraud_score` (IA-10.1).
-3. **Problema sustentado con datos** (criterio 1): análisis escrito de motivos de contacto, demanda, calidad y
+3. **Hecho (3 oct):** `presidencia/reporte/01_problema.md` y 10 figuras (`uv run python -m latam_datos.analisis`). Antes: **Problema sustentado con datos** (criterio 1): análisis escrito de motivos de contacto, demanda, calidad y
    restricciones operativas (bloques A a C de Datos) que justifique elegir disputas y fije la línea base de negocio.
 4. **Evaluación con las métricas del enunciado** (criterio 5 y "Evaluation evidence"): sobre el mismo conjunto
    retenido, línea base (B-reglas) contra el sistema; resolución automática segura, contención, calidad de escalamiento
