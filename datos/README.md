@@ -109,3 +109,13 @@ y acceso a `latam_seguridad` solo para la cuenta del pipeline.
 
 `latam_pruebas` guarda los fallos de las pruebas de dbt (`store_failures`) y las tablas temporales de las
 pruebas unitarias, con vencimiento de 7 días, para que `latam_bank` solo muestre las capas.
+
+## Análisis del problema (criterio 1, DAT-2)
+
+`uv run python -m latam_datos.analisis` ejecuta `analisis/consultas.sql` (17 consultas sobre plata, una por marca `-- @nombre`),
+guarda las cifras en `presidencia/reporte/figuras/cifras.json`, dibuja las diez figuras PNG y redacta
+`presidencia/reporte/01_problema.md`. Con `--desde-cache` regenera figuras e informe sin consultar BigQuery
+(`LATAM_GCP_PROJECT`, `LATAM_BQ_DATASET`, `LATAM_GCP_LOCATION` con los mismos valores por defecto que dbt). Cubre motivos,
+tendencia y estacionalidad, demanda frente a capacidad, resultados (CSAT, quejas, SLA, fraude), calidad, priorización por
+puntaje con sensibilidad y línea base con n. El costo por contacto es un supuesto marcado como tal; no hay modelos dbt nuevos.
+Código en `src/latam_datos/analisis/` (`calculos.py` puro y probado sin red en `tests/test_analisis.py`).
