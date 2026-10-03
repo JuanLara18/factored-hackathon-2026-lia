@@ -34,7 +34,7 @@ país. El linter rechaza un término de país escrito a mano.
 
 - **Usted:** "¿Lo confirma?", "marque uno", "su tarjeta". Nunca "tú" ni "tu".
 - **Vos:** "confirmás", "podés", "marcá", "decí", "tu tarjeta". Nunca mezclar "tú" y "vos".
-- **Portugués (voce):** la matriz lo reserva y queda pendiente hasta CLI-1.5; sin formas de Portugal.
+- **Portugués (voce):** `você` constante, pt-BR sin formas de Portugal ni `tu`; "senha" por clave; el catálogo vive en `plantillas/pt.yaml` con su retrotraducción y el perfil `pt` de `estilo.yaml` fija vocabulario, límites y marcas de registro. Es atención en portugués para clientes de México, Colombia y Argentina: la norma, el monto y la fecha son los del país de la cuenta.
 - Las etiquetas de botón van en infinitivo para servir a todos los registros.
 
 ## Cifras, plazos y montos

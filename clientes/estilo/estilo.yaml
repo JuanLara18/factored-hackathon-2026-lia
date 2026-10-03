@@ -229,7 +229,7 @@ frases_prohibidas:
     motivo: P7; se declara la espera o se ofrece continuar después
     alcance: [plantilla, prompt]
   - id: prazo_sem_regra_pt
-    patron: "em alguns dias|o quanto antes|nos pr[óo]ximos dias|\\blogo logo\\b"
+    patron: "em alguns dias|em breve|o quanto antes|nos pr[óo]ximos dias|\\blogo logo\\b"
     motivo: plazo sin regla (caso Air Canada)
     alternativa: plantilla de plazo con norma, número, unidad y fecha
     alcance: [plantilla]
