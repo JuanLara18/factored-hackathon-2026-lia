@@ -17,6 +17,7 @@ RAIZ_CLIENTES = Path(__file__).resolve().parents[2]
 RUTA_MATRIZ = RAIZ_CLIENTES / "matriz" / "matriz.yaml"
 RUTA_ESTILO = RAIZ_CLIENTES / "estilo" / "estilo.yaml"
 RUTA_PLANTILLAS = RAIZ_CLIENTES / "plantillas" / "es.yaml"
+RUTA_PLANTILLAS_PT = RAIZ_CLIENTES / "plantillas" / "pt.yaml"
 
 MARCADOR = re.compile(r"\{([a-z_0-9]+)\}")
 
@@ -54,8 +55,9 @@ class Matriz(_Estricto):
     registros: dict[str, Registro]
     estados: dict[str, EstadoMatriz]
 
-    def registros_exigidos(self) -> list[str]:
-        return [r for r, v in self.registros.items() if v.exigido]
+    def registros_exigidos(self, idioma: str | None = None) -> list[str]:
+        """Registros exigidos; con `idioma`, solo los de ese idioma (`es`: usted y vos; `pt`: voce)."""
+        return [r for r, v in self.registros.items() if v.exigido and (idioma is None or v.idioma == idioma)]
 
 
 # Guía de estilo
@@ -106,6 +108,23 @@ class MarcasRegistro(_Estricto):
     usted: str
 
 
+class PerfilIdioma(_Estricto):
+    """Lo que cambia por idioma en la guía de estilo: vocabulario, límites, marcadores de muestra y registro.
+
+    Las frases prohibidas y los caracteres prohibidos son una sola lista para todos los idiomas.
+    `marcas_registro` agrupa los patrones ajenos al registro del idioma (tuteo, español colado, trato formal).
+    """
+
+    registro: str
+    paises: dict[str, Pais]
+    pais_neutro: Pais
+    terminos_por_pais: list[str]
+    canales: dict[str, LimitesCanal]
+    marcadores: dict[str, str]
+    frases_obligatorias: list[Obligatoria]
+    marcas_registro: dict[str, str]
+
+
 class Estilo(_Estricto):
     version: int
     paises: dict[str, Pais]
@@ -118,6 +137,7 @@ class Estilo(_Estricto):
     caracteres_prohibidos: list[Regla]
     frases_obligatorias: list[Obligatoria]
     marcas_registro: MarcasRegistro
+    pt: PerfilIdioma | None = None
 
 
 # Plantillas
@@ -129,6 +149,8 @@ class Plantilla(_Estricto):
     tipos: list[str]
     marcadores: list[str]
     textos: dict[str, str]
+    retraduccion: str | None = None  # CLI-1.5: lo que dice el texto portugués, vuelto a español
+    notas: str | None = None  # CLI-1.5: dónde el texto adapta en lugar de traducir
 
 
 class Plantillas(_Estricto):
@@ -157,6 +179,10 @@ def cargar_estilo(ruta: Path = RUTA_ESTILO) -> Estilo:
 
 
 def cargar_plantillas(ruta: Path = RUTA_PLANTILLAS) -> Plantillas:
+    return _cargar(ruta, Plantillas)
+
+
+def cargar_plantillas_pt(ruta: Path = RUTA_PLANTILLAS_PT) -> Plantillas:
     return _cargar(ruta, Plantillas)
 
 
