@@ -7,10 +7,14 @@ dependencies = [
     "latam-clientes",
     "latam-comun",
     "latam-tecnologia",
+    "db-dtypes>=1.3",
+    "google-cloud-bigquery>=3.25",
     "pandas>=2.2",
+    "pyarrow>=17",
     "pydantic>=2.8",
     "pydantic-ai-slim[google,openai]>=2.51.0",
     "pyyaml>=6",
+    "scikit-learn>=1.5",
 ]
 
 [build-system]
