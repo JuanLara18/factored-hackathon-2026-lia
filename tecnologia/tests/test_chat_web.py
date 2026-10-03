@@ -24,6 +24,7 @@ FICHA_TOOL = {
 }
 WEB = Path(__file__).resolve().parents[1] / "web" / "chat"
 PLANTILLAS = yaml.safe_load(textos.RUTA_PLANTILLAS.read_text(encoding="utf-8"))["plantillas"]
+PLANTILLAS_PT = yaml.safe_load(textos.RUTA_PLANTILLAS_PT.read_text(encoding="utf-8"))["plantillas"]
 
 
 class Reloj:
@@ -254,14 +255,17 @@ def test_gemini_solo_con_llave() -> None:
 
 
 def test_textos_salen_de_las_plantillas() -> None:
-    plantillas = {p["id"]: p["textos"] for p in PLANTILLAS}
+    plantillas = {
+        p["id"]: {**p["textos"], **pt["textos"]} for p, pt in zip(PLANTILLAS, PLANTILLAS_PT, strict=True)
+    }
     for registro in textos.REGISTROS:
         cat = textos.catalogo_pagina(registro)
         assert cat["registro"] == registro
         for clave, pid in textos.PLANTILLAS_PAGINA.items():
             base = " ".join(plantillas[pid][registro].split())
-            assert cat["textos"][clave] == base.replace("{rango_espera}", "unos minutos")
-        assert cat["textos"]["aviso"].count("inteligencia artificial") == 1
+            assert cat["textos"][clave] == base.replace("{rango_espera}", textos.rango_espera(registro))
+        ia = "inteligência artificial" if registro == "voce" else "inteligencia artificial"
+        assert cat["textos"]["aviso"].count(ia) == 1
     usted, vos = textos.catalogo_pagina("usted"), textos.catalogo_pagina("vos")
     assert "Si prefiere" in usted["textos"]["aviso"] and "Si preferís" in vos["textos"]["aviso"]
 
@@ -270,7 +274,7 @@ def test_etiquetas_respetan_limites_de_botones() -> None:
     for et in textos.ETIQUETAS.values():
         for clave in ("confirmo", "no", "reconozco", "no_reconozco", "renovar", "enviar"):
             assert len(et[clave]) <= 20, clave  # R-CLI-47
-        assert "persona" in et["persona"].lower()  # R-CLI-48
+        assert any(w in et["persona"].lower() for w in ("persona", "pessoa"))  # R-CLI-48
 
 
 def test_la_confirmacion_usa_la_plantilla_del_registro() -> None:
@@ -322,3 +326,92 @@ def test_modelo_geap_y_llave_de_muerte() -> None:
     assert crear_modelo({**proyecto, "LATAM_MODELO": "guionado"})[1] == "guionado"
     assert crear_modelo({**proyecto, "GEMINI_API_KEY": "x"})[1].startswith("gemini:")
     assert crear_modelo({"LATAM_MODELO_PROVEEDOR": "geap", "LATAM_GCP_PROJECT": "p"})[1].startswith("geap:")
+
+
+# Portugués (CLI-1.5): registro voce de punta a punta
+
+
+def test_voce_es_un_registro_valido_y_el_catalogo_sale_de_pt_yaml() -> None:
+    assert textos.registro_valido("voce") == "voce" and textos.registro_valido("tu") == "usted"
+    cat = textos.catalogo_pagina("voce")
+    assert cat["idioma"] == "pt" and cat["registro"] == "voce"
+    assert "Sou o assistente virtual do LATAM Bank" in cat["textos"]["aviso"]
+    assert cat["textos"]["aviso"].count("inteligência artificial") == 1
+    assert "alguns minutos" in cat["textos"]["traspaso"]
+    assert cat["etiquetas"]["persona"] == "Falar com uma pessoa"
+    assert textos.describir_comercio(None, "Withdrawal", "voce") == "Saque"
+    assert textos.estado_transaccion("Approved", "voce") == "Aprovada"
+
+
+def test_la_confirmacion_en_portugues_usa_la_plantilla_y_la_base() -> None:
+    objeto = textos.objeto_confirmacion("abrir_disputa", "voce", "Tienda Uno", None)
+    v = textos.confirmacion("abrir_disputa", "voce", objeto, "1.234,56", "COP")
+    assert v.startswith("Vou abrir uma contestação sobre a cobrança de Tienda Uno, no valor de 1.234,56 COP.")
+    assert v.endswith("Você confirma?")
+    tarjeta = textos.objeto_confirmacion("bloquear_tarjeta", "voce", None, "4001")
+    assert "o cartão com final 4001" in textos.confirmacion("bloquear_tarjeta", "voce", tarjeta)
+    assert "pessoa da equipe" in textos.confirmacion(
+        "escalar", "voce", textos.objeto_confirmacion("escalar", "voce", None, None)
+    )
+
+
+def test_disputa_en_portugues_con_el_formato_de_la_cuenta(entorno: Entorno) -> None:
+    cliente, _, demo = entorno
+    n = Navegador(cliente, registro="voce")
+    e1 = n.decir("Não reconheço uma cobrança")
+    assert "Encontrei esta cobrança: Tienda Uno" in _texto(e1)
+    assert _ficha(e1)["monto"] == "1.234,56"  # el monto sigue el formato de la cuenta, no el de Brasil
+    e2 = n.decir("Não reconheço")
+    msg = e2[-1]["outcome"]["interrupts"][0]["message"]
+    assert "Vou abrir uma contestação sobre a cobrança de Tienda Uno, no valor de 1.234,56 COP" in msg
+    assert demo.banco.llamadas == 0
+    e3 = n.resolver(e2, aprobado=True)
+    assert "a contestação caso-" in _texto(e3) and "foi registrada" in _texto(e3)
+    assert demo.banco.llamadas == 1
+
+
+def test_rechazo_en_portugues_usa_la_plantilla_sin_cambios(entorno: Entorno) -> None:
+    cliente, _, demo = entorno
+    n = Navegador(cliente, registro="voce")
+    n.decir("Não reconheço uma cobrança")
+    e3 = n.resolver(n.decir("Não reconheço"), aprobado=False)
+    assert demo.banco.llamadas == 0
+    assert _texto(e3).strip() == textos.plantilla("cierre.sin_cambios", "voce")
+
+
+def test_traspaso_en_portugues_lleva_idioma_pt_en_el_paquete(entorno: Entorno) -> None:
+    cliente, _, demo = entorno
+    n = Navegador(cliente, registro="voce")
+    r = cliente.post("/api/traspaso", headers=n.h)
+    assert r.json()["texto"] == textos.plantilla("traspaso.chat", "voce", rango_espera="alguns minutos")
+    t = demo.banco.traspaso_de_conversacion(n.conv)
+    assert t is not None
+    assert t.paquete.idioma.value == "pt" and t.paquete.registro == "voce"
+    assert t.paquete.cola_destino is not None and t.paquete.cola_destino.idioma == "pt"
+    assert t.paquete.preferencias["registro"] == "voce"
+    assert "alguns minutos" in t.paquete.compromisos_comunicados[0].texto
+
+
+def test_el_paquete_en_espanol_sigue_en_es(entorno: Entorno) -> None:
+    cliente, _, demo = entorno
+    n = Navegador(cliente, registro="vos")
+    cliente.post("/api/traspaso", headers=n.h)
+    t = demo.banco.traspaso_de_conversacion(n.conv)
+    assert t is not None and t.paquete.idioma.value == "es" and t.paquete.registro == "vos"
+
+
+def test_cambiar_de_registro_a_mitad_de_la_conversacion(entorno: Entorno) -> None:
+    cliente, _, _ = entorno
+    n = Navegador(cliente, registro="usted")
+    assert "Encontré este cargo" in _texto(n.decir("No reconozco un cargo"))
+    n.h["X-Registro"] = "voce"  # el cliente elige Português en el selector
+    e2 = n.decir("Não reconheço")
+    assert "Vou abrir uma contestação" in e2[-1]["outcome"]["interrupts"][0]["message"]
+    assert cliente.post("/api/traspaso", headers=n.h).json()["texto"].startswith("Já compartilhei")
+
+
+def test_el_filtro_de_salida_responde_en_el_idioma_del_registro() -> None:
+    from latam_tecnologia.canales.frases import falla_de, respaldo_de
+
+    assert respaldo_de("voce").startswith("Vou analisar") and respaldo_de("vos").startswith("Voy a revisar")
+    assert falla_de("voce").startswith("Não consegui") and falla_de("usted").startswith("No pude")

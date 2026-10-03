@@ -75,7 +75,35 @@ class ResultadoFiltro:
 FiltroFrase = Callable[[str], ResultadoFiltro]
 
 _TARJETA = re.compile(r"\b(?:\d[ -]?){12,18}(\d{4})\b")
-_PROHIBIDAS = re.compile(r"\b(radicad[oa]|bloquead[oa]|reembols\w+|abonad[oa]|estorn\w+)\b", re.IGNORECASE)
+_PROHIBIDAS = re.compile(
+    r"\b(radicad[oa]|bloquead[oa]|reembols\w+|abonad[oa]|estorn\w+|creditad[oa])\b", re.IGNORECASE
+)
+
+# Lo que el cliente ve cuando el filtro bloquea una frase o el turno falla, en el idioma de su registro.
+RESPALDO = {
+    "es": "Voy a revisar esto con un asesor para darte una respuesta correcta.",
+    "pt": "Vou analisar isso com uma pessoa da equipe para dar uma resposta correta.",
+}
+FALLA = {
+    "es": (
+        "No pude continuar en este momento. Intenta de nuevo en unos minutos o pide una persona del equipo."
+    ),
+    "pt": (
+        "Não consegui continuar neste momento. Tente de novo em alguns minutos ou peça uma pessoa da equipe."
+    ),
+}
+
+
+def _idioma(registro: str) -> str:
+    return "pt" if registro == "voce" else "es"
+
+
+def respaldo_de(registro: str) -> str:
+    return RESPALDO[_idioma(registro)]
+
+
+def falla_de(registro: str) -> str:
+    return FALLA[_idioma(registro)]
 
 
 # Identificadores internos (defensa en profundidad, además del prompt): el de producto pasa a "terminada en

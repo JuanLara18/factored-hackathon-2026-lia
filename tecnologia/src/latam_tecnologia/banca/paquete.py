@@ -65,6 +65,8 @@ def construir_paquete(
     cliente = sesion.cliente_id
     conv = banco.conversacion(conversacion_id)
     registro = conv.registro if conv else "usted"
+    # El idioma sale del registro de la conversación (voce es portugués), no del país de la cuenta.
+    idioma = Idioma.PT if registro == "voce" else Idioma.ES
     m = motivo_de(motivo, urgente)
     recientes = lectura.transacciones_recientes(cliente, 50)
     productos = lectura.productos(cliente)
@@ -224,7 +226,9 @@ def construir_paquete(
         pais = PAIS_POR_MONEDA.get(productos[0].moneda)
 
     try:
-        texto_compromiso = textos.plantilla("traspaso.chat", registro, rango_espera="unos minutos")
+        texto_compromiso = textos.plantilla(
+            "traspaso.chat", registro, rango_espera=textos.rango_espera(registro)
+        )
         plantillas = ("traspaso.chat",)
     except Exception:  # plantilla ausente: se declara, no se inventa
         texto_compromiso, plantillas = NO_DISPONIBLE, ()
@@ -253,13 +257,15 @@ def construir_paquete(
         acciones=acciones,
         preguntas_abiertas=tuple(preguntas),
         motivo=m.codigo,
-        idioma=Idioma.ES,
+        idioma=idioma,
         prioridad=prioridad,  # pyright: ignore[reportArgumentType]
         hilo_id=conversacion_id,
         caso_id=caso.caso_ref if caso else None,
         motivo_texto=m.texto,
         regla=regla,
-        cola_destino=ColaDestino(idioma="es", especialidad=m.especialidad, franja=ESPECIALIDAD_FRANJA[prio]),
+        cola_destino=ColaDestino(
+            idioma=idioma.value, especialidad=m.especialidad, franja=ESPECIALIDAD_FRANJA[prio]
+        ),
         registro=registro,
         pais_cuenta=pais,
         canal_actual=Canal.CHAT,

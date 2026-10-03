@@ -113,6 +113,7 @@ class EventosChat(FiltradoEventStream):
 @dataclass
 class AdaptadorChat(ChatAdapter):
     enriquecer: Enriquecedor | None = None
+    registro: str = "usted"
 
     def build_event_stream(self) -> EventosChat:
         return EventosChat(
@@ -120,6 +121,7 @@ class AdaptadorChat(ChatAdapter):
             accept=self.accept,
             ag_ui_version=self.ag_ui_version,
             traza=self.traza,
+            registro=self.registro,
             enriquecer=self.enriquecer,
         )
 
@@ -312,7 +314,7 @@ def crear_app(
         traza.append("traspaso_iniciado")
         return JSONResponse(
             {
-                "texto": textos.plantilla("traspaso.chat", reg, rango_espera="unos minutos"),
+                "texto": textos.plantilla("traspaso.chat", reg, rango_espera=textos.rango_espera(reg)),
                 "turno": accion.resultado_releido,
             }
         )
@@ -320,17 +322,18 @@ def crear_app(
     def enriquecedor(s: Sesion, reg: str) -> Enriquecedor:
         def enriquecer(interrupcion: str, herramienta: str, args: dict[str, Any]) -> tuple[str, str]:
             expira = vencimientos.emitir(s.autenticada.id_sesion, interrupcion)
-            objeto, monto, moneda = "su caso", None, ""
+            comercio, final, monto, moneda = None, None, None, ""
             try:
                 if herramienta == "abrir_disputa":
                     tx = herramientas.transaccion(s.autenticada, str(args.get("transaction_id"))).valor
                     if tx is not None:
-                        objeto = f"sobre el cargo de {textos.describir_comercio(tx.comercio, tx.tipo)}"
+                        comercio = textos.describir_comercio(tx.comercio, tx.tipo, reg)
                         monto, moneda = monto_pais(tx.monto.monto, tx.monto.moneda), tx.monto.moneda
                 elif herramienta == "bloquear_tarjeta":
-                    objeto = f"la tarjeta terminada en {_final(str(args.get('product_id')))}"
+                    final = _final(str(args.get("product_id")))
             except AccesoDenegado:
                 pass
+            objeto = textos.objeto_confirmacion(herramienta, reg, comercio, final)
             return textos.confirmacion(herramienta, reg, objeto, monto, moneda), expira.isoformat()
 
         return enriquecer
@@ -407,6 +410,7 @@ def crear_app(
             deps=ctx,
             instructions=f"Registro: {reg}. {contexto}".strip(),
             traza=traza,
+            registro=reg,
             enriquecer=enriquecedor(s, reg),
         )
 

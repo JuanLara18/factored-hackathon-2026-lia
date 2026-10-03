@@ -18,7 +18,7 @@ from pydantic_ai.messages import TextPart, TextPartDelta
 from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls, FunctionModel
 from pydantic_ai.ui.ag_ui import AGUIAdapter, AGUIEventStream
 
-from latam_tecnologia.canales.frases import FiltroFrase, SegmentadorFrases, filtrar_frase
+from latam_tecnologia.canales.frases import FiltroFrase, SegmentadorFrases, filtrar_frase, respaldo_de
 
 VIGENCIA_NONCE_S = 300.0
 PLANTILLA_RESPALDO = "Voy a revisar esto con un asesor para darte una respuesta correcta."
@@ -48,6 +48,7 @@ class FiltradoEventStream(AGUIEventStream[Confirmaciones, str | DeferredToolRequ
 
     filtro: FiltroFrase = filtrar_frase
     traza: list[str] = field(default_factory=list[str])
+    registro: str = "usted"
     _seg: SegmentadorFrases = field(default_factory=SegmentadorFrases, init=False)
     _bloqueado: bool = field(default=False, init=False)
 
@@ -60,7 +61,7 @@ class FiltradoEventStream(AGUIEventStream[Confirmaciones, str | DeferredToolRequ
             if r.bloqueada:
                 self._bloqueado = True
                 self.traza.append(f"filtro_salida.bloqueo {r.motivo}")
-                texto = PLANTILLA_RESPALDO
+                texto = respaldo_de(self.registro)
             else:
                 texto = r.texto
             eventos.append(TextMessageContentEvent(message_id=self.message_id, delta=texto + " "))

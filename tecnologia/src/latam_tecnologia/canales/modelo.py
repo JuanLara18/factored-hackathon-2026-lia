@@ -22,12 +22,32 @@ from latam_tecnologia.canales.textos import describir_comercio, estado_transacci
 VARIABLE_LLAVE = "GEMINI_API_KEY"
 URL_GEMINI = "https://generativelanguage.googleapis.com/v1beta/openai/"
 MODELO_GEMINI = "gemini-2.5-flash-lite"
-_NO_RECONOCE = re.compile(r"no\s+(la\s+)?reconozc?o|no\s+es\s+m[ií]a", re.IGNORECASE)
-_RECONOCE = re.compile(r"\bla\s+reconozco\b|\bes\s+m[ií]a\b", re.IGNORECASE)
+_NO_RECONOCE = re.compile(
+    r"no\s+(la\s+)?reconozc?o|no\s+es\s+m[ií]a|n[ãa]o\s+reconhe[çc]o|n[ãa]o\s+[ée]\s+minha", re.IGNORECASE
+)
+_RECONOCE = re.compile(r"\bla\s+reconozco\b|\bes\s+m[ií]a\b|\breconhe[çc]o\b|\b[ée]\s+minha\b", re.IGNORECASE)
 
 
 def _registro(info: AgentInfo) -> str:
-    return "vos" if info.instructions and "Registro: vos" in info.instructions else "usted"
+    texto = info.instructions or ""
+    return next((r for r in ("vos", "voce") if f"Registro: {r}" in texto), "usted")
+
+
+# Valores de marcadores del cierre y de la ficha en cada idioma (el resto del texto sale de plantillas).
+CIERRE = {
+    "es": {
+        "cargo": "cargo",
+        "hecho": "quedó registrado el reclamo {caso}",
+        "no_hecho": "no se bloqueó la tarjeta ni se movió dinero",
+        "que_sigue": "el banco revisará el cargo y se lo hará saber por este canal",
+    },
+    "pt": {
+        "cargo": "cobrança",
+        "hecho": "a contestação {caso} foi registrada",
+        "no_hecho": "o cartão não foi bloqueado e nenhum dinheiro foi movimentado",
+        "que_sigue": "o banco vai analisar a cobrança e avisar por este canal",
+    },
+}
 
 
 def _partes(messages: list[ModelMessage]) -> tuple[str, list[ToolReturnPart], list[ToolReturnPart]]:
@@ -75,6 +95,7 @@ def crear_modelo_guionado() -> FunctionModel:
 
     async def flujo(messages: list[ModelMessage], info: AgentInfo) -> AsyncIterator[str | DeltaToolCalls]:
         reg = _registro(info)
+        c = CIERRE["pt" if reg == "voce" else "es"]
         usuario, tras, todos = _partes(messages)
         if (r := next((p for p in tras if p.tool_name == "abrir_disputa"), None)) is not None:
             if r.outcome == "denied":
@@ -83,9 +104,9 @@ def crear_modelo_guionado() -> FunctionModel:
                 texto = plantilla(
                     "cierre.chat",
                     reg,
-                    hecho=f"quedó registrado el reclamo {r.content}",
-                    no_hecho="no se bloqueó la tarjeta ni se movió dinero",
-                    que_sigue="el banco revisará el cargo y se lo hará saber por este canal",
+                    hecho=c["hecho"].format(caso=r.content),
+                    no_hecho=c["no_hecho"],
+                    que_sigue=c["que_sigue"],
                 )
             for t in _trozos(texto):
                 yield t
@@ -95,8 +116,8 @@ def crear_modelo_guionado() -> FunctionModel:
             texto = plantilla(
                 "identificando.chat",
                 reg,
-                cargo="cargo",
-                comercio=describir_comercio(tx["comercio"], tx.get("tipo")),
+                cargo=c["cargo"],
+                comercio=describir_comercio(tx["comercio"], tx.get("tipo"), reg),
                 fecha=fecha_texto(tx["event_ts"]),
                 monto=_dinero(monto, str(tx["monto"]["moneda"])),
                 moneda=str(tx["monto"]["moneda"]),
@@ -105,11 +126,11 @@ def crear_modelo_guionado() -> FunctionModel:
                 yield t
             digitos = re.sub(r"\D", "", str(tx["product_id"])).rjust(4, "0")[-4:]
             ficha = {
-                "comercio": describir_comercio(tx["comercio"], tx.get("tipo")),
+                "comercio": describir_comercio(tx["comercio"], tx.get("tipo"), reg),
                 "monto": _dinero(monto, str(tx["monto"]["moneda"])),
                 "moneda": tx["monto"]["moneda"],
                 "fecha": fecha_texto(tx["event_ts"]),
-                "estado": estado_transaccion(tx["estado"]),
+                "estado": estado_transaccion(tx["estado"], reg),
                 "tarjeta_final": digitos,
             }
             yield {
