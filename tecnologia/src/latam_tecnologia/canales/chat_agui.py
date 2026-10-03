@@ -49,6 +49,7 @@ class FiltradoEventStream(AGUIEventStream[Confirmaciones, str | DeferredToolRequ
     filtro: FiltroFrase = filtrar_frase
     traza: list[str] = field(default_factory=list[str])
     registro: str = "usted"
+    permitidas: frozenset[str] = frozenset()
     _seg: SegmentadorFrases = field(default_factory=SegmentadorFrases, init=False)
     _bloqueado: bool = field(default=False, init=False)
 
@@ -57,7 +58,7 @@ class FiltradoEventStream(AGUIEventStream[Confirmaciones, str | DeferredToolRequ
         for frase in frases:
             if self._bloqueado:
                 break
-            r = self.filtro(frase)
+            r = filtrar_frase(frase, self.permitidas) if self.filtro is filtrar_frase else self.filtro(frase)
             if r.bloqueada:
                 self._bloqueado = True
                 self.traza.append(f"filtro_salida.bloqueo {r.motivo}")

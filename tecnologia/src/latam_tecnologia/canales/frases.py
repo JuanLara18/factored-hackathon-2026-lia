@@ -78,6 +78,10 @@ _TARJETA = re.compile(r"\b(?:\d[ -]?){12,18}(\d{4})\b")
 _PROHIBIDAS = re.compile(
     r"\b(radicad[oa]|bloquead[oa]|reembols\w+|abonad[oa]|estorn\w+|creditad[oa])\b", re.IGNORECASE
 )
+# Afirmaciones que valen solo si en el turno se ejecutó la acción verificada (aprobada por el cliente). Las de
+# movimiento de dinero no se habilitan nunca: el banco no mueve dinero en este flujo.
+ACCIONES_VERIFICABLES = frozenset({"radicad", "bloquead"})
+_NEGACION = re.compile(r"\b(no|não|nao|nunca|sin|sem|ni|nem)\b(?:\W+\w+){0,3}\W*$", re.IGNORECASE)
 
 # Lo que el cliente ve cuando el filtro bloquea una frase o el turno falla, en el idioma de su registro.
 RESPALDO = {
@@ -131,11 +135,16 @@ def enmascarar_identificadores(frase: str) -> str:
     return re.sub(r"\s+([,.;:?])", r"\1", re.sub(r" {2,}", " ", sin_transaccion)).strip()
 
 
-def filtrar_frase(frase: str) -> ResultadoFiltro:
-    """Enmascara tarjetas e ids internos y bloquea afirmaciones de acción sin `AccionVerificada`."""
+def filtrar_frase(frase: str, permitidas: frozenset[str] = frozenset()) -> ResultadoFiltro:
+    """Enmascara tarjetas e ids internos y bloquea afirmaciones de acción sin `AccionVerificada`.
+
+    `permitidas` trae las raíces de `ACCIONES_VERIFICABLES` cuya acción se ejecutó en el turno; una negación
+    ("no fue bloqueada", "não foi bloqueado") no afirma nada y pasa.
+    """
     enmascarada = enmascarar_identificadores(_TARJETA.sub(lambda m: f"**** {m.group(1)}", frase))
-    if (m := _PROHIBIDAS.search(enmascarada)) is not None:
-        return ResultadoFiltro(
-            enmascarada, bloqueada=True, motivo=f"afirmacion_prohibida:{m.group(1).lower()}"
-        )
+    for m in _PROHIBIDAS.finditer(enmascarada):
+        palabra = m.group(1).lower()
+        if palabra[:-1] in permitidas or _NEGACION.search(enmascarada[: m.start()]):
+            continue
+        return ResultadoFiltro(enmascarada, bloqueada=True, motivo=f"afirmacion_prohibida:{palabra}")
     return ResultadoFiltro(enmascarada)

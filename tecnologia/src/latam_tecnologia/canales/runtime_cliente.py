@@ -34,7 +34,13 @@ from ag_ui.core import (
 from ag_ui.encoder import EventEncoder
 from latam_comun.dominio import SesionAutenticada
 
-from latam_tecnologia.canales.frases import SegmentadorFrases, falla_de, filtrar_frase, respaldo_de
+from latam_tecnologia.canales.frases import (
+    ACCIONES_VERIFICABLES,
+    SegmentadorFrases,
+    falla_de,
+    filtrar_frase,
+    respaldo_de,
+)
 from latam_tecnologia.runtime.agente import crear_cliente_sdk
 
 VARIABLE_RECURSO = "LATAM_AGENT_RUNTIME_RECURSO"
@@ -167,6 +173,8 @@ async def flujo_agui(
     yield _evento(RunStartedEvent(thread_id=thread_id, run_id=run_id))
     mensaje_id = f"m-{secrets.token_hex(6)}"
     seg, bloqueado, abierto = SegmentadorFrases(), False, False
+    # Las acciones con efecto solo se ejecutan en el turno en que el cliente las aprueba.
+    permitidas = ACCIONES_VERIFICABLES if aprobaciones and any(aprobaciones.values()) else frozenset[str]()
 
     def frases(lista: list[str]) -> list[str]:
         nonlocal bloqueado
@@ -174,7 +182,7 @@ async def flujo_agui(
         for frase in lista:
             if bloqueado:
                 break
-            r = filtrar_frase(frase)
+            r = filtrar_frase(frase, permitidas)
             if r.bloqueada:
                 bloqueado = True
                 traza.append(f"filtro_salida.bloqueo {r.motivo}")

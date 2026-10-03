@@ -430,3 +430,15 @@ def test_handlers_con_io_bloqueante_no_corren_en_el_bucle() -> None:
     rutas = [r for r in todas if isinstance(r, APIRoute) and r.path in sincronos]
     assert {r.path for r in rutas} == sincronos
     assert [r.path for r in rutas if inspect.iscoroutinefunction(r.endpoint)] == []
+
+
+def test_filtro_permite_acciones_verificadas_y_negaciones() -> None:
+    from latam_tecnologia.canales.frases import ACCIONES_VERIFICABLES, filtrar_frase
+
+    assert filtrar_frase("Su tarjeta quedó bloqueada.").bloqueada  # sin acción verificada en el turno
+    assert not filtrar_frase("Su tarjeta quedó bloqueada.", ACCIONES_VERIFICABLES).bloqueada
+    assert not filtrar_frase("O reclamo foi radicado.", ACCIONES_VERIFICABLES).bloqueada
+    assert not filtrar_frase("La tarjeta no fue bloqueada.").bloqueada
+    assert not filtrar_frase("O cartão não foi bloqueado.").bloqueada
+    assert filtrar_frase("Le reembolsamos el cargo.", ACCIONES_VERIFICABLES).bloqueada  # dinero: nunca
+    assert filtrar_frase("Ya fue abonado a su cuenta.", ACCIONES_VERIFICABLES).bloqueada
