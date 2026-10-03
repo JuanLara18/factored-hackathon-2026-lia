@@ -107,17 +107,11 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
-## En curso (3 oct): brechas 1, 2 y 3
-
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/clientes-cli-1-5-portugues` | `../fh-pt` | plantillas pt (você), selector de idioma en banca y widget, ambigüedad multilingüe, escenarios pt en GEAP |
-
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
 `main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:
 
-1. **Portugués** (obligatorio: "demonstrate interactions in Spanish and Portuguese"): el prompt tiene `pt voce`, pero
+1. **Hecho (3 oct):** plantillas pt-BR (você) con retrotraducción, selector de idioma en banca, widget y chat, prompt 1.3.0 con cambio y mezcla de idioma, 9 escenarios pt en GEAP (`ia/evaluacion/reportes/geap_pt_2026-10-03.md`), recorrido pt verificado en producción. Falta revisión de un hablante nativo. Antes: **Portugués** (obligatorio: "demonstrate interactions in Spanish and Portuguese"): el prompt tiene `pt voce`, pero
    plantillas, sitio, banca y escenarios están solo en español (CLI-1.5). Faltan plantillas pt, interruptor de idioma,
    escenarios pt en el arnés y un caso de demo; el dataset no trae clientes de Brasil (limitación que hay que declarar).
 2. **Hecho (3 oct):** clasificador de motivo de contacto, `ia/evaluacion/reportes/clasificador_2026-10-03.md` y model card. Antes: **Componente aprendido contra línea base** (criterio 4): no hay ninguno evaluado. Lo más directo: clasificador de
