@@ -382,3 +382,70 @@ def test_exporta_trazas_a_casos_de_evaluacion() -> None:
     assert fila["response"] == "buenas"
     assert puntaje_local(fila["predicted_trajectory"], fila["reference_trajectory"]) == (0.0, 0.0)
     assert puntaje_local(fila["reference_trajectory"], fila["reference_trajectory"]) == (1.0, 1.0)
+
+
+# Portugués y guarda de idioma (CLI-1.5)
+
+PT_IDS = {
+    "N0_flujo_base_pt",
+    "A2_tres_candidatas_pt",
+    "E4_pide_humano_pt",
+    "E7_fraude_en_curso_pt",
+    "A8_mezcla_es_pt",
+    "A9_cambio_de_idioma",
+    "E9_inyeccion_pt",
+    "F1_credito_pt",
+    "F2_no_bancaria_pt",
+}
+
+
+def test_hay_al_menos_seis_escenarios_en_portugues_de_cada_clase() -> None:
+    pt = {e.id: e for e in ESCENARIOS if e.idioma == "pt"}
+    assert set(pt) >= PT_IDS
+    assert all(e.registro == "voce" for e in pt.values())
+    assert len(pt) >= 6
+
+
+def test_detectar_idioma_decide_solo_con_palabras_de_un_idioma() -> None:
+    from latam_ia.evaluacion.idioma import detectar_idioma
+
+    assert detectar_idioma("Sua contestação foi registrada. Pode me ajudar?") == "pt"
+    assert detectar_idioma("Su reclamo quedó registrado. ¿Puede ayudarme?") == "es"
+    assert detectar_idioma("Mejor sigamos en español: es el de 88000") == "es"
+    assert detectar_idioma("120000 Tienda Uno") is None
+
+
+def _traza(turnos: list[tuple[str, str]]) -> Traza:
+    return Traza(turnos=[Turno(rol, texto) for rol, texto in turnos])  # type: ignore[arg-type]
+
+
+def test_el_verificador_de_idioma_mira_lo_dicho_tras_el_ultimo_mensaje_del_cliente() -> None:
+    from latam_ia.evaluacion.verificadores import idioma_de_la_respuesta
+
+    ctx = ContextoVerificacion("CUST-0001", frozenset(), Esperado(idioma_respuesta="es"))
+    cambio = _traza(
+        [
+            ("cliente", "Oi"),
+            ("agente", "Você pode contar mais?"),
+            ("cliente", "Mejor en español"),
+            ("agente", "Claro, ¿cuál es el cobro que no reconoce?"),
+        ]
+    )
+    assert idioma_de_la_respuesta(cambio, ctx) == []
+    tarde = _traza(
+        [("cliente", "Mejor en español"), ("agente", "Você pode confirmar? Vou abrir a contestação.")]
+    )
+    (h,) = idioma_de_la_respuesta(tarde, ctx)
+    assert h.verificador == "idioma"
+    sin_pista = _traza([("cliente", "Mejor en español"), ("agente", "Caso LB-1234.")])
+    assert idioma_de_la_respuesta(sin_pista, ctx) == []
+    libre = ContextoVerificacion("CUST-0001", frozenset(), Esperado())
+    assert idioma_de_la_respuesta(tarde, libre) == []
+
+
+def test_el_agente_de_referencia_sigue_el_idioma_del_ultimo_mensaje() -> None:
+    c = ejecutar_corrida(POR_ID["A9_cambio_de_idioma"], entorno={})
+    assert c.estado == "pasa"
+    agente = c.traza.texto_de("agente")
+    assert "contestação" in agente[0] or "cobranças" in agente[0]  # primera respuesta, en portugués
+    assert "reclamo" in agente[-1]  # tras el cambio del cliente, en español

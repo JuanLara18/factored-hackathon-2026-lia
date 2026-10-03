@@ -1,0 +1,435 @@
+# CLI-1.5: catálogo en portugués de Brasil, registro voce, con los mismos ids y marcadores que es.yaml.
+# Cada plantilla trae su retrotraducción al español (`retraduccion`) y, cuando adapta en lugar de traducir,
+# una nota. Sin revisor nativo: el reporte de cierre lo declara (definición 2.3.3). Sin cifras ni fechas escritas.
+# Atención en portugués para clientes de la región (cuentas de México, Colombia y Argentina): la norma que se
+# nombra es la del país de la cuenta, nunca la brasileña.
+version: 1
+idioma: pt
+plantillas:
+  - id: inicio.chat
+    canales: [chat]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      voce: >-
+        Olá. Sou o assistente virtual do LATAM Bank, um sistema de inteligência artificial.
+        Se preferir falar com uma pessoa, você pode pedir a qualquer momento. Em que posso ajudar?
+    retraduccion: >-
+      Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial. Si prefiere hablar
+      con una persona, puede pedirlo en cualquier momento. ¿En qué puedo ayudar?
+  - id: inicio.whatsapp
+    canales: [whatsapp]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      voce: >-
+        Olá. Sou o assistente virtual do LATAM Bank, uma inteligência artificial.
+        Se preferir falar com uma pessoa, escreva pessoa a qualquer momento. Em que posso ajudar?
+    retraduccion: >-
+      Hola. Soy el asistente virtual de LATAM Bank, una inteligencia artificial. Si prefiere hablar con una
+      persona, escriba persona en cualquier momento. ¿En qué puedo ayudar?
+  - id: inicio.voz
+    canales: [voz]
+    tipos: [aviso]
+    marcadores: []
+    textos:
+      voce: >-
+        Olá, sou o assistente virtual do LATAM Bank, uma inteligência artificial.
+        Para falar com uma pessoa, diga pessoa ou digite zero. Em que posso ajudar?
+    retraduccion: >-
+      Hola, soy el asistente virtual de LATAM Bank, una inteligencia artificial. Para hablar con una persona,
+      diga persona o marque cero. ¿En qué puedo ayudar?
+  - id: identificando.chat
+    canales: [chat]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto, moneda]
+    textos:
+      voce: >-
+        Revisei seus movimentos recentes. Encontrei esta {cargo}: {comercio}, em {fecha},
+        no valor de {monto} {moneda}. É esta?
+    retraduccion: >-
+      Revisé sus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+      ¿Es este?
+    notas: "{cargo} es siempre femenino en portugués (cobrança); el motor entrega ese término sin importar el país."
+  - id: identificando.whatsapp
+    canales: [whatsapp]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto, moneda]
+    textos:
+      voce: >-
+        Revisei seus movimentos recentes. Encontrei esta {cargo}: {comercio}, em {fecha},
+        no valor de {monto} {moneda}. É esta? Responda sim ou não.
+    retraduccion: >-
+      Revisé sus movimientos recientes. Encontré este {cargo}: {comercio}, el {fecha}, por {monto} {moneda}.
+      ¿Es este? Responda sí o no.
+  - id: identificando.voz
+    canales: [voz]
+    tipos: [monto]
+    marcadores: [cargo, comercio, fecha, monto_en_palabras]
+    textos:
+      voce: >-
+        Revisei seus movimentos. Encontrei uma {cargo} em {comercio}. Foi em {fecha}.
+        O valor foi {monto_en_palabras}. É esta? Diga sim ou não.
+    retraduccion: >-
+      Revisé sus movimientos. Encontré un {cargo} en {comercio}. Fue el {fecha}, por {monto_en_palabras}.
+      ¿Es este? Diga sí o no.
+    notas: La fecha y el monto van en dos frases para respetar las 15 palabras por frase de voz.
+  - id: confirmando.chat
+    canales: [chat]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      voce: >-
+        Vou {accion} {objeto}. Isso significa que {consecuencia}. Você confirma?
+        Também pode corrigir ou falar com uma pessoa.
+    retraduccion: >-
+      Voy a {accion} {objeto}. Esto significa que {consecuencia}. ¿Lo confirma? También puede corregirlo o
+      hablar con una persona.
+  - id: confirmando.whatsapp
+    canales: [whatsapp]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      voce: >-
+        Vou {accion} {objeto}. Isso significa que {consecuencia}. Responda sim para confirmar
+        ou escreva pessoa para falar com alguém da equipe.
+    retraduccion: >-
+      Voy a {accion} {objeto}. Esto significa que {consecuencia}. Responda sí para confirmar o escriba
+      persona para hablar con alguien del equipo.
+  - id: confirmando.voz
+    canales: [voz]
+    tipos: [confirmacion]
+    marcadores: [accion, objeto, consecuencia]
+    textos:
+      voce: >-
+        Vou {accion} {objeto}. Isso significa que {consecuencia}.
+        Para confirmar, diga sim ou digite um. Para corrigir, digite dois.
+    retraduccion: >-
+      Voy a {accion} {objeto}. Esto significa que {consecuencia}. Para confirmar, diga sí o marque uno. Para
+      corregir, marque dos.
+  - id: ejecutando.chat
+    canales: [chat, whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Estou processando sua solicitação. Ainda não foi concluída.
+    retraduccion: Estoy procesando su solicitud. Todavía no está completada.
+  - id: ejecutando.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Um momento, estou processando sua solicitação. Ainda não foi concluída.
+    retraduccion: Un momento, estoy procesando su solicitud. Todavía no está completada.
+  - id: verificando.chat
+    canales: [chat, whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Estou verificando o resultado antes de confirmar para você.
+    retraduccion: Estoy verificando el resultado antes de confirmárselo.
+  - id: verificando.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Sigo verificando o resultado antes de confirmar para você.
+    retraduccion: Sigo verificando el resultado antes de confirmárselo.
+  - id: informando.chat
+    canales: [chat]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto, moneda, hora, norma, n, unidad, fecha]
+    textos:
+      voce: >-
+        Sua contestação {numero_caso} no valor de {monto} {moneda} foi registrada às {hora}.
+        Conforme {norma}, o LATAM Bank deve responder em no máximo {n} {unidad}.
+        Ou seja, até {fecha}. Mais alguma coisa?
+    retraduccion: >-
+      Su reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}. Según {norma}, LATAM Bank
+      debe responderle en un máximo de {n} {unidad}. Es decir, a más tardar el {fecha}. ¿Algo más?
+    notas: "Reclamo se dice contestação (contestación de una compra), el término del cliente brasileño. {norma} lleva el artículo (a Lei ...)."
+  - id: informando.whatsapp
+    canales: [whatsapp]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto, moneda, hora, norma, n, unidad, fecha]
+    textos:
+      voce: >-
+        Sua contestação {numero_caso} no valor de {monto} {moneda} foi registrada às {hora}.
+        Conforme {norma}, o LATAM Bank deve responder em no máximo {n} {unidad}.
+        Ou seja, até {fecha}. Vamos avisar você por este canal quando o status mudar.
+    retraduccion: >-
+      Su reclamo {numero_caso} por {monto} {moneda} quedó registrado a las {hora}. Según {norma}, LATAM Bank
+      debe responderle en un máximo de {n} {unidad}. Es decir, a más tardar el {fecha}. Le avisaremos por este
+      medio cuando cambie el estado.
+  - id: informando.voz
+    canales: [voz]
+    tipos: [plazo, monto]
+    marcadores: [numero_caso, monto_en_palabras, hora, norma, n, unidad, fecha]
+    textos:
+      voce: >-
+        Sua contestação foi registrada às {hora}. O valor é {monto_en_palabras}.
+        O número do caso é {numero_caso}. Conforme {norma}, o banco deve responder em {n} {unidad}.
+        No máximo, até {fecha}. Mais alguma coisa?
+    retraduccion: >-
+      Su reclamo quedó registrado a las {hora}. Es por {monto_en_palabras}. El número de caso es
+      {numero_caso}. Según {norma}, el banco debe responderle en {n} {unidad}. Como máximo, el {fecha}.
+      ¿Algo más?
+  - id: traspaso.chat
+    canales: [chat]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      voce: >-
+        Já compartilhei o que conversamos com uma pessoa da equipe, então você não precisará repetir.
+        A espera estimada é de {rango_espera}. Prefere continuar esperando ou que a gente avise você?
+    retraduccion: >-
+      Ya compartí lo que conversamos con una persona del equipo, así que no tendrá que repetirlo. La espera
+      estimada es de {rango_espera}. ¿Prefiere seguir esperando o que le avisemos?
+    notas: '"a gente avise você" es el registro corriente en Brasil para "le avisemos".'
+  - id: traspaso.whatsapp
+    canales: [whatsapp]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      voce: >-
+        Já compartilhei o que conversamos com uma pessoa da equipe, então você não precisará repetir.
+        A espera estimada é de {rango_espera}. Vamos escrever para você por este canal quando houver alguém disponível.
+    retraduccion: >-
+      Ya compartí lo que conversamos con una persona del equipo, así que no tendrá que repetirlo. La espera
+      estimada es de {rango_espera}. Le escribiremos por este medio cuando esté disponible.
+  - id: traspaso.voz
+    canales: [voz]
+    tipos: [traspaso]
+    marcadores: [rango_espera]
+    textos:
+      voce: >-
+        Já compartilhei seu caso com uma pessoa da equipe. Você não precisará repetir.
+        A espera estimada é de {rango_espera}. Você pode continuar na linha ou pedir que a gente avise.
+    retraduccion: >-
+      Ya compartí su caso con una persona del equipo. No tendrá que repetirlo. La espera estimada es de
+      {rango_espera}. Puede seguir en línea o pedir que le avisemos.
+  - id: cierre.chat
+    canales: [chat]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      voce: >-
+        Resumo. Feito: {hecho}. Não feito: {no_hecho}. O que vem a seguir: {que_sigue}.
+        Pode nos ajudar com uma pergunta sobre o atendimento?
+    retraduccion: >-
+      Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}. ¿Nos ayuda con una pregunta
+      sobre la atención?
+  - id: cierre.whatsapp
+    canales: [whatsapp]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      voce: >-
+        Resumo. Feito: {hecho}. Não feito: {no_hecho}. O que vem a seguir: {que_sigue}.
+        Como você avalia o atendimento? Responda com um número de um a cinco.
+    retraduccion: >-
+      Resumen. Hecho: {hecho}. No hecho: {no_hecho}. Qué sigue: {que_sigue}. ¿Cómo calificaría la atención?
+      Responda con un número del uno al cinco.
+  - id: cierre.voz
+    canales: [voz]
+    tipos: [cierre]
+    marcadores: [hecho, no_hecho, que_sigue]
+    textos:
+      voce: >-
+        Isto foi feito: {hecho}. Isto não foi feito: {no_hecho}. O que vem a seguir: {que_sigue}.
+        Se precisar de algo mais, ligue de novo. Agradecemos a ligação.
+    retraduccion: >-
+      Esto quedó hecho: {hecho}. Esto no se hizo: {no_hecho}. Lo que sigue: {que_sigue}. Si necesita algo
+      más, vuelva a llamar. Gracias por su llamada.
+    notas: '"Agradecemos a ligação" evita "obrigado/obrigada", que obliga a conocer el género de quien llama.'
+  - id: falla_segura.chat
+    canales: [chat]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: >-
+        Não consegui concluir a ação e não fizemos nenhuma alteração na sua conta.
+        Você pode falar com uma pessoa ou retomar mais tarde.
+    retraduccion: >-
+      No pude completar la acción y no hicimos ningún cambio en su cuenta. Puede hablar con una persona o
+      retomar más tarde.
+  - id: falla_segura.whatsapp
+    canales: [whatsapp]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: >-
+        Não consegui concluir a ação e não fizemos nenhuma alteração na sua conta.
+        Escreva pessoa para falar com alguém da equipe, ou retome esta conversa mais tarde.
+    retraduccion: >-
+      No pude completar la acción y no hicimos ningún cambio en su cuenta. Escriba persona para hablar con
+      alguien del equipo, o retome esta conversación más tarde.
+  - id: falla_segura.voz
+    canales: [voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: >-
+        Não consegui concluir a ação. Não fizemos nenhuma alteração na sua conta.
+        Você pode falar com uma pessoa ou retomar mais tarde. O que prefere?
+    retraduccion: >-
+      No pude completar la acción. No hicimos ningún cambio en su cuenta. Puede hablar con una persona o
+      retomar más tarde. ¿Qué prefiere?
+  - id: negado.todos
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: >-
+        Com isso não posso ajudar. Posso ajudar com o seu próprio caso.
+        Não fizemos nenhuma alteração na sua conta.
+    retraduccion: >-
+      Con eso no le puedo ayudar. Sí puedo ayudarle con su propio caso. No hicimos ningún cambio en su cuenta.
+
+  # Críticas fuera de la matriz: plazos, montos, cierre que distingue y frase de seguridad
+  - id: plazo.respuesta.chat
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, fecha]
+    textos:
+      voce: >-
+        Conforme {norma}, o LATAM Bank deve responder em no máximo {n} {unidad}.
+        Ou seja, até {fecha}.
+    retraduccion: >-
+      Según {norma}, LATAM Bank debe responderle en un máximo de {n} {unidad}. Es decir, a más tardar el {fecha}.
+  - id: plazo.respuesta.voz
+    canales: [voz]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, fecha]
+    textos:
+      voce: Conforme {norma}, o banco deve responder em {n} {unidad}. No máximo, até {fecha}.
+    retraduccion: Según {norma}, el banco debe responderle en {n} {unidad}. Como máximo, el {fecha}.
+  - id: plazo.abono_provisional
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [hora, n, unidad, norma, fecha]
+    textos:
+      voce: >-
+        Registramos seu relato hoje às {hora}. Você o fez dentro de {n} {unidad}, e {norma} prevê
+        um crédito provisório. A área de esclarecimentos analisa até {fecha}.
+        Vamos avisar você quando for aplicado.
+    retraduccion: >-
+      Registramos su reporte hoy a las {hora}. Lo hizo dentro de {n} {unidad}, y {norma} prevé un abono
+      provisional. El área de aclaraciones lo revisa a más tardar el {fecha}. Le avisaremos cuando se aplique.
+    notas: El crédito provisório es lo que prevé la norma; nunca se presenta como promesa del asistente.
+  - id: plazo.fuera_de_termino.chat
+    canales: [chat, whatsapp]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, evento, cargo, fecha_cargo, fecha]
+    textos:
+      voce: >-
+        Conforme {norma}, o prazo para contestar é de {n} {unidad} desde {evento}.
+        Esta {cargo} é de {fecha_cargo}, então esse prazo venceu em {fecha}.
+        Se quiser, uma pessoa da equipe analisa o seu caso.
+    retraduccion: >-
+      Según {norma}, este reclamo se presenta dentro de {n} {unidad} desde {evento}. Este {cargo} es del
+      {fecha_cargo}, así que ese plazo venció el {fecha}. Si quiere, una persona del equipo revisa su caso.
+  - id: plazo.fuera_de_termino.voz
+    canales: [voz]
+    tipos: [plazo]
+    marcadores: [norma, n, unidad, evento, fecha]
+    textos:
+      voce: >-
+        Conforme {norma}, o prazo é de {n} {unidad}. Ele conta desde {evento}.
+        Esse prazo venceu em {fecha}. Se quiser, uma pessoa da equipe analisa o seu caso.
+    retraduccion: >-
+      Según {norma}, el plazo es de {n} {unidad}. Se cuenta desde {evento}. Ese plazo venció el {fecha}. Si
+      quiere, una persona del equipo revisa su caso.
+  - id: monto.no_confirmado
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Não tenho o valor confirmado deste movimento. Pode me contar o que aconteceu?
+    retraduccion: No tengo el monto confirmado de este movimiento. ¿Puede contarme qué pasó?
+  - id: monto.moneda_registrada.chat
+    canales: [chat, whatsapp]
+    tipos: [monto]
+    marcadores: [monto, moneda]
+    textos:
+      voce: >-
+        O valor é {monto} {moneda}, como consta no registro.
+        O produto está registrado nessa moeda e não fazemos conversão.
+    retraduccion: >-
+      El monto es {monto} {moneda}, tal como figura en el registro. El producto está registrado en esa moneda
+      y no la convertimos.
+  - id: monto.moneda_registrada.voz
+    canales: [voz]
+    tipos: [monto]
+    marcadores: [monto_en_palabras]
+    textos:
+      voce: O valor é {monto_en_palabras}, como consta no registro. Não fazemos conversão.
+    retraduccion: El monto es {monto_en_palabras}, tal como figura en el registro. No lo convertimos.
+  - id: confirmacion.reclamo.chat
+    canales: [chat, whatsapp]
+    tipos: [confirmacion, monto]
+    marcadores: [accion, objeto, monto, moneda, consecuencia]
+    textos:
+      voce: >-
+        Vou {accion} {objeto}, no valor de {monto} {moneda}. Isso significa que {consecuencia}. Você confirma?
+    retraduccion: >-
+      Voy a {accion} {objeto}, por {monto} {moneda}. Esto significa que {consecuencia}. ¿Lo confirma?
+  - id: confirmacion.reclamo.voz
+    canales: [voz]
+    tipos: [confirmacion, monto]
+    marcadores: [accion, objeto, monto_en_palabras, consecuencia]
+    textos:
+      voce: >-
+        Vou {accion} {objeto}. O valor é {monto_en_palabras}. Isso significa que {consecuencia}.
+        Para confirmar, diga sim ou digite um.
+    retraduccion: >-
+      Voy a {accion} {objeto}, por {monto_en_palabras}. Esto significa que {consecuencia}. Para confirmar,
+      diga sí o marque uno.
+  - id: cierre.reclamo_abierto
+    canales: [chat, whatsapp, voz]
+    tipos: [general]
+    marcadores: []
+    textos:
+      voce: Sua contestação continua aberta. Vamos avisar você quando houver mudança.
+    retraduccion: Su reclamo sigue abierto. Le avisaremos cuando cambie.
+  - id: cierre.sin_cambios
+    canales: [chat, whatsapp, voz]
+    tipos: [cierre_sin_cambios]
+    marcadores: []
+    textos:
+      voce: Não fizemos nenhuma alteração na sua conta. Se precisar de algo mais, estamos à sua disposição.
+    retraduccion: No hicimos ningún cambio en su cuenta. Si necesita algo más, estamos a su disposición.
+  - id: seguridad.frase.chat
+    canales: [chat]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      voce: >-
+        O LATAM Bank nunca pede sua senha nem que você mova seu dinheiro para outra conta.
+        O código de verificação só se digita no campo seguro; nunca se compartilha.
+    retraduccion: >-
+      LATAM Bank nunca le pide su clave ni que mueva su dinero a otra cuenta. El código de verificación solo
+      se escribe en el campo seguro; nunca se comparte.
+    notas: '"senha" es la palabra brasileña para clave o contraseña.'
+  - id: seguridad.frase.whatsapp
+    canales: [whatsapp]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      voce: >-
+        O LATAM Bank nunca pede sua senha nem que você mova seu dinheiro para outra conta.
+        Não compartilhe com ninguém o seu código de verificação.
+    retraduccion: >-
+      LATAM Bank nunca le pide su clave ni que mueva su dinero a otra cuenta. No comparta con nadie su código
+      de verificación.
+  - id: seguridad.frase.voz
+    canales: [voz]
+    tipos: [seguridad]
+    marcadores: []
+    textos:
+      voce: >-
+        O LATAM Bank nunca pede sua senha nem que você mova dinheiro para outra conta.
+        O código de verificação se digita no teclado, nunca em voz alta.
+    retraduccion: >-
+      LATAM Bank nunca le pide su clave ni que mueva dinero a otra cuenta. El código de verificación se marca
+      con el teclado, nunca en voz alta.

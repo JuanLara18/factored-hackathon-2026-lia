@@ -10,7 +10,7 @@ opacas y la interfaz nunca las muestra. Montos como texto con formato del país 
 | Método y ruta | Entrada | Salida |
 |---|---|---|
 | `GET /api/banca/clientes-demo` | | `[{indice, alias, pais}]` (alias ficticio, p. ej. "Cliente 1 · Argentina") |
-| `POST /api/banca/ingresar` | `{indice, registro?}` | `{sesion, cliente: {alias, pais, moneda, registro}}` |
+| `POST /api/banca/ingresar` | `{indice, registro?}` (`registro`: `usted`, `vos` o `voce`; `voce` es portugués y fija el idioma del agente, las plantillas y `idioma = pt` en el traspaso) | `{sesion, cliente: {alias, pais, moneda, registro}}` |
 | `GET /api/banca/resumen` | | `{cliente, productos: [{producto_ref, tipo, etiqueta, final, estado, moneda, saldo, limite}]}` (`saldo` y `limite` pueden ser `null`) |
 | `GET /api/banca/movimientos?producto_ref=&limite=50&antes_de=` | | `{movimientos: [Movimiento], siguiente}` |
 | `GET /api/banca/movimientos/{tx_ref}` | | `Movimiento` |

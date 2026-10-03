@@ -44,3 +44,22 @@ La regla anterior (percentiles 1 y 99) marcaba unos 110 días de ruido por const
 ## Sin hallazgos
 
 Las tablas sin llave declarada (`satisfaction_surveys`, `call_transcripts`, `digital_events` y otras) no tienen filas idénticas repetidas. Las nueve relaciones revisadas no tienen huérfanos entre los valores no vacíos: transactions hacia customers y products; products, complaints e interacciones hacia customers; complaints hacia products e interacciones; transcripts y surveys hacia interacciones.
+
+## Cobertura de idioma: español y portugués
+
+El enunciado pide demostrar interacciones en español y en portugués y reportar los límites de los datos y del idioma. Estado al 3 de octubre de 2026:
+
+| Qué | Cobertura | Límite |
+|---|---|---|
+| Datos de clientes | cuentas de México, Colombia y Argentina; los clientes de la demostración son de esos tres países | no hay cuentas, transacciones ni reclamos de Brasil |
+| Idioma de los datos | la definición de Clientes (sección 2.3.3) anota `detected_language = es` en todas las filas de interacciones | no hay conversaciones reales en portugués para entrenar, calibrar ni medir; no se volvió a consultar en esta entrega |
+| Plantillas | `clientes/plantillas/es.yaml` (usted y vos) y `clientes/plantillas/pt.yaml` (você, pt-BR), 41 plantillas cada una, mismos ids y marcadores, con retrotraducción al español y linter propio | sin revisor nativo (S-CLI-14): la retrotraducción la hizo el mismo equipo que escribió el texto |
+| Agente | prompt `disputas/agente@1.3.0` con variante `pt voce` y guarda de idioma: responde en el idioma del último mensaje, con cambio de idioma y mezcla | 9 escenarios en portugués en el arnés, k=1 en casi todos (reporte `ia/evaluacion/reportes/geap_pt_2026-10-03.md`); sirven para ver que el camino funciona, no para estimar tasas |
+| Banca, asistente y chat | selector "Español, usted", "Español, vos" y "Português, você" que viaja como `registro` (`usted`, `vos`, `voce`) por sesión, textos, aprobaciones y paquete de traspaso (`idioma = pt`) | las páginas públicas de marketing siguen en español, con una nota; las fichas de transacción llevan el comercio y los estados tal como los trae la base |
+| Montos y fechas | siguen el formato del país de la cuenta (por ejemplo `1.234,56 COP`), no el de Brasil | un cliente en portugués ve montos en pesos colombianos, mexicanos o argentinos, sin conversión a reales |
+| Normas | se nombra la del país de la cuenta; Pix, MED, Procon y Banco Central do Brasil están en las frases prohibidas de plantilla y el prompt dice que no aplican | ningún escenario con verificador propio mide que el agente no las presente como aplicables |
+| Cola humana | el traspaso en portugués lleva `idioma = pt` y cola destino `pt` | la definición de Clientes cuenta 7 especialistas de fraude con portugués y 1 con turno de noche; la demostración tiene una sola cola de operador |
+
+El modo en portugués se rotula en la interfaz como "atendimento em português para clientes da região": es atención en ese idioma para clientes de México, Colombia y Argentina, no un servicio para cuentas brasileñas. Quien lo evalúe debe leerlo así. Ningún dato sintético de Brasil se agregó para disimular el límite.
+
+Lo que falta para cerrar esta brecha de verdad: un revisor nativo de las 41 plantillas, conversaciones reales (o una semilla humana) en portugués, y una medición de equidad por idioma con tamaño de grupo, como pide R-DAT-50.

@@ -14,8 +14,13 @@
   function guardar(v) {
     try { window.localStorage.setItem(CLAVE, v); } catch (e) { /* sin almacenamiento */ }
   }
+  // En portugués (idioma.js) el cargo es siempre la cobrança y el documento mensual el extrato; la moneda sigue siendo la del país.
+  var PT = { cargo: "cobrança", cargos: "cobranças", documento: "extrato" };
   function aplicar(pais) {
     var t = PAISES[pais];
+    if (window.Idioma && window.Idioma.modo() === "voce") {
+      t = { cargo: PT.cargo, cargos: PT.cargos, documento: PT.documento, moneda: t.moneda };
+    }
     var nodos = document.querySelectorAll("[data-p]");
     for (var i = 0; i < nodos.length; i++) {
       var k = nodos[i].getAttribute("data-p");

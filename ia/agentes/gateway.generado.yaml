@@ -58,7 +58,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.3.0
+    latam.trabajador.version: 0.4.0
     entorno: local
 - key_alias: lb-disputas-ci
   models:
@@ -68,7 +68,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.3.0
+    latam.trabajador.version: 0.4.0
     entorno: ci
 - key_alias: lb-disputas-dev
   models:
@@ -78,7 +78,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.3.0
+    latam.trabajador.version: 0.4.0
     entorno: dev
 - key_alias: lb-disputas-demo
   models:
@@ -88,7 +88,7 @@ claves_virtuales:
   max_tokens_per_request: 4600
   metadata:
     latam.trabajador.id: disputas
-    latam.trabajador.version: 0.3.0
+    latam.trabajador.version: 0.4.0
     entorno: demo
 - key_alias: lb-redaccion-local
   models:

@@ -1,0 +1,25 @@
+id: N0_flujo_base_pt
+version: 1.0.0
+categoria: N
+descripcion: "Flujo base en portugués (você): cobrança de monto bajo, se identifica, se confirma en pantalla y se abre la disputa."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Cobrança de monto bajo en portugués: se identifica, se confirma y se abre la disputa con crédito provisional."
+  max_turnos: 8
+  turnos:
+    - decir: "Não reconheço uma cobrança de {{monto}} na Tienda Uno"
+      intencion: hablar
+    - decir: "Sim, confirme"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: [[CUST-0001, TX-1001]]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: pt

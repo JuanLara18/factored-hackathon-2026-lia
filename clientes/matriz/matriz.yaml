@@ -6,7 +6,7 @@ canales: [chat, whatsapp, voz]
 registros:
   usted: {idioma: es, exigido: true}
   vos: {idioma: es, exigido: true}
-  voce: {idioma: pt, exigido: false, pendiente: CLI-1.5}
+  voce: {idioma: pt, exigido: true}
 estados:
   inicio:
     nunca: pedir datos antes de saber el motivo; saludos largos

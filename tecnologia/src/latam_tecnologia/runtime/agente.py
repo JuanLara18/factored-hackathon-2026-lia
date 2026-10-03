@@ -361,7 +361,7 @@ class AgenteDisputasRuntime:
         elif not mensaje:
             yield {"tipo": "error", "codigo": "mensaje_vacio"}
             return
-        registro = registro if registro in ("usted", "vos") else "usted"
+        registro = registro if registro in ("usted", "vos", "voce") else "usted"
         # El prompt versionado (ia/prompts/disputas) ya fija el registro; aquí solo se elige cuál.
         ctx = ContextoAgente(
             self._herramientas, sesion, conversacion_id, Canal.CHAT, registro=registro, contexto=contexto

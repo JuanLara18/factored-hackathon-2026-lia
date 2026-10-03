@@ -1,8 +1,12 @@
-"""Textos del chat: salen de `clientes/plantillas/es.yaml`, nunca del código (CLI-2.1, R-CLI-21).
+"""Textos del chat: salen de `clientes/plantillas/es.yaml` y `pt.yaml`, nunca del código (CLI-2.1, R-CLI-21).
 
-Este módulo lee el YAML directamente y no importa `latam_clientes`, que ya depende de Tecnología.
+Este módulo lee los YAML directamente y no importa `latam_clientes`, que ya depende de Tecnología.
 Los valores de los marcadores (acción, objeto, consecuencia) son vocabulario del canal; las frases
 completas son siempre de la plantilla.
+
+Tres registros: `usted` y `vos` (español) y `voce` (portugués de Brasil, CLI-1.5). El portugués es
+atención en ese idioma para clientes de la región: el país de la cuenta sigue mandando en la norma, el
+monto y la fecha.
 """
 
 from __future__ import annotations
@@ -14,8 +18,11 @@ from typing import Any, cast
 
 import yaml
 
-RUTA_PLANTILLAS = Path(__file__).resolve().parents[4] / "clientes" / "plantillas" / "es.yaml"
-REGISTROS = ("usted", "vos")
+_CLIENTES = Path(__file__).resolve().parents[4] / "clientes" / "plantillas"
+RUTA_PLANTILLAS = _CLIENTES / "es.yaml"
+RUTA_PLANTILLAS_PT = _CLIENTES / "pt.yaml"
+REGISTROS = ("usted", "vos", "voce")
+IDIOMA_POR_REGISTRO = {"usted": "es", "vos": "es", "voce": "pt"}
 _MARCADOR = re.compile(r"\{([a-z_0-9]+)\}")
 
 # Plantillas de chat que usa la página (id de plantilla por función).
@@ -76,30 +83,75 @@ ETIQUETAS: dict[str, dict[str, str]] = {
         "sesion_vencida": "La sesión terminó. Iniciá una nueva conversación.",
         "error_red": "No pude conectarme.",
     },
+    "voce": {
+        "persona": "Falar com uma pessoa",
+        "confirmo": "Confirmo",
+        "no": "Não",
+        "reconozco": "Reconheço",
+        "no_reconozco": "Não reconheço",
+        "renovar": "Perguntar de novo",
+        "enviar": "Enviar",
+        "escribir": "Escreva sua mensagem",
+        "ia": "Assistente de IA",
+        "vence": "Esta confirmação vence em",
+        "vencida": "A confirmação venceu.",
+        "vence_pronto": "Falta um minuto para confirmar.",
+        "tarjeta": "Cartão com final",
+        "registro": "Tratamento",
+        "cliente": "Cliente de demonstração",
+        "iniciar": "Iniciar conversa",
+        "demo": "Demonstração",
+        "conversacion": "Conversa",
+        "ir_mensaje": "Ir para o campo de mensagem",
+        "sesion_vencida": "A sessão terminou. Inicie uma nova conversa.",
+        "error_red": "Não consegui me conectar.",
+    },
 }
 
-# Valores de marcadores para la confirmación de cada herramienta con efecto.
-CONFIRMACION: dict[str, dict[str, str]] = {
-    "abrir_disputa": {
-        "accion": "abrir un reclamo",
-        "consecuencia": "el banco revisará el cargo; bloquear la tarjeta es un paso aparte",
+# Valores de marcadores para la confirmación de cada herramienta con efecto, por idioma.
+CONFIRMACION: dict[str, dict[str, dict[str, str]]] = {
+    "es": {
+        "abrir_disputa": {
+            "accion": "abrir un reclamo",
+            "consecuencia": "el banco revisará el cargo; bloquear la tarjeta es un paso aparte",
+        },
+        "bloquear_tarjeta": {
+            "accion": "bloquear",
+            "consecuencia": "la tarjeta no podrá usarse; abrir un reclamo es un paso aparte",
+        },
+        "escalar": {
+            "accion": "pasar el caso a",
+            "consecuencia": "una persona del equipo lo retomará sin que tenga que repetir nada",
+        },
     },
-    "bloquear_tarjeta": {
-        "accion": "bloquear",
-        "consecuencia": "la tarjeta no podrá usarse; abrir un reclamo es un paso aparte",
-    },
-    "escalar": {
-        "accion": "pasar el caso a",
-        "consecuencia": "una persona del equipo lo retomará sin que tenga que repetir nada",
+    "pt": {
+        "abrir_disputa": {
+            "accion": "abrir uma contestação",
+            "consecuencia": "o banco vai analisar a cobrança; bloquear o cartão é um passo à parte",
+        },
+        "bloquear_tarjeta": {
+            "accion": "bloquear",
+            "consecuencia": "o cartão não poderá ser usado; abrir uma contestação é um passo à parte",
+        },
+        "escalar": {
+            "accion": "encaminhar",
+            "consecuencia": "uma pessoa da equipe vai retomar o caso sem que você precise repetir nada",
+        },
     },
 }
+
+RANGO_ESPERA = {"es": "unos minutos", "pt": "alguns minutos"}
 
 
 @lru_cache(maxsize=1)
 def _plantillas() -> dict[str, dict[str, str]]:
-    datos = cast(dict[str, Any], yaml.safe_load(RUTA_PLANTILLAS.read_text(encoding="utf-8")))
-    filas = cast(list[dict[str, Any]], datos["plantillas"])
-    return {str(f["id"]): cast(dict[str, str], f["textos"]) for f in filas}
+    """Textos por id y registro; el español aporta usted y vos, el portugués aporta voce."""
+    salida: dict[str, dict[str, str]] = {}
+    for ruta in (RUTA_PLANTILLAS, RUTA_PLANTILLAS_PT):
+        datos = cast(dict[str, Any], yaml.safe_load(ruta.read_text(encoding="utf-8")))
+        for f in cast(list[dict[str, Any]], datos["plantillas"]):
+            salida.setdefault(str(f["id"]), {}).update(cast(dict[str, str], f["textos"]))
+    return salida
 
 
 # Etiquetas de los dominios canónicos (datos/dominios/dominios_canonicos.csv) que el chat muestra al cliente.
@@ -117,17 +169,39 @@ ESTADOS_TRANSACCION = {
     "Pending": "Pendiente",
     "Reversed": "Revertida",
 }
+TIPOS_TRANSACCION_PT = {
+    "Purchase": "Compra",
+    "Withdrawal": "Saque",
+    "Transfer": "Transferência",
+    "Payment": "Pagamento",
+    "Deposit": "Depósito",
+    "Adjustment": "Ajuste",
+}
+ESTADOS_TRANSACCION_PT = {
+    "Approved": "Aprovada",
+    "Declined": "Recusada",
+    "Pending": "Pendente",
+    "Reversed": "Estornada",
+}
+SIN_COMERCIO = {"es": "Movimiento sin comercio", "pt": "Movimento sem estabelecimento"}
 
 
-def describir_comercio(comercio: object, tipo: object) -> str:
-    """El comercio si existe; si no (transferencias, retiros), el tipo de transacción en español."""
+def idioma_de(registro: str | None) -> str:
+    return IDIOMA_POR_REGISTRO.get(registro_valido(registro), "es")
+
+
+def describir_comercio(comercio: object, tipo: object, registro: str = "usted") -> str:
+    """El comercio si existe; si no, el tipo de transacción (transferencias, retiros) en el idioma."""
     if comercio:
         return str(comercio)
-    return TIPOS_TRANSACCION.get(str(tipo), "Movimiento sin comercio")
+    if idioma_de(registro) == "pt":
+        return TIPOS_TRANSACCION_PT.get(str(tipo), SIN_COMERCIO["pt"])
+    return TIPOS_TRANSACCION.get(str(tipo), SIN_COMERCIO["es"])
 
 
-def estado_transaccion(estado: object) -> str:
-    return ESTADOS_TRANSACCION.get(str(estado), str(estado))
+def estado_transaccion(estado: object, registro: str = "usted") -> str:
+    tabla = ESTADOS_TRANSACCION_PT if idioma_de(registro) == "pt" else ESTADOS_TRANSACCION
+    return tabla.get(str(estado), str(estado))
 
 
 def plantilla(plantilla_id: str, registro: str, **valores: str) -> str:
@@ -145,21 +219,35 @@ def registro_valido(registro: str | None) -> str:
     return registro if registro in REGISTROS else "usted"
 
 
+def rango_espera(registro: str | None) -> str:
+    return RANGO_ESPERA[idioma_de(registro)]
+
+
 def catalogo_pagina(registro: str) -> dict[str, Any]:
     """Todo lo que la página necesita mostrar, en el registro pedido."""
     r = registro_valido(registro)
     textos = {
-        clave: plantilla(pid, r, **({"rango_espera": "unos minutos"} if pid == "traspaso.chat" else {}))
+        clave: plantilla(pid, r, **({"rango_espera": rango_espera(r)} if pid == "traspaso.chat" else {}))
         for clave, pid in PLANTILLAS_PAGINA.items()
     }
-    return {"registro": r, "textos": textos, "etiquetas": ETIQUETAS[r]}
+    return {"registro": r, "idioma": idioma_de(r), "textos": textos, "etiquetas": ETIQUETAS[r]}
+
+
+def objeto_confirmacion(herramienta: str, registro: str, comercio: str | None, final: str | None) -> str:
+    """El objeto de la acción en el idioma del cliente; comercio y final salen de la base."""
+    pt = idioma_de(registro) == "pt"
+    if herramienta == "abrir_disputa" and comercio is not None:
+        return f"sobre a cobrança de {comercio}" if pt else f"sobre el cargo de {comercio}"
+    if herramienta == "bloquear_tarjeta" and final is not None:
+        return f"o cartão com final {final}" if pt else f"la tarjeta terminada en {final}"
+    return "o seu caso" if pt else "su caso"
 
 
 def confirmacion(
     herramienta: str, registro: str, objeto: str, monto: str | None = None, moneda: str = ""
 ) -> str:
     """Texto de la confirmación; el monto, cuando hay, sale de la base (R-CLI-45)."""
-    v = CONFIRMACION[herramienta]
+    v = CONFIRMACION[idioma_de(registro)][herramienta]
     if monto is not None:
         return plantilla(
             "confirmacion.reclamo.chat",

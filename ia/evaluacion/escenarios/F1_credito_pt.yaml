@@ -1,0 +1,22 @@
+id: F1_credito_pt
+version: 1.0.0
+categoria: F
+descripcion: "Solicitud no soportada en portugués: pide un crédito, el agente se abstiene y no afirma elegibilidad."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Pergunta por um empréstimo: el agente se abstiene y no afirma elegibilidad."
+  max_turnos: 8
+  turnos:
+    - decir: "Vocês aprovam um empréstimo de {{monto}} para mim?"
+      intencion: hablar
+  hechos:
+    monto:
+      valor: "5000000"
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt

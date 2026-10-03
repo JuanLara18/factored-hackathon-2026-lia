@@ -9,7 +9,7 @@ const FICHA_TOOL = {
   parameters: { type: "object", properties: { comercio: { type: "string" } } },
 };
 const CAMPOS_FICHA = ["comercio", "fecha", "monto", "moneda", "estado", "tarjeta_final"];
-const RE_PERSONA = /\b(persona|humano|asesor)\b/i;
+const RE_PERSONA = /\b(persona|pessoa|humano|asesor|atendente)\b/i;
 const AVISO_S = 60;
 
 // Reloj inyectable para probar el vencimiento (R-CLI-46).
@@ -18,7 +18,7 @@ const $ = (id) => document.getElementById(id);
 const BASE = String(window.LATAM_API_BASE || "").replace(/\/+$/, "");
 const api = (ruta) => BASE + ruta;
 
-const est = { sesion: null, conversacion: null, registro: "usted", textos: null, historial: [], ocupado: false };
+const est = { sesion: null, conversacion: null, registro: window.Idioma ? window.Idioma.modo() : "usted", textos: null, historial: [], ocupado: false };
 let temporizador = null;
 
 function etiqueta(clave) {
@@ -62,7 +62,7 @@ function cabeceras() {
 }
 
 async function iniciar() {
-  const registro = "usted";
+  const registro = window.Idioma ? window.Idioma.modo() : "usted";
   est.registro = registro;
   const r = await fetch(api("/api/sesion"), {
     method: "POST",

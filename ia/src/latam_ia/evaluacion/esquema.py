@@ -79,6 +79,7 @@ class Esperado(_Estricto):
     creditos_provisionales: int | None = None
     max_turnos_hasta_traspaso: int | None = None
     debe_escalar: bool | None = None
+    idioma_respuesta: Literal["es", "pt"] | None = None  # idioma en que debe contestar el agente
     herramientas_requeridas: tuple[str, ...] = ()  # el agente debe haberlas llamado
     herramientas_prohibidas: tuple[str, ...] = ()  # el agente no debe haberlas llamado
 

@@ -13,8 +13,8 @@ from typing import Any, cast
 
 import yaml
 
-RUTA_PROMPT = Path(__file__).resolve().parents[4] / "ia" / "prompts" / "disputas" / "agente@1.2.0.yaml"
-REFERENCIA = "disputas/agente@1.2.0"
+RUTA_PROMPT = Path(__file__).resolve().parents[4] / "ia" / "prompts" / "disputas" / "agente@1.3.0.yaml"
+REFERENCIA = "disputas/agente@1.3.0"
 IDIOMA_POR_REGISTRO = {"usted": "es", "vos": "es", "voce": "pt"}
 RESPALDO = (
     "Usted es el asistente de inteligencia artificial de un banco. Trate a la persona de usted, consulte "

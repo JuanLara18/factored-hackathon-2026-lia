@@ -194,6 +194,81 @@ frases_prohibidas:
     motivo: jerga interna que el cliente no usa
     alcance: [plantilla]
 
+  # CLI-1.5: equivalentes en portugués de Brasil (la lista es una sola para los dos idiomas).
+  - id: promesa_devolucao_pt
+    patron: "devolveremos seu dinheiro|vamos devolver seu dinheiro|reembolsaremos|ser[aá] reembolsad[oa]|ser[aá] estornad[oa]|seu dinheiro ser[aá] devolvido"
+    motivo: promesa sin decisión; no hay movimiento de dinero
+    alternativa: "A contestação pede a revisão da cobrança; a resposta chega até {fecha}."
+    clase: promesa
+    alcance: [plantilla, prompt, respuesta]
+  - id: dinheiro_seguro_pt
+    patron: "seu dinheiro est[aá] seguro|n[ãa]o se preocupe|fique tranquil[oa]|pode ficar tranquil[oa]|n[ãa]o vai perder"
+    motivo: afirmación no verificable
+    clase: promesa
+    alcance: [plantilla, prompt, respuesta]
+  - id: pronto_sem_verificar_pt
+    patron: "\\bpronto,? (j[aá] )?feito\\b|\\bj[aá] est[aá] feito\\b|\\btudo certo\\b"
+    motivo: acción no verificada (P6)
+    alcance: [plantilla]
+  - id: diagnostico_fraude_pt
+    patron: "isso [ée] (uma )?fraude|[ée] fraude (com certeza|sim)|com certeza [ée] fraude"
+    motivo: diagnóstico que no le corresponde al sistema
+    alternativa: Vamos tratar como uma possível fraude.
+    alcance: [plantilla, prompt]
+  - id: acusacao_pt
+    patron: "voc[eê] (fez|realizou) (a|essa|esta) compra|voc[eê] mesm[oa] fez|(de acordo com|segundo) nossos registros,? voc[eê]"
+    motivo: acusación al cliente (E3)
+    clase: acusacion
+    alcance: [plantilla, prompt, respuesta]
+  - id: culpa_do_sistema_pt
+    patron: "o sistema n[ãa]o (me )?deixa"
+    motivo: culpa y opacidad
+    alcance: [plantilla, prompt]
+  - id: sem_pessoa_pt
+    patron: "n[ãa]o posso transferir|n[ãa]o h[áa] ningu[ée]m|n[ãa]o tem ningu[ée]m"
+    motivo: P7; se declara la espera o se ofrece continuar después
+    alcance: [plantilla, prompt]
+  - id: prazo_sem_regra_pt
+    patron: "em alguns dias|em breve|o quanto antes|nos pr[óo]ximos dias|\\blogo logo\\b"
+    motivo: plazo sin regla (caso Air Canada)
+    alternativa: plantilla de plazo con norma, número, unidad y fecha
+    alcance: [plantilla]
+  - id: certeza_indevida_pt
+    patron: "\\bgaranto\\b|garantimos|sem d[úu]vida"
+    motivo: certeza indebida
+    clase: promesa
+    alcance: [plantilla, prompt, respuesta]
+  - id: caso_encerrado_pt
+    patron: "caso encerrado"
+    motivo: estado falso si el reclamo sigue abierto
+    alcance: [plantilla]
+  - id: pedir_senha_pt
+    patron: "me (diga|passe|informe) (a |o |sua |seu )?(senha|c[óo]digo)|informe (a |sua )?senha"
+    motivo: ingeniería social
+    alcance: [plantilla, prompt]
+  - id: engano_de_identidade_pt
+    patron: "sou (uma pessoa|humano|um humano)"
+    motivo: engaño sobre la identidad
+    clase: identidad
+    alcance: [plantilla, prompt, respuesta]
+  - id: revela_regras_pt
+    patron: "sua pontua[çc][ãa]o de fraude|seu score de fraude|superou o limite"
+    motivo: revela reglas (LLM07)
+    alcance: [plantilla, prompt]
+  - id: excusa_de_ia_pt
+    patron: "como intelig[êe]ncia artificial n[ãa]o posso"
+    motivo: evasión
+    alcance: [plantilla, prompt]
+  - id: conselho_juridico_pt
+    patron: "recomendo processar|conv[ée]m processar|deveria processar o banco"
+    motivo: consejo legal que no corresponde
+    clase: asesoria
+    alcance: [plantilla, prompt, respuesta]
+  - id: portugues_de_portugal
+    patron: "telem[óo]vel|\\becr[ãa]\\b|palavra-passe|utilizador|ficheiro|multibanco"
+    motivo: pt-BR, sin formas de Portugal
+    alcance: [plantilla]
+
 # Caracteres que no pueden aparecer en ningún texto al cliente (sin emojis, sereno, sin rayas de prosa).
 caracteres_prohibidos:
   - id: emoji
@@ -232,3 +307,77 @@ marcas_registro:
   tuteo: "\\b(tú|puedes|tienes|quieres|eres|reconoces|confirmas|necesitas|prefieres|contigo)\\b"
   voseo: "\\b(vos|reconocés|querés|podés|confirmás|ingresá|tocá|decí|marcá|tenés|sos|elegí|escribí|respondé|preferís|necesitás|ayudás|volvé|retomá|calificás|mirá|esperá|tu|tus|te|ti)\\b"
   usted: "\\b(usted|ustedes|su|sus|le|les|puede|prefiere|quiere|necesita|desea|escriba|responda|marque|diga|retome|ingrese|toque)\\b"
+
+# CLI-1.5: perfil del portugués de Brasil (registro voce). Atención en portugués para clientes de la región:
+# las cuentas son de México, Colombia y Argentina, así que la norma y el formato de montos y fechas son los del
+# país de la cuenta, nunca los de Brasil. Las plantillas no escriben estos términos: usan {cargo} y {documento_mensual}.
+pt:
+  registro: voce
+  paises:
+    MX: {registro: voce, cargo: cobrança, documento_mensual: extrato}
+    CO: {registro: voce, cargo: cobrança, documento_mensual: extrato}
+    AR: {registro: voce, cargo: cobrança, documento_mensual: extrato}
+  pais_neutro: {registro: voce, cargo: cobrança, documento_mensual: extrato}
+  terminos_por_pais: [cobrança, extrato, fatura]
+  canales:
+    chat:
+      max_palabras_frase: 20
+      max_caracteres: 460
+      vocabulario_prohibido: [disque, diga, clique]
+    whatsapp:
+      max_palabras_frase: 20
+      max_caracteres: 520
+      vocabulario_prohibido: [botão, toque, clique, campo seguro, disque]
+    voz:
+      max_palabras_frase: 15
+      max_caracteres: 350
+      vocabulario_prohibido: [botão, toque, tela, link, escreva, clique, campo seguro]
+  marcadores:
+    monto: "180.000,00"
+    moneda: COP
+    monto_en_palabras: cento e oitenta mil pesos colombianos
+    n: "15"
+    unidad: dias úteis
+    fecha: 12 de outubro de 2026
+    fecha_cargo: 3 de outubro de 2026
+    hora: "14:35"
+    norma: a Lei 1328 de 2009
+    evento: o dia da cobrança
+    comercio: Comércio Exemplo
+    ultimos4: "1234"
+    cargo: cobrança
+    documento_mensual: extrato
+    numero_caso: LB-123456
+    accion: bloquear
+    objeto: o cartão com final 1234
+    consecuencia: não serão aceitas novas cobranças a partir desse momento
+    hecho: a contestação foi registrada
+    no_hecho: o cartão não foi bloqueado
+    que_sigue: a resposta chega por este canal
+    rango_espera: entre cinco e dez minutos
+  frases_obligatorias:
+    - id: aviso_ia
+      aplica_a: {estados: [inicio]}
+      patron: "intelig[êe]ncia artificial"
+      motivo: aviso de que habla con una IA al abrir
+    - id: opcao_de_pessoa
+      aplica_a: {estados: [inicio]}
+      patron: "pessoa"
+      motivo: derecho a una persona desde el primer turno
+    - id: sem_alteracoes
+      aplica_a: {estados: [falla_segura, negado], tipos: [cierre_sin_cambios]}
+      patron: "nenhuma altera[çc][ãa]o na sua conta"
+      motivo: decir que no se tocó la cuenta cuando no hubo acción
+    - id: frase_de_seguranca_1
+      aplica_a: {tipos: [seguridad]}
+      patron: "nunca pede"
+      motivo: el banco nunca pide clave ni movimiento de dinero
+    - id: frase_de_seguranca_2
+      aplica_a: {tipos: [seguridad]}
+      patron: "c[óo]digo de verifica[çc][ãa]o"
+      motivo: dónde se digita el código
+  # Patrones ajenos al registro voce: tuteo, español colado y trato formal (o senhor, a senhora).
+  marcas_registro:
+    tuteo: "\\b(tu|teu|tua|teus|tuas|te|ti|contigo|podes|queres|tens|precisas|confirmas|preferes)\\b"
+    espanol: "\\b(usted|ustedes|vos|su|sus|tarjeta|reclamo|cuenta|gracias|tambi[eé]n|puede|quiere|necesita|persona)\\b"
+    formal: "\\b(o senhor|a senhora|senhor|senhora|vossa|vosso)\\b"
