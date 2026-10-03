@@ -123,7 +123,7 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 
 /* Sitio público */
 .cabecera-fila { flex-wrap: nowrap; }
-.cabecera-acciones { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
+.cabecera-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .75rem; margin-left: auto; }
 .cabecera-acciones .boton { min-height: 40px; padding-block: .4rem; white-space: nowrap; }
 .pais select { width: auto; min-height: 40px; padding: .35rem .6rem; font-size: .92rem; }
 .selector-idioma { margin-left: auto; }
@@ -180,6 +180,7 @@ input[type="search"] { width: 100%; min-height: 48px; padding: .5rem .9rem; font
 }
 @media (max-width: 30rem) {
   .cabecera-acciones .boton { padding-inline: .8rem; font-size: .9rem; }
+  .cabecera-acciones .selector-idioma { flex-basis: 100%; display: flex; justify-content: flex-end; }
   .marca span { font-size: 1rem; }
 }
 
