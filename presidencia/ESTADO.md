@@ -112,7 +112,6 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 | Rama | Worktree | Qué hace |
 |---|---|---|
 | `feature/clientes-cli-1-5-portugues` | `../fh-pt` | plantillas pt (você), selector de idioma en banca y widget, ambigüedad multilingüe, escenarios pt en GEAP |
-| `feature/ia-ia-2-clasificador-motivo` | `../fh-ml` | componente aprendido con etiquetas válidas, partición temporal, línea base de reglas, métricas y umbral de abstención |
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
@@ -121,7 +120,7 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 1. **Portugués** (obligatorio: "demonstrate interactions in Spanish and Portuguese"): el prompt tiene `pt voce`, pero
    plantillas, sitio, banca y escenarios están solo en español (CLI-1.5). Faltan plantillas pt, interruptor de idioma,
    escenarios pt en el arnés y un caso de demo; el dataset no trae clientes de Brasil (limitación que hay que declarar).
-2. **Componente aprendido contra línea base** (criterio 4): no hay ninguno evaluado. Lo más directo: clasificador de
+2. **Hecho (3 oct):** clasificador de motivo de contacto, `ia/evaluacion/reportes/clasificador_2026-10-03.md` y model card. Antes: **Componente aprendido contra línea base** (criterio 4): no hay ninguno evaluado. Lo más directo: clasificador de
    motivo/intención (IA-2.x) con etiquetas válidas (semilla humana IA-1.1 o etiquetas derivadas de `complaints`),
    partición temporal sin fuga, línea base de reglas y métricas con umbrales justificados; o el experimento de
    `fraud_score` (IA-10.1).
