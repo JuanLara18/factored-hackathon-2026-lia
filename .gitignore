@@ -54,4 +54,10 @@ datos/dbt/.user.yml
 # Reportes del arnés de evaluación (se regeneran con `just evaluar`)
 ia/evaluacion/reportes/*
 !ia/evaluacion/reportes/geap_*.md
+!ia/evaluacion/reportes/clasificador_*.md
+!ia/evaluacion/reportes/modelcard_*.md
 .hf_space/
+
+# Artefactos de experimentos de IA (modelos y cachés)
+ia/artefactos/
+*.joblib
