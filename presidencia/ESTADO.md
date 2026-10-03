@@ -107,14 +107,30 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
-## Siguientes historias, en orden
+## Qué falta para la entrega (contra el enunciado, 3 oct)
 
-1. **IA:** afinar la ruta (bloqueo de más, escalamiento) y repetir el GenAI Evaluation Service; IA-3.1 e IA-7.2.
-2. **Gobierno:** fijar el umbral de ESC-04 (hoy 1.000 USD provisional por moneda) y revisar la guía de estilo (S-CLI-02).
-3. **Clientes:** CLI-2.1 (etiquetas de los componentes en `es.yaml`; hoy en `canales/textos.py`), CLI-1.4 y CLI-1.5 (portugués).
-4. **Tecnología:** mover las compilaciones de Cloud Build a su propia cuenta y retirar `roles/editor` de la de Compute;
-   voz (spike S1) y WhatsApp de prueba.
-5. **Presidencia:** reporte final y guion de la demo (CLI-5.4).
+`main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:
+
+1. **Portugués** (obligatorio: "demonstrate interactions in Spanish and Portuguese"): el prompt tiene `pt voce`, pero
+   plantillas, sitio, banca y escenarios están solo en español (CLI-1.5). Faltan plantillas pt, interruptor de idioma,
+   escenarios pt en el arnés y un caso de demo; el dataset no trae clientes de Brasil (limitación que hay que declarar).
+2. **Componente aprendido contra línea base** (criterio 4): no hay ninguno evaluado. Lo más directo: clasificador de
+   motivo/intención (IA-2.x) con etiquetas válidas (semilla humana IA-1.1 o etiquetas derivadas de `complaints`),
+   partición temporal sin fuga, línea base de reglas y métricas con umbrales justificados; o el experimento de
+   `fraud_score` (IA-10.1).
+3. **Problema sustentado con datos** (criterio 1): análisis escrito de motivos de contacto, demanda, calidad y
+   restricciones operativas (bloques A a C de Datos) que justifique elegir disputas y fije la línea base de negocio.
+4. **Evaluación con las métricas del enunciado** (criterio 5 y "Evaluation evidence"): sobre el mismo conjunto
+   retenido, línea base (B-reglas) contra el sistema; resolución automática segura, contención, calidad de escalamiento
+   (faltantes e innecesarias), resultados inseguros con denominador, p50/p95 de latencia y costo por caso y por
+   resolución, variabilidad entre corridas, cortes por idioma y segmento, validación del juez. Faltan casos de
+   inyección de prompt, sesión vencida, acceso no autorizado y falla de herramienta en el arnés.
+5. **Equidad**: comparar resultados por segmento autorizado (`plata_restringida_clientes`) y por idioma.
+6. **Reporte final y demo** (D10): reporte con todo lo anterior, "AI-first" (PRE-3.4), capítulo de trabajo restante
+   para producción (PRE-3.5), capacidad, monitoreo, controles de acceso y retención; guion y grabación de la demo
+   (normal, ambiguo y traspaso a persona, en español y portugués); dictamen de Auditoría (AUD-1 a AUD-3).
+7. **Pulido**: umbrales provisionales de Gobierno (ESC-04, tiempos por prioridad, 48 h de México); `--min-instances 1`
+   el día de la demo; decidir si el repositorio se hace público (sin datos ni credenciales: la guarda lo asegura).
 
 ## Cómo se trabaja
 
