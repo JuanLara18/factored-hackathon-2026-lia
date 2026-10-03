@@ -19,6 +19,11 @@
   if (params.get("demo") === "off") { guardar.borrar("banca_mock"); guardar.borrar("banca_mock_estado"); }
   const MOCK = guardar.leer("banca_mock") === "1";
 
+  // Idioma y trato (idioma.js): sin él la banca queda en español de usted.
+  const T = (texto, valores) => (window.Idioma ? window.Idioma.t(texto, valores) : String(texto));
+  const registro = () => (window.Idioma ? window.Idioma.modo() : "usted");
+  const locale = () => (window.Idioma ? window.Idioma.locale() : "es");
+
   const pausa = (ms) => new Promise((r) => window.setTimeout(r, ms));
 
   // Construye nodos con nodos del DOM: todo texto entra por textContent.
@@ -58,7 +63,7 @@
     try {
       r = await fetch(BASE + ruta, {
         method: metodo,
-        headers: { "Content-Type": "application/json", "X-Sesion": (s && s.sesion) || "", "X-Registro": "usted" },
+        headers: { "Content-Type": "application/json", "X-Sesion": (s && s.sesion) || "", "X-Registro": registro() },
         body: o.cuerpo === undefined ? undefined : JSON.stringify(o.cuerpo),
       });
     } catch (e) {
@@ -101,7 +106,7 @@
       const lista = await fixture("clientes-demo");
       const c = lista.find((x) => x.indice === (cuerpo && cuerpo.indice)) || lista[0];
       const moneda = { MX: "MXN", CO: "COP", AR: "ARS" }[c.pais] || "USD";
-      return { sesion: "demo-local", cliente: { alias: c.alias, pais: c.pais, moneda, registro: "usted" } };
+      return { sesion: "demo-local", cliente: { alias: c.alias, pais: c.pais, moneda, registro: registro() } };
     }
     if (camino === "/api/banca/resumen") {
       const r = await fixture("resumen");
@@ -166,12 +171,12 @@
   function fechaLarga(iso) {
     const d = new Date(String(iso) + "T12:00:00");
     if (Number.isNaN(d.getTime())) return String(iso || "");
-    return d.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
+    return d.toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" });
   }
   function fechaCorta(iso) {
     const d = new Date(String(iso) + "T12:00:00");
     if (Number.isNaN(d.getTime())) return String(iso || "");
-    return d.toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" });
+    return d.toLocaleDateString(locale(), { day: "numeric", month: "short", year: "numeric" });
   }
   const dinero = (monto, moneda) => (monto === null || monto === undefined ? "" : String(monto) + " " + String(moneda || ""));
   const enmascarar = (final) => "···· " + String(final || "").replace(/\D/g, "").slice(-4);
@@ -182,7 +187,7 @@
   };
   function insignia(estado) {
     const [texto, tono] = ESTADOS[estado] || [String(estado || "").replace(/_/g, " "), "neutro"];
-    return h("span", { clase: "bn-insignia bn-" + tono, texto });
+    return h("span", { clase: "bn-insignia bn-" + tono, texto: T(texto) });
   }
   // El backend manda el tipo como texto ("Tarjeta Crédito"), no como código: se normaliza antes de comparar.
   const minuscula = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -203,23 +208,23 @@
     return h("div", { clase: "bn-vacio" }, h("h3", { texto: titulo }), texto ? h("p", { texto }) : null, accion || null);
   }
   function estadoError(mensaje, reintentar) {
-    const b = h("button", { type: "button", texto: "Intentar de nuevo" });
+    const b = h("button", { type: "button", texto: T("Intentar de nuevo") });
     b.addEventListener("click", reintentar);
-    return h("div", { clase: "bn-error", role: "alert" }, h("h3", { texto: "No pudimos cargar esta información" }), h("p", { texto: mensaje }), b);
+    return h("div", { clase: "bn-error", role: "alert" }, h("h3", { texto: T("No pudimos cargar esta información") }), h("p", { texto: mensaje }), b);
   }
   function mensajeDeError(e) {
-    if (e && e.status === 401) return "Su sesión venció. Vuelva a ingresar para continuar.";
+    if (e && e.status === 401) return T("Su sesión venció. Vuelva a ingresar para continuar.");
     if (e && (e.status === 404 || e.status === 0 || e.status === 501 || e.status === 503)) {
-      return "El servicio de la banca en línea no está disponible en este momento. En la demostración local puede usar la vista de ejemplo.";
+      return T("El servicio de la banca en línea no está disponible en este momento. En la demostración local puede usar la vista de ejemplo.");
     }
-    return "Ocurrió un problema. Puede intentarlo de nuevo en unos minutos.";
+    return T("Ocurrió un problema. Puede intentarlo de nuevo en unos minutos.");
   }
 
   // Con la sesión vencida no hay nada que mostrar: se limpia y se vuelve al ingreso con un aviso.
   function sesionVencida(e) {
     if (!e || e.status !== 401) return false;
     salir();
-    guardar.escribir("banca_aviso", "Su sesión venció. Vuelva a ingresar para continuar.");
+    guardar.escribir("banca_aviso", T("Su sesión venció. Vuelva a ingresar para continuar."));
     window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
     return true;
   }
@@ -230,7 +235,7 @@
     if (!zona) return;
     zona.textContent = "";
     if (!s) return;
-    const b = h("button", { type: "button", clase: "bn-enlace", texto: "Salir" });
+    const b = h("button", { type: "button", clase: "bn-enlace", texto: T("Salir") });
     b.addEventListener("click", () => { salir(); window.location.href = "/banca/index.html"; });
     zona.append(h("span", { clase: "bn-quien", texto: s.cliente.alias }), b);
   }
@@ -255,19 +260,19 @@
     cont.textContent = "";
     const sel = h("select", { id: "cliente-demo", name: "cliente" });
     lista.forEach((c) => sel.append(h("option", { value: String(c.indice), texto: c.alias })));
-    const btn = h("button", { type: "submit", clase: "primario", texto: "Ingresar a la demostración" });
+    const btn = h("button", { type: "submit", clase: "primario", texto: T("Ingresar a la demostración") });
     const aviso = guardar.leer("banca_aviso") || "";
     guardar.borrar("banca_aviso");
     const err = h("p", { id: "ingreso-error", clase: "bn-msg-error", role: "alert", texto: aviso });
     const form = h("form", { id: "form-ingreso" },
-      h("div", { clase: "campo" }, h("label", { for: "cliente-demo", texto: "Cliente de demostración" }), sel),
+      h("div", { clase: "campo" }, h("label", { for: "cliente-demo", texto: T("Cliente de demostración") }), sel),
       btn, err);
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       btn.disabled = true;
       err.textContent = "";
       try {
-        const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice: Number(sel.value), registro: "usted" } });
+        const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice: Number(sel.value), registro: registro() } });
         guardarSesion({ sesion: r.sesion, cliente: r.cliente });
         window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
       } catch (e) {
@@ -285,17 +290,17 @@
   function tarjetaProducto(p) {
     const cifras = [];
     if (p.saldo !== null && p.saldo !== undefined) {
-      cifras.push(h("div", {}, h("dt", { texto: esTarjeta(p) && p.limite ? "Saldo utilizado" : "Saldo" }), h("dd", { clase: "bn-num", texto: dinero(p.saldo, p.moneda) })));
+      cifras.push(h("div", {}, h("dt", { texto: T(esTarjeta(p) && p.limite ? "Saldo utilizado" : "Saldo") }), h("dd", { clase: "bn-num", texto: dinero(p.saldo, p.moneda) })));
     }
     if (p.limite !== null && p.limite !== undefined) {
-      cifras.push(h("div", {}, h("dt", { texto: "Cupo" }), h("dd", { clase: "bn-num", texto: dinero(p.limite, p.moneda) })));
+      cifras.push(h("div", {}, h("dt", { texto: T("Cupo") }), h("dd", { clase: "bn-num", texto: dinero(p.limite, p.moneda) })));
     }
     return h("li", { clase: "bn-producto" + (p.estado === "bloqueada" ? " bn-bloqueado" : "") },
       h("div", { clase: "bn-producto-cab" },
         h("h3", { texto: p.etiqueta }),
         insignia(p.estado)),
       h("p", { clase: "bn-final bn-num", texto: enmascarar(p.final) }),
-      cifras.length ? h("dl", { clase: "bn-cifras" }, cifras) : h("p", { clase: "nota", texto: "Sin saldo para mostrar." }));
+      cifras.length ? h("dl", { clase: "bn-cifras" }, cifras) : h("p", { clase: "nota", texto: T("Sin saldo para mostrar.") }));
   }
 
   function filtrados() {
@@ -306,13 +311,13 @@
   }
 
   function filaMovimiento(m) {
-    const b = h("button", { type: "button", clase: "bn-fila", "aria-label": `${m.descripcion}, ${dinero(m.monto, m.moneda)}, ${(ESTADOS[m.estado] || [m.estado])[0]}. Ver detalle` },
+    const b = h("button", { type: "button", clase: "bn-fila", "aria-label": T("{desc}, {monto}, {estado}. Ver detalle", { desc: m.descripcion, monto: dinero(m.monto, m.moneda), estado: T((ESTADOS[m.estado] || [m.estado])[0]) }) },
       h("span", { clase: "bn-fila-txt" },
         h("span", { clase: "bn-fila-desc", texto: m.descripcion }),
         h("span", { clase: "bn-fila-meta", texto: `${m.hora} · ${m.categoria || m.tipo} · ${enmascarar(m.tarjeta_final)}` }),
         h("span", { clase: "bn-fila-marcas" }, insignia(m.estado),
-          m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: "Compra en el exterior" }) : null,
-          m.caso_ref ? h("span", { clase: "bn-insignia bn-neutro", texto: "Con reclamo" }) : null)),
+          m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: T("Compra en el exterior") }) : null,
+          m.caso_ref ? h("span", { clase: "bn-insignia bn-neutro", texto: T("Con reclamo") }) : null)),
       h("span", { clase: "bn-monto bn-num", texto: dinero(m.monto, m.moneda) }));
     b.addEventListener("click", () => abrirDetalle(m, b));
     return h("li", {}, b);
@@ -322,11 +327,11 @@
     const cont = $("movimientos");
     cont.textContent = "";
     const lista = filtrados();
-    $("cuenta-resultados").textContent = `${lista.length} ${lista.length === 1 ? "movimiento" : "movimientos"}`;
+    $("cuenta-resultados").textContent = T(lista.length === 1 ? "{n} movimiento" : "{n} movimientos", { n: lista.length });
     if (!lista.length) {
       const hay = tablero.movimientos.length > 0;
-      cont.append(estadoVacio(hay ? "No hay movimientos con esos filtros" : "Todavía no hay movimientos",
-        hay ? "Pruebe con otra búsqueda o quite algún filtro." : "Cuando haga una compra la verá aquí.", null));
+      cont.append(estadoVacio(T(hay ? "No hay movimientos con esos filtros" : "Todavía no hay movimientos"),
+        T(hay ? "Pruebe con otra búsqueda o quite algún filtro." : "Cuando haga una compra la verá aquí."), null));
       return;
     }
     const grupos = new Map();
@@ -364,13 +369,13 @@
     try {
       const r = await llamar("/api/banca/resumen");
       tablero.productos = r.productos || [];
-      $("saludo").textContent = "Hola, " + (r.cliente && r.cliente.alias ? r.cliente.alias : "cliente");
+      $("saludo").textContent = T("Hola, {nombre}", { nombre: r.cliente && r.cliente.alias ? r.cliente.alias : T("cliente") });
       cont.textContent = "";
-      if (!tablero.productos.length) cont.append(estadoVacio("No tiene productos en esta demostración", "", null));
+      if (!tablero.productos.length) cont.append(estadoVacio(T("No tiene productos en esta demostración"), "", null));
       else cont.append(...tablero.productos.map(tarjetaProducto));
       const sel = $("f-producto");
       sel.textContent = "";
-      sel.append(h("option", { value: "", texto: "Todos los productos" }));
+      sel.append(h("option", { value: "", texto: T("Todos los productos") }));
       tablero.productos.forEach((p) => sel.append(h("option", { value: p.producto_ref, texto: `${p.etiqueta} ${enmascarar(p.final)}` })));
     } catch (e) {
       cont.textContent = "";
@@ -393,31 +398,31 @@
     const producto = tablero.productos.find((p) => esTarjeta(p) && p.final === m.tarjeta_final);
     $("detalle-titulo").textContent = m.descripcion;
     const marcas = h("p", { clase: "bn-fila-marcas" }, insignia(m.estado),
-      m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: `Compra en el exterior (${m.pais})` }) : h("span", { clase: "bn-insignia bn-neutro", texto: `País: ${m.pais}` }));
+      m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: T("Compra en el exterior ({pais})", { pais: m.pais }) }) : h("span", { clase: "bn-insignia bn-neutro", texto: T("País: {pais}", { pais: m.pais }) }));
     cuerpo.append(
       h("p", { clase: "bn-detalle-monto bn-num", texto: dinero(m.monto, m.moneda) }),
       marcas,
       h("dl", { clase: "bn-datos" },
-        filaDetalle("Fecha", fechaCorta(m.fecha)), filaDetalle("Hora", m.hora),
-        filaDetalle("Tarjeta", enmascarar(m.tarjeta_final)), filaDetalle("Categoría", m.categoria || m.tipo),
-        filaDetalle("Canal", m.canal || "")));
+        filaDetalle(T("Fecha"), fechaCorta(m.fecha)), filaDetalle(T("Hora"), m.hora),
+        filaDetalle(T("Tarjeta"), enmascarar(m.tarjeta_final)), filaDetalle(T("Categoría"), m.categoria || m.tipo),
+        filaDetalle(T("Canal"), m.canal || "")));
     const res = h("p", { id: "detalle-resultado", clase: "bn-resultado", role: "status" });
     const acciones = h("div", { clase: "bn-acciones-detalle" });
     if (m.caso_ref) {
-      acciones.append(h("a", { clase: "boton", href: "/banca/reclamos.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mi reclamo" }));
+      acciones.append(h("a", { clase: "boton", href: "/banca/reclamos.html" + (MOCK ? "?demo=local" : ""), texto: T("Ver mi reclamo") }));
     } else if (m.reclamable) {
-      const b = h("button", { type: "button", clase: "primario", texto: "No reconozco este cargo" });
+      const b = h("button", { type: "button", clase: "primario", texto: T("No reconozco este cargo") });
       b.addEventListener("click", () => reclamar(m, b, res));
       acciones.append(b);
     } else {
-      acciones.append(h("p", { clase: "nota", texto: "Este movimiento no admite reclamos." }));
+      acciones.append(h("p", { clase: "nota", texto: T("Este movimiento no admite reclamos.") }));
     }
     if (producto && producto.estado !== "bloqueada") {
-      const b = h("button", { type: "button", texto: "Bloquear tarjeta" });
+      const b = h("button", { type: "button", texto: T("Bloquear tarjeta") });
       b.addEventListener("click", () => confirmarBloqueo(producto, res));
       acciones.append(b);
     } else if (producto) {
-      acciones.append(h("p", { clase: "nota", texto: `La tarjeta ${enmascarar(producto.final)} está bloqueada.` }));
+      acciones.append(h("p", { clase: "nota", texto: T("La tarjeta {t} está bloqueada.", { t: enmascarar(producto.final) }) }));
     }
     cuerpo.append(acciones, res);
     dlg.showModal();
@@ -426,22 +431,22 @@
 
   async function reclamar(m, boton, res) {
     boton.disabled = true;
-    res.textContent = "Abriendo su reclamo...";
+    res.textContent = T("Abriendo su reclamo...");
     try {
-      const r = await llamar(`/api/banca/movimientos/${encodeURIComponent(m.tx_ref)}/reclamar`, { metodo: "POST", cuerpo: { registro: "usted" } });
+      const r = await llamar(`/api/banca/movimientos/${encodeURIComponent(m.tx_ref)}/reclamar`, { metodo: "POST", cuerpo: { registro: registro() } });
       m.caso_ref = m.caso_ref || "abierto";
       $("detalle").close();
       pintarMovimientos();
       abrirAsistente(r.conversacion, m);
     } catch (e) {
       boton.disabled = false;
-      res.textContent = e.status === 409 ? "Este cargo ya tiene un reclamo abierto." : mensajeDeError(e);
+      res.textContent = e.status === 409 ? T("Este cargo ya tiene un reclamo abierto.") : mensajeDeError(e);
     }
   }
 
   function confirmarBloqueo(p, res) {
     const dlg = $("confirmar");
-    $("confirmar-texto").textContent = `Va a bloquear la tarjeta ${p.etiqueta} ${enmascarar(p.final)}. No podrá usarla para compras ni retiros hasta que se reponga. Si no quiere bloquearla, elija Cancelar y no se hará ningún cambio.`;
+    $("confirmar-texto").textContent = T("Va a bloquear la tarjeta {t}. No podrá usarla para compras ni retiros hasta que se reponga. Si no quiere bloquearla, elija Cancelar y no se hará ningún cambio.", { t: `${p.etiqueta} ${enmascarar(p.final)}` });
     const si = $("confirmar-si");
     const no = $("confirmar-no");
     si.disabled = false;
@@ -451,7 +456,7 @@
         const r = await llamar(`/api/banca/tarjetas/${encodeURIComponent(p.producto_ref)}/bloqueo`, { metodo: "POST", cuerpo: { confirmo: true } });
         p.estado = "bloqueada";
         dlg.close();
-        const t = r.ya_estaba ? `La tarjeta ${enmascarar(p.final)} ya estaba bloqueada. No hicimos ningún cambio.` : `Bloqueamos la tarjeta ${enmascarar(p.final)}.`;
+        const t = r.ya_estaba ? T("La tarjeta {t} ya estaba bloqueada. No hicimos ningún cambio.", { t: enmascarar(p.final) }) : T("Bloqueamos la tarjeta {t}.", { t: enmascarar(p.final) });
         res.textContent = t;
         anunciar(t);
         const cont = $("productos");
@@ -461,7 +466,7 @@
         si.disabled = false;
         dlg.close();
         res.textContent = e.status === 400 || e.status === 404
-          ? "No pudimos bloquear esta tarjeta desde aquí. Puede pedir ayuda a una persona desde el asistente."
+          ? T("No pudimos bloquear esta tarjeta desde aquí. Puede pedir ayuda a una persona desde el asistente.")
           : mensajeDeError(e);
       }
     };
@@ -494,15 +499,15 @@
 
   function tarjetaReclamo(c) {
     const eventos = (c.historial || []).map((e) => h("li", {}, h("span", { clase: "bn-punto", "aria-hidden": "true" }),
-      h("div", {}, h("p", { clase: "bn-evento", texto: e.evento }), h("p", { clase: "nota", texto: fechaCorta(e.fecha) }))));
-    const cifras = [filaDetalle("Monto reclamado", dinero(c.monto, c.moneda)), filaDetalle("Abierto el", fechaCorta(c.abierto_en))];
-    cifras.push(filaDetalle("Devolución provisional", c.credito_provisional ? dinero(c.credito_provisional, c.moneda) : "Todavía no aplica"));
-    cifras.push(filaDetalle("Plazo de respuesta", c.plazo ? fechaCorta(c.plazo) : "Se lo informaremos pronto"));
+      h("div", {}, h("p", { clase: "bn-evento", texto: T(e.evento) }), h("p", { clase: "nota", texto: fechaCorta(e.fecha) }))));
+    const cifras = [filaDetalle(T("Monto reclamado"), dinero(c.monto, c.moneda)), filaDetalle(T("Abierto el"), fechaCorta(c.abierto_en))];
+    cifras.push(filaDetalle(T("Devolución provisional"), c.credito_provisional ? dinero(c.credito_provisional, c.moneda) : T("Todavía no aplica")));
+    cifras.push(filaDetalle(T("Plazo de respuesta"), c.plazo ? fechaCorta(c.plazo) : T("Se lo informaremos pronto")));
     return h("li", { clase: "bn-reclamo" },
-      h("div", { clase: "bn-producto-cab" }, h("h2", { texto: c.descripcion || "Cargo reclamado" }), insignia(c.estado)),
+      h("div", { clase: "bn-producto-cab" }, h("h2", { texto: c.descripcion || T("Cargo reclamado") }), insignia(c.estado)),
       h("dl", { clase: "bn-datos" }, cifras),
-      h("h3", { texto: "Historial" }),
-      h("ol", { clase: "bn-linea", "aria-label": "Historial del reclamo" }, eventos));
+      h("h3", { texto: T("Historial") }),
+      h("ol", { clase: "bn-linea", "aria-label": T("Historial del reclamo") }, eventos));
   }
 
   async function iniciarReclamos() {
@@ -514,8 +519,8 @@
         const lista = await llamar("/api/banca/reclamos");
         cont.textContent = "";
         if (!lista.length) {
-          cont.append(estadoVacio("No tiene reclamos", "Si no reconoce un cargo, ábralo desde sus movimientos y le ayudamos.",
-            h("a", { clase: "boton", href: "/banca/index.html" + (MOCK ? "?demo=local" : ""), texto: "Ver mis movimientos" })));
+          cont.append(estadoVacio(T("No tiene reclamos"), T("Si no reconoce un cargo, ábralo desde sus movimientos y le ayudamos."),
+            h("a", { clase: "boton", href: "/banca/index.html" + (MOCK ? "?demo=local" : ""), texto: T("Ver mis movimientos") })));
           return;
         }
         cont.append(...lista.map(tarjetaReclamo));
@@ -547,6 +552,6 @@
     }
   }
 
-  window.Banca = { llamar, h, sesion, MOCK, BASE, guardar, ErrorApi, pausa, anunciar, fixture, estadoLocal };
+  window.Banca = { llamar, h, sesion, MOCK, BASE, guardar, ErrorApi, pausa, anunciar, fixture, estadoLocal, T, registro };
   arrancar();
 })();

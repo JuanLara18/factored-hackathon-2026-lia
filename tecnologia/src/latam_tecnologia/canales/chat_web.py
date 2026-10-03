@@ -54,7 +54,7 @@ MAX_VIVAS = 2000  # confirmaciones emitidas y sin gastar, por proceso
 log = logging.getLogger(__name__)
 WEB_DIR = Path(__file__).resolve().parents[3] / "web" / "chat"
 CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-ancestors 'none'"
-_PERSONA = re.compile(r"\b(persona|humano|asesor)\b", re.IGNORECASE)
+_PERSONA = re.compile(r"\b(persona|pessoa|humano|asesor|atendente)\b", re.IGNORECASE)
 
 Enriquecedor = Callable[[str, str, dict[str, Any]], tuple[str, str]]
 

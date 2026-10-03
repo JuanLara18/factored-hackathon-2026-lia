@@ -6,13 +6,13 @@
 (function () {
   const B = window.Banca;
   if (!B) return;
-  const { h } = B;
+  const { h, T, registro } = B;
   const FICHA_TOOL = {
     name: "FichaTransaccion",
     description: "Dibuja la ficha de una transacción del cliente",
     parameters: { type: "object", properties: { comercio: { type: "string" } } },
   };
-  const RE_PERSONA = /\b(persona|humano|asesor)\b/i;
+  const RE_PERSONA = /\b(persona|pessoa|humano|asesor|atendente)\b/i;
   const AVISO_S = 60;
   const SONDEO_MS = 4000;
   const ahora = () => (typeof window.relojChat === "function" ? window.relojChat() : Date.now());
@@ -45,20 +45,21 @@
     return null;
   }
 
-  const et = (k) => est.textos.etiquetas[k] || RESPALDO.etiquetas[k] || "";
-  const tx = (k) => est.textos.textos[k] || RESPALDO.textos[k] || "";
+  // Con /api/textos caído, el respaldo se traduce al idioma elegido (idioma.js).
+  const et = (k) => est.textos.etiquetas[k] || T(RESPALDO.etiquetas[k] || "");
+  const tx = (k) => est.textos.textos[k] || T(RESPALDO.textos[k] || "");
 
   function construir() {
-    el.lanzador = h("button", { type: "button", id: "asistente-lanzador", clase: "bw-lanzador", "aria-expanded": "false", "aria-controls": "asistente-panel", texto: "Asistente" });
-    el.ia = h("p", { id: "asistente-ia", clase: "bw-ia", role: "note", texto: RESPALDO.etiquetas.ia });
-    el.persona = h("button", { type: "button", clase: "bw-persona", texto: RESPALDO.etiquetas.persona });
-    el.cerrar = h("button", { type: "button", clase: "bw-cerrar", "aria-label": "Cerrar el asistente", texto: "Cerrar" });
-    el.titulo = h("h2", { id: "asistente-titulo", tabindex: "-1", texto: "Asistente de LATAM Bank" });
-    el.log = h("div", { id: "asistente-log", clase: "bw-log", role: "log", "aria-live": "polite", "aria-relevant": "additions", tabindex: "0", "aria-label": "Conversación" });
+    el.lanzador = h("button", { type: "button", id: "asistente-lanzador", clase: "bw-lanzador", "aria-expanded": "false", "aria-controls": "asistente-panel", texto: T("Asistente") });
+    el.ia = h("p", { id: "asistente-ia", clase: "bw-ia", role: "note", texto: T(RESPALDO.etiquetas.ia) });
+    el.persona = h("button", { type: "button", clase: "bw-persona", texto: T(RESPALDO.etiquetas.persona) });
+    el.cerrar = h("button", { type: "button", clase: "bw-cerrar", "aria-label": T("Cerrar el asistente"), texto: T("Cerrar") });
+    el.titulo = h("h2", { id: "asistente-titulo", tabindex: "-1", texto: T("Asistente de LATAM Bank") });
+    el.log = h("div", { id: "asistente-log", clase: "bw-log", role: "log", "aria-live": "polite", "aria-relevant": "additions", tabindex: "0", "aria-label": T("Conversación") });
     el.estado = h("p", { clase: "nota bw-estado", role: "status" });
     el.entrada = h("input", { id: "asistente-mensaje", type: "text", maxlength: "500", required: true, autocomplete: "off" });
-    el.etiquetaEntrada = h("label", { for: "asistente-mensaje", clase: "visualmente-oculto", texto: RESPALDO.etiquetas.escribir });
-    el.enviar = h("button", { type: "submit", clase: "primario", texto: RESPALDO.etiquetas.enviar });
+    el.etiquetaEntrada = h("label", { for: "asistente-mensaje", clase: "visualmente-oculto", texto: T(RESPALDO.etiquetas.escribir) });
+    el.enviar = h("button", { type: "submit", clase: "primario", texto: T(RESPALDO.etiquetas.enviar) });
     el.form = h("form", { clase: "bw-form" }, el.etiquetaEntrada, el.entrada, el.enviar);
     el.panel = h("section", { id: "asistente-panel", clase: "bw-panel oculto", role: "dialog", "aria-modal": "false", "aria-labelledby": "asistente-titulo" },
       h("div", { clase: "bw-cab" }, el.titulo, el.cerrar), h("div", { clase: "bw-sub" }, el.ia, el.persona),
@@ -105,7 +106,7 @@
 
   async function cargarTextos() {
     try {
-      const d = await B.llamar("/api/textos?registro=usted");
+      const d = await B.llamar("/api/textos?registro=" + encodeURIComponent(registro()));
       if (d && d.etiquetas && d.textos) est.textos = d;
     } catch (e) { est.textos = RESPALDO; }
     aplicarTextos();
@@ -127,7 +128,7 @@
     est.abierto = true;
     el.panel.classList.remove("oculto");
     el.lanzador.setAttribute("aria-expanded", "true");
-    el.lanzador.textContent = "Asistente";
+    el.lanzador.textContent = T("Asistente");
     if (o.conversacion && o.conversacion !== est.conversacion) await empezar(o.conversacion, o.contexto);
     else if (!est.conversacion && !o.conversacion) mostrarSinContexto();
     el.titulo.focus();
@@ -143,7 +144,7 @@
     if (el.log.childElementCount) return;
     cargarTextos().then(() => {
       burbuja("asistente", tx("aviso"));
-      burbuja("asistente", "Para revisar un cargo, ábralo desde sus movimientos y elija No reconozco este cargo. También puede pedir hablar con una persona.");
+      burbuja("asistente", T("Para revisar un cargo, ábralo desde sus movimientos y elija No reconozco este cargo. También puede pedir hablar con una persona."));
     });
   }
 
@@ -169,15 +170,15 @@
     let texto;
     try {
       const r = await B.llamar("/api/traspaso", { metodo: "POST", cuerpo: { conversacion: est.conversacion } });
-      texto = r.texto || "Ya avisamos a una persona. Le responderá en esta misma conversación.";
+      texto = r.texto || T("Ya avisamos a una persona. Le responderá en esta misma conversación.");
       est.traspaso = true;
       recordar();
     } catch (e) {
-      texto = e.status === 401 ? et("sesion_vencida") : "No pudimos avisar a una persona en este momento. Puede intentarlo de nuevo.";
+      texto = e.status === 401 ? et("sesion_vencida") : T("No pudimos avisar a una persona en este momento. Puede intentarlo de nuevo.");
     }
     burbuja("asistente", texto);
     anunciar(texto);
-    if (est.traspaso) { el.estado.textContent = "Esperando a una persona"; iniciarSondeo(); }
+    if (est.traspaso) { el.estado.textContent = T("Esperando a una persona"); iniciarSondeo(); }
   }
 
   function iniciarSondeo() {
@@ -197,13 +198,13 @@
         recordar();
         if (m.autor !== "persona") continue;
         const b = burbuja("persona");
-        if (!est.abierto) el.lanzador.textContent = "Asistente, mensaje nuevo";
-        b.append(etiquetaAutor("Persona de LATAM Bank"), h("span", { texto: m.texto }));
-        anunciar("Nueva respuesta de una persona de LATAM Bank");
+        if (!est.abierto) el.lanzador.textContent = T("Asistente, mensaje nuevo");
+        b.append(etiquetaAutor(T("Persona de LATAM Bank")), h("span", { texto: m.texto }));
+        anunciar(T("Nueva respuesta de una persona de LATAM Bank"));
         el.estado.textContent = "";
       }
     } catch (e) {
-      if (e.status === 404) { detenerSondeo(); el.estado.textContent = "Por ahora no podemos mostrar las respuestas de la persona. Vuelva a abrir el asistente en unos minutos."; }
+      if (e.status === 404) { detenerSondeo(); el.estado.textContent = T("Por ahora no podemos mostrar las respuestas de la persona. Vuelva a abrir el asistente en unos minutos."); }
     }
   }
 
@@ -213,7 +214,7 @@
       await B.llamar(`/api/banca/conversaciones/${encodeURIComponent(est.conversacion)}/mensajes`, { metodo: "POST", cuerpo: { texto } });
     } catch (e) {
       b.classList.add("error");
-      burbuja("asistente error", e.status === 409 || e.status === 404 ? "Todavía no hay una persona en este caso. Su mensaje no se envió." : "No pudimos enviar su mensaje. Inténtelo de nuevo.");
+      burbuja("asistente error", e.status === 409 || e.status === 404 ? T("Todavía no hay una persona en este caso. Su mensaje no se envió.") : T("No pudimos enviar su mensaje. Inténtelo de nuevo."));
     }
   }
 
@@ -223,7 +224,7 @@
     if (est.ocupado) return;
     if (est.traspaso) { await responderAPersona(texto); return; }
     if (RE_PERSONA.test(texto)) { await pedirPersona(texto); return; }
-    if (!est.conversacion) { burbuja("usuario", texto); burbuja("asistente", "Para hablar con el asistente, abra primero un movimiento y elija No reconozco este cargo."); return; }
+    if (!est.conversacion) { burbuja("usuario", texto); burbuja("asistente", T("Para hablar con el asistente, abra primero un movimiento y elija No reconozco este cargo.")); return; }
     burbuja("usuario", texto);
     est.historial.push({ id: crypto.randomUUID(), role: "user", content: texto });
     await correr(null);
@@ -245,7 +246,7 @@
       } else {
         const resp = await fetch(B.BASE + "/api/agui", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Sesion": (s && s.sesion) || "", "X-Registro": "usted", Accept: "text/event-stream" },
+          headers: { "Content-Type": "application/json", "X-Sesion": (s && s.sesion) || "", "X-Registro": registro(), Accept: "text/event-stream" },
           body: JSON.stringify(cuerpo),
         });
         if (resp.status === 401) { burbuja("asistente error", et("sesion_vencida")); return; }
@@ -263,7 +264,7 @@
       burbuja("asistente error", tx("falla"));
     } finally {
       est.ocupado = false;
-      el.estado.textContent = est.traspaso ? "Esperando a una persona" : "";
+      el.estado.textContent = est.traspaso ? T("Esperando a una persona") : "";
     }
   }
 
@@ -333,8 +334,8 @@
     const filas = [];
     const monto = `${datos.monto || ""} ${datos.moneda || ""}`.trim();
     if (monto) filas.push(h("dt", { texto: et("monto") }), h("dd", { clase: "bn-num", texto: monto }));
-    if (datos.fecha) filas.push(h("dt", { texto: "Fecha" }), h("dd", { texto: String(datos.fecha) }));
-    if (datos.estado) filas.push(h("dt", { texto: "Estado" }), h("dd", { texto: String(datos.estado) }));
+    if (datos.fecha) filas.push(h("dt", { texto: T("Fecha") }), h("dd", { texto: String(datos.fecha) }));
+    if (datos.estado) filas.push(h("dt", { texto: T("Estado") }), h("dd", { texto: String(datos.estado) }));
     if (datos.tarjeta_final) filas.push(h("dt", { texto: et("tarjeta") }), h("dd", { clase: "bn-num", texto: "···· " + String(datos.tarjeta_final).replace(/\D/g, "").slice(-4) }));
     const acciones = h("div", { clase: "acciones" });
     for (const clave of ["reconozco", "no_reconozco"]) {
@@ -345,7 +346,7 @@
       });
       acciones.append(b);
     }
-    const caja = h("section", { clase: "bw-ficha", "aria-label": "Transacción" }, h("h3", { texto: String(datos.comercio || "") }), h("dl", {}, filas), acciones);
+    const caja = h("section", { clase: "bw-ficha", "aria-label": T("Transacción") }, h("h3", { texto: String(datos.comercio || "") }), h("dl", {}, filas), acciones);
     el.log.append(caja);
     caja.scrollIntoView({ block: "end" });
   }
@@ -431,8 +432,8 @@
     est.traspaso = Boolean(previa.traspaso);
     est.ultimoMensaje = null; // el registro se vuelve a pintar entero
     if (est.traspaso) {
-      burbuja("asistente", "Retomamos su conversación con una persona de LATAM Bank.");
-      el.estado.textContent = "Esperando a una persona";
+      burbuja("asistente", T("Retomamos su conversación con una persona de LATAM Bank."));
+      el.estado.textContent = T("Esperando a una persona");
       iniciarSondeo();
     }
   }

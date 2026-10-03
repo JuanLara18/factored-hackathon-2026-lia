@@ -126,6 +126,11 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .cabecera-acciones { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
 .cabecera-acciones .boton { min-height: 40px; padding-block: .4rem; white-space: nowrap; }
 .pais select { width: auto; min-height: 40px; padding: .35rem .6rem; font-size: .92rem; }
+.selector-idioma { margin-left: auto; }
+.selector-idioma + #zona-sesion, .selector-idioma + .cabecera-acciones { margin-left: 0; }
+.idioma select { width: auto; min-height: 40px; padding: .35rem .6rem; font-size: .92rem; }
+.nota-idioma { flex-basis: 100%; }
+
 .nav { flex: 1; margin-left: 1rem; }
 .nav-pronto { color: var(--suave); padding: .55rem 0; font-size: .95rem; cursor: default; }
 .nav-pronto small { font-size: .72rem; border: 1px solid var(--borde); border-radius: 999px; padding: .05rem .5rem; margin-left: .25rem; }
