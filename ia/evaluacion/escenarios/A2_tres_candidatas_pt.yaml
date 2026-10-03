@@ -1,0 +1,27 @@
+id: A2_tres_candidatas_pt
+version: 1.0.0
+categoria: A
+descripcion: "Ambigüedad en portugués: tres cobranças posibles en el mismo comercio, se listan opciones y se disputa solo la elegida."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Tres cobranças posibles en Super Norte, en portugués: se listan opciones y se disputa solo la que el cliente elige."
+  max_turnos: 8
+  turnos:
+    - decir: "Tem uma cobrança do Super Norte que não reconheço"
+      intencion: hablar
+    - decir: "A de {{monto}}"
+      intencion: hablar
+    - decir: "Sim, confirme"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "88000"
+      si_pregunta: [qual]
+esperado:
+  casos: [[CUST-0001, TX-1008]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt

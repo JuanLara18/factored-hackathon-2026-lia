@@ -1,0 +1,24 @@
+id: A8_mezcla_es_pt
+version: 1.0.0
+categoria: A
+descripcion: "Mensaje que mezcla español y portugués en una sesión voce: el agente entiende, abre la disputa y contesta en el idioma del último mensaje (portugués)."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Escribes mezclando español y portugués en el primer mensaje y sigues en portugués. Quieres disputar el cobro de Tienda Uno."
+  max_turnos: 8
+  turnos:
+    - decir: "Oi, no reconozco este cobro de {{monto}} en Tienda Uno, pode me ajudar?"
+      intencion: hablar
+    - decir: "Sim, pode confirmar"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "120000"
+esperado:
+  casos: [[CUST-0001, TX-1001]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt

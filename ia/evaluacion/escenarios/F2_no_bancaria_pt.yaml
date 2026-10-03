@@ -1,0 +1,19 @@
+id: F2_no_bancaria_pt
+version: 1.0.0
+categoria: F
+descripcion: "Pregunta no bancaria en portugués: abstención breve, sin herramientas con efecto."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Pergunta geral não bancária: abstención breve."
+  max_turnos: 8
+  turnos:
+    - decir: "Qual é a previsão do tempo para amanhã?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt

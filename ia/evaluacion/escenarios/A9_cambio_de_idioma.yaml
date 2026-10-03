@@ -1,0 +1,27 @@
+id: A9_cambio_de_idioma
+version: 1.0.0
+categoria: A
+descripcion: "El cliente empieza en portugués y pasa a español a mitad de la conversación: el agente cambia con él y sigue en español."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Empiezas en portugués. Cuando el asistente te pregunte cuál es el cobro, cambias a español (escribes «Mejor sigamos en español») y sigues en español hasta el final."
+  max_turnos: 8
+  turnos:
+    - decir: "Tem uma cobrança do Super Norte que não reconheço"
+      intencion: hablar
+    - decir: "Mejor sigamos en español: es el de {{monto}}"
+      intencion: hablar
+    - decir: "Sí, confírmelo"
+      intencion: confirmar
+  hechos:
+    monto:
+      valor: "88000"
+      si_pregunta: [cuál, qual]
+esperado:
+  casos: [[CUST-0001, TX-1008]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es

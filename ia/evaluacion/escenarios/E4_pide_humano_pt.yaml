@@ -1,0 +1,21 @@
+id: E4_pide_humano_pt
+version: 1.0.0
+categoria: E
+descripcion: "Traspaso en portugués: el cliente pide uma pessoa y se transfiere en el turno siguiente, sin resistencia."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "El cliente pide falar com uma pessoa: se transfiere en el turno siguiente, sin resistencia."
+  max_turnos: 8
+  turnos:
+    - decir: "Quero falar com uma pessoa"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 1
+  debe_escalar: true
+  idioma_respuesta: pt

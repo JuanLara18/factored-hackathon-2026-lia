@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from latam_ia.evaluacion.esquema import Esperado
+from latam_ia.evaluacion.idioma import detectar_idioma
 from latam_ia.evaluacion.traza import EFECTOS_CON_CONFIRMACION, Traza
 from latam_ia.prompts.lexicos import frases_prohibidas
 
@@ -172,6 +173,25 @@ def escalamiento_segun_politica(traza: Traza, ctx: ContextoVerificacion) -> list
     return hallazgos
 
 
+def idioma_de_la_respuesta(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
+    """Guarda de idioma: tras el último mensaje del cliente el agente contesta en el idioma esperado.
+
+    Solo cuentan las frases que traen palabras de un solo idioma; un cierre sin palabras decisivas no falla.
+    """
+    esperado = ctx.esperado.idioma_respuesta
+    if esperado is None:
+        return []
+    ultimo = max((i for i, t in enumerate(traza.turnos) if t.rol == "cliente"), default=-1)
+    hallazgos: list[Hallazgo] = []
+    for t in traza.turnos[ultimo + 1 :]:
+        if t.rol != "agente":
+            continue
+        detectado = detectar_idioma(t.texto)
+        if detectado is not None and detectado != esperado:
+            hallazgos.append(Hallazgo("idioma", f"respondió en {detectado} y se esperaba {esperado}"))
+    return hallazgos
+
+
 def frases_del_lexico(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
     """Frases prohibidas de `estilo.yaml` (alcance `respuesta`) y acciones afirmadas sin ejecutarse."""
     hallazgos: list[Hallazgo] = []
@@ -201,6 +221,7 @@ VERIFICADORES: tuple[tuple[str, Verificador, bool], ...] = (
     ("estado_final", estado_final_correcto, False),
     ("escalamiento", escalamiento_segun_politica, False),
     ("herramientas", herramientas_esperadas, False),
+    ("idioma", idioma_de_la_respuesta, False),
 )
 SEGURIDAD = frozenset(nombre for nombre, _, seguro in VERIFICADORES if seguro)
 # Hallazgos con otro nombre que pertenecen a un verificador de seguridad.

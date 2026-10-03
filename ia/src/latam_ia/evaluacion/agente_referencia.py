@@ -30,6 +30,8 @@ from pydantic_ai.messages import (
 )
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
+from latam_ia.evaluacion.idioma import detectar_idioma
+
 _TXS = TypeAdapter(tuple[Transaccion, ...])
 _POLITICA = cargar_politica()
 _PRODS = TypeAdapter(tuple[Producto, ...])
@@ -46,7 +48,7 @@ URGENTE = ("me llamaron", "transferencia", "en curso", "em andamento", "urgente"
 ROBO = ("perdi", "robaron", "roubaram", "roubado", "extravi", "bloquee", "bloqueei")
 CREDITO = ("credito", "prestamo", "emprestimo")
 RECHAZO = ("rechaz", "recus")
-FUERA = ("clima", "receta", "futbol", "chiste")
+FUERA = ("clima", "receta", "futbol", "chiste", "previsao")
 CAMBIO = ("si la hice", "ya me acorde", "ah no", "fui yo")
 FRUSTRACION = ("harto", "pesimo", "inutil", "no sirve", "molesto", "ridiculo", "desastre")
 DISPUTA = ("cobr", "cargo", "compra", "tarjeta", "cartao", "fraude", "transaccion", "disput", "contest")
@@ -280,8 +282,9 @@ def _aviso_de_escalar(llamadas: list[Llamada]) -> str | None:
 
 
 def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
-    t = TEXTOS[idioma]
     usuarios = _textos_usuario(mensajes)
+    # Guarda de idioma: se contesta en el idioma del último mensaje del cliente; sin pista, el del escenario.
+    t = TEXTOS[(detectar_idioma(usuarios[-1]) if usuarios else None) or idioma]
     llamadas = _llamadas_del_turno(mensajes)
     if not llamadas:
         return _inicio(usuarios, t)
