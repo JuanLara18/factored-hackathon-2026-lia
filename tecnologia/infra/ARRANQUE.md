@@ -27,8 +27,11 @@ adopta con `importar.tf`. **Terraform no se ha aplicado nunca**: `terraform vali
 - **Estado remoto.** No existe bucket de estado: el estado es local. Para trabajar en equipo hay que crear uno con
   versionado y añadir `backend "gcs"`.
 - **Retirado** por no existir en el proyecto: Cloud SQL, Workload Identity Federation y cuenta de despliegue, Cloud Run
-  Job `pipeline-datos`, Artifact Registry propio y Secret Manager. El pipeline de datos corre desde la máquina del
-  dueño (dbt y la carga usan sus credenciales).
+  Job `pipeline-datos` y Artifact Registry propio. El pipeline de datos corre desde la máquina del dueño (dbt y la
+  carga usan sus credenciales).
+- **Secret Manager.** Existe un secreto creado a mano el 30 sep, `latam-ref-secreto` (clave de las referencias opacas
+  de la API), que Cloud Run monta como `LATAM_REF_SECRETO` y que `latam-chat@` lee con `secretAccessor`. Todavía no
+  está en Terraform: hay que añadirlo al adoptar lo desplegado.
 
 ## Adoptar lo desplegado (sin aplicar)
 
