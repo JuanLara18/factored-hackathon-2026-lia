@@ -146,6 +146,8 @@ def test_banca_axe_autenticado(abrir, axe_js, oscuro):
     ingresar(page, 0)
     assert axe(page, axe_js) == []
     page.locator("#movimientos .bn-fila").first.click()
+    # axe mide el contraste con la opacidad del momento: hay que esperar a que termine la entrada del panel.
+    page.wait_for_function("document.getAnimations().every(a => a.playState !== 'running')")
     assert axe(page, axe_js) == []
 
 
