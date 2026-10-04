@@ -112,8 +112,8 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 | Rama | Worktree | Qué hace |
 |---|---|---|
 | `feature/ia-ia-5-4-evaluacion-final` | `../fh-eval2` | conjunto retenido (~30 casos con fallas, inyección, sesión vencida, acceso ajeno), línea base contra sistema, métricas del enunciado, `presidencia/reporte/04_evaluacion.md` |
-| `feature/gobierno-gob-equidad` | `../fh-equidad` | equidad histórica por país, segmento, canal, edad y género (solo auditoría, agregada) y función de cortes para la evaluación; `presidencia/reporte/05_equidad.md` |
-| `feature/ia-ia-10-riesgo-plazo` | `../fh-sla` | segundo componente aprendido: riesgo de incumplir el plazo al radicar la disputa; solo sube la prioridad del traspaso |
+
+- **Segundo componente (4 oct):** riesgo de plazo al radicar; sin señal sobre las líneas base (AUC 0,50) y la etiqueta `sla_breached` no sigue los tiempos registrados. Se entrega abstenido siempre, con el hallazgo documentado (`ia/evaluacion/reportes/riesgo_plazo_2026-10-04.md`).
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
@@ -133,7 +133,7 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
    (faltantes e innecesarias), resultados inseguros con denominador, p50/p95 de latencia y costo por caso y por
    resolución, variabilidad entre corridas, cortes por idioma y segmento, validación del juez. Faltan casos de
    inyección de prompt, sesión vencida, acceso no autorizado y falla de herramienta en el arnés.
-5. **Equidad**: comparar resultados por segmento autorizado (`plata_restringida_clientes`) y por idioma.
+5. **Hecho (4 oct):** `presidencia/reporte/05_equidad.md`, sin disparidades atribuibles en la línea base histórica; función `latam_gobierno.equidad.tabla_disparidad` para cortar la evaluación. Antes: **Equidad**: comparar resultados por segmento autorizado (`plata_restringida_clientes`) y por idioma.
 6. **Reporte final y demo** (D10): reporte con todo lo anterior, "AI-first" (PRE-3.4), capítulo de trabajo restante
    para producción (PRE-3.5), capacidad, monitoreo, controles de acceso y retención; guion y grabación de la demo
    (normal, ambiguo y traspaso a persona, en español y portugués); dictamen de Auditoría (AUD-1 a AUD-3).
