@@ -107,6 +107,14 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
+## En curso (4 oct)
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/ia-ia-5-4-evaluacion-final` | `../fh-eval2` | conjunto retenido (~30 casos con fallas, inyección, sesión vencida, acceso ajeno), línea base contra sistema, métricas del enunciado, `presidencia/reporte/04_evaluacion.md` |
+| `feature/gobierno-gob-equidad` | `../fh-equidad` | equidad histórica por país, segmento, canal, edad y género (solo auditoría, agregada) y función de cortes para la evaluación; `presidencia/reporte/05_equidad.md` |
+| `feature/ia-ia-10-riesgo-plazo` | `../fh-sla` | segundo componente aprendido: riesgo de incumplir el plazo al radicar la disputa; solo sube la prioridad del traspaso |
+
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
 `main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:
