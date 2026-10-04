@@ -115,6 +115,14 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 
 - **Segundo componente (4 oct):** riesgo de plazo al radicar; sin señal sobre las líneas base (AUC 0,50) y la etiqueta `sla_breached` no sigue los tiempos registrados. Se entrega abstenido siempre, con el hallazgo documentado (`ia/evaluacion/reportes/riesgo_plazo_2026-10-04.md`).
 
+## En curso (4 oct): diseño y flujos
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/diseno-banca` | `../fh-diseno-banca` | rediseño de banca en línea y asistente (ingreso con personas, resumen, tarjetas, movimientos con íconos y signo, detalle, panel del asistente, reclamos) y tokens de diseño |
+| `feature/diseno-sitio-consola` | `../fh-diseno-sitio` | rediseño del sitio público (hero con maqueta de la app) y de la consola del experto |
+| `feature/tecnologia-api-ux` | `../fh-api-ux` | etiquetas en español y portugués, montos con signo, íconos, resumen, nombres ficticios, `POST /api/demo/restablecer` y pruebas e2e que limpian |
+
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
 `main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:
