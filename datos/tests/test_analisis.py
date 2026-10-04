@@ -65,3 +65,43 @@ def test_consultas_se_parsean() -> None:
     q = parsear_consultas(SQL.read_text(encoding="utf-8"))
     assert {"cobertura", "motivo_canal", "quejas_linea_base", "calidad", "digital"} <= set(q)
     assert all("{ds}" in sql for sql in q.values())
+
+
+def test_equidad_k_anonimato_y_canal_sin_ajuste() -> None:
+    import pytest
+    from latam_datos.analisis import equidad as eq
+
+    with pytest.raises(ValueError):
+        eq.verificar_k({"q": [{"n": 19}]})
+    base = {"ambito": "disputa", "n_h": 100, "h_p50": 37, "n_csat": None}
+
+    def f(dim: str, grupo: str, resp: int, n: int) -> dict[str, float | str | None]:
+        return {
+            **base,
+            "dimension": dim,
+            "grupo": grupo,
+            "n": n,
+            "resp": resp,
+            "sla": 10,
+            "res": 10,
+            "esc": 5,
+            "e_resp": n * 0.5,
+            "e_sla": 10,
+            "e_res": 10,
+            "e_esc": 5,
+        }
+
+    filas = [f(d, g, r, 100) for d in ("pais", "canal") for g, r in (("a", 70), ("b", 50))]
+    m = eq.calcular({"equidad_quejas": filas})
+    canal = next(
+        r
+        for r in m["binarias"]
+        if r["dimension"] == "canal" and r["grupo"] == "b" and r["metrica"] == "con primera respuesta"
+    )
+    assert canal["estado"] == "investigar_sin_ajuste" and "dif_aj" not in canal
+    pais = next(
+        r
+        for r in m["binarias"]
+        if r["dimension"] == "pais" and r["grupo"] == "b" and r["metrica"] == "con primera respuesta"
+    )
+    assert pais["estado"] in {"persiste_tras_ajustar", "explicada_por_mezcla"}
