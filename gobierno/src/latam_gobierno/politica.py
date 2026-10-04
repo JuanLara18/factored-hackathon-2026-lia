@@ -61,8 +61,16 @@ class RadicarYEscalar(_Modelo):
     por_moneda: dict[str, TopeCredito] = {}
 
 
+class Urgencia(_Cita):
+    """Única vía para marcar P1 desde el agente: el motivo es un código cerrado, no la bandera del modelo."""
+
+    id: Texto
+    motivos: tuple[str, ...] = Field(min_length=1)
+
+
 class Escalamiento(_Modelo):
     reglas: tuple[ReglaEscalamiento, ...] = Field(min_length=1)
+    urgencia: Urgencia
     radicar_y_escalar: RadicarYEscalar
 
 
@@ -148,6 +156,11 @@ class PoliticaV1(_Modelo):
             if coincide:
                 return Decision(id=r.id, motivo=r.motivo)
         return None
+
+    def es_urgente(self, motivo: str) -> bool:
+        """Urgencia (P1) por política: solo un motivo de la lista cerrada; la orden del cliente no cuenta."""
+        clave = "_".join(motivo.strip().lower().split())
+        return clave in self.escalamiento.urgencia.motivos
 
     def escalar_tras_radicar(self, moneda: str, amount_usd: Decimal | None) -> Decision | None:
         """Monto sobre el umbral de la moneda: radica y luego escala. Sin monto en USD no se adivina."""

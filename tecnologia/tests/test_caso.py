@@ -6,12 +6,14 @@ from decimal import Decimal
 import pytest
 from latam_comun.dominio import Canal, Confirmacion, Dinero, NivelAcr, SesionAutenticada
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
-from latam_tecnologia.herramientas.catalogo import AccesoDenegado, Herramientas
+from latam_tecnologia.herramientas.catalogo import AccesoDenegado, EscalacionRequerida, Herramientas
 from latam_tecnologia.herramientas.falsos import LecturaOroFalsa, ServiciosBancoFalsos
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.caso import Estado, Evento, MotorCaso, transicionar
 from latam_tecnologia.servicios.almacen import AlmacenMemoria
-from pydantic_ai import DeferredToolRequests
+from pydantic_ai import DeferredToolRequests, DeferredToolResults
+from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.test import TestModel
 
 AHORA = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
@@ -246,3 +248,94 @@ def test_monto_sobre_el_umbral_radica_y_luego_escala() -> None:
     r = m.motor.confirmar("k1", s, _conf())
     assert r.accion is not None and r.accion.exito and r.escalada is not None
     assert m.banco.casos == {("c1", "t4"): "caso-1"} and len(m.banco.traspasos) == 1
+
+
+# Hallazgos de la evaluación (5 oct): la política se hace cumplir en la herramienta, no en el prompt.
+
+
+def _escalar_como_modelo(m: Mundo, motivo: str, urgente: bool) -> None:
+    s = _sesion()
+    m.motor.abrir("k1", s, Canal.CHAT)
+    m.h.escalar(s, "k1", motivo, urgente)
+
+
+def test_r27_el_cliente_no_sube_su_propia_prioridad() -> None:
+    m = Mundo()
+    _escalar_como_modelo(m, "Solicitud de usuario", urgente=True)  # lo que hizo el modelo bajo inyección
+    assert m.banco.traspasos == [("c1", "k1", False)]
+
+
+def test_r27_solo_un_motivo_de_politica_es_urgente() -> None:
+    m = Mundo()
+    _escalar_como_modelo(m, "fraude_en_curso", urgente=False)
+    assert m.banco.traspasos == [("c1", "k1", True)]
+
+
+def test_r21_abrir_disputa_con_producto_desconocido_exige_escalar() -> None:
+    m = Mundo()
+    m.lectura._tx.append(("c1", _tx("t7", producto="p-fantasma")))  # pyright: ignore[reportPrivateUsage]
+    s = _sesion()
+    m.motor.abrir("k1", s, Canal.CHAT)
+    with pytest.raises(EscalacionRequerida) as e:
+        m.h.abrir_disputa(s, "k1", "t7", "fraude", _conf())
+    assert e.value.motivo == "producto_no_encontrado" and m.banco.llamadas == 0
+
+
+def test_r21_la_herramienta_del_agente_rechaza_antes_de_pedir_aprobacion() -> None:
+    m = Mundo()
+    m.lectura._tx.append(("c1", _tx("t7", producto="p-fantasma")))  # pyright: ignore[reportPrivateUsage]
+    m.motor.abrir("k1", _sesion(), Canal.CHAT)
+
+    def modelo(mensajes: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if len(mensajes) == 1:
+            return ModelResponse(
+                parts=[ToolCallPart("abrir_disputa", {"transaction_id": "t7", "motivo": "fraude"})]
+            )
+        return ModelResponse(parts=[TextPart("lo paso con una persona")])
+
+    agente = crear_agente_disputas(FunctionModel(modelo))
+    deps = ContextoAgente(m.h, _sesion(), "k1", Canal.CHAT)
+    r = agente.run_sync("disputa t7", deps=deps)
+    assert isinstance(r.output, DeferredToolRequests)  # la herramienta pide aprobación como siempre
+    pedida = r.output.approvals[0]
+    aprobada = DeferredToolResults(approvals={pedida.tool_call_id: True})
+    r = agente.run_sync(None, message_history=r.all_messages(), deferred_tool_results=aprobada, deps=deps)
+    retorno = next(p for x in r.all_messages() for p in x.parts if isinstance(p, ToolReturnPart))
+    assert "llamar a escalar con motivo producto_no_encontrado" in str(retorno.content)
+    assert m.banco.llamadas == 0 and m.banco.casos == {}
+
+
+def test_r21_el_listado_marca_la_ruta_obligada() -> None:
+    m = Mundo()
+    m.lectura._tx.append(("c1", _tx("t7", producto="p-fantasma")))  # pyright: ignore[reportPrivateUsage]
+    rutas = dict(
+        zip(
+            ("t7", "t1"),
+            m.h.rutas_obligadas(_sesion(), (_tx("t7", producto="p-fantasma"), _tx("t1"))),
+            strict=True,
+        )
+    )
+    assert rutas == {"t7": "producto_no_encontrado", "t1": None}
+
+
+def test_r07_listar_transacciones_alcanza_cobros_viejos_y_busca() -> None:
+    m = Mundo()
+    s = _sesion()
+    for i in range(30):
+        m.lectura._tx.append(  # pyright: ignore[reportPrivateUsage]
+            (
+                "c1",
+                _tx(f"x{i}").model_copy(
+                    update={"event_ts": AHORA - timedelta(hours=i + 2), "comercio": f"Local {i}"}
+                ),
+            )
+        )
+    assert len(m.h.transacciones_recientes(s).valor) == 34  # antes el límite era 10
+    assert len(m.h.transacciones_recientes(s, 10_000).valor) == 34  # tope duro, pero alto
+    assert len(m.h.transacciones_recientes(s, 5).valor) == 5
+    hallado = m.h.transacciones_recientes(s, comercio="local 29").valor
+    assert [t.transaction_id for t in hallado] == ["x29"]
+    ayer = (AHORA - timedelta(days=1)).date()
+    por_fecha = m.h.transacciones_recientes(s, desde=ayer, hasta=ayer, monto=Decimal("120000")).valor
+    assert {t.transaction_id for t in por_fecha} >= {"t1"}
+    assert all(t.transaction_id != "t9" for t in m.h.transacciones_recientes(s, comercio="Tienda").valor)

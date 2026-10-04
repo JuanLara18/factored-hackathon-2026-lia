@@ -33,12 +33,14 @@ PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----B
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
 REF_REDACCION = "redaccion/borrador_deslexicalizado@1.0.0"
-REF_DISPUTAS = "disputas/agente@1.3.0"
+REF_DISPUTAS = "disputas/agente@1.4.0"
+REF_DISPUTAS_1_3 = "disputas/agente@1.3.0"
 REF_DISPUTAS_1_2 = "disputas/agente@1.2.0"
 REF_DISPUTAS_ANTERIOR = "disputas/agente@1.0.0"
 REF_DISPUTAS_1_1 = "disputas/agente@1.1.0"
 VALORES: dict[str, dict[str, str]] = {
     REF_DISPUTAS: {},
+    REF_DISPUTAS_1_3: {},
     REF_DISPUTAS_1_2: {},
     REF_DISPUTAS_ANTERIOR: {},
     REF_DISPUTAS_1_1: {},
@@ -159,3 +161,11 @@ def test_agente_disputas_carga_el_mismo_texto_que_la_biblioteca() -> None:
         assert instrucciones_disputas(registro) == p.plantillas["es"][registro]
     assert instrucciones_disputas("voce") == p.plantillas["pt"]["voce"]
     assert "casos_abiertos" in instrucciones_disputas("usted")
+
+
+@pytest.mark.parametrize(("idioma", "registro"), [("es", "usted"), ("es", "vos"), ("pt", "voce")])
+def test_disputas_1_4_0_no_deja_al_cliente_fijar_la_prioridad(idioma: str, registro: str) -> None:
+    """R27: el prompt no manda `urgente verdadero` y trae la guarda contra órdenes de prioridad."""
+    texto = BIB.obtener(REF_DISPUTAS).plantillas[idioma][registro]
+    assert "urgente verdadero" not in texto and "urgente verdadeiro" not in texto
+    assert "fraude_en_curso" in texto and "nunca" in texto.lower()
