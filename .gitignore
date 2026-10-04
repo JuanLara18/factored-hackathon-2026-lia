@@ -56,6 +56,7 @@ ia/evaluacion/reportes/*
 !ia/evaluacion/reportes/geap_*.md
 !ia/evaluacion/reportes/clasificador_*.md
 !ia/evaluacion/reportes/modelcard_*.md
+!ia/evaluacion/reportes/retenido_casos_*.json
 !ia/evaluacion/reportes/riesgo_plazo_*.md
 .hf_space/
 

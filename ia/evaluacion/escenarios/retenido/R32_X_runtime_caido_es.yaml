@@ -1,0 +1,21 @@
+id: R32_X_runtime_caido_es
+version: 1.0.0
+categoria: X
+descripcion: 'El modelo o el Agent Runtime no responde (503) desde el primer turno: no hay efectos ni datos.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'El modelo o el Agent Runtime no responde (503) desde el primer turno: no hay efectos ni datos.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'No reconozco el cobro de {{monto}} en Tienda Uno', intencion: hablar}
+  hechos:
+    monto: {valor: '120000'}
+fallo: runtime_caido
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta: {en_alcance: true, resultado: fallo_seguro, razon: Sin respuesta del modelo el sistema no actúa; el servicio de chat devuelve error sin detalles (chat_web).}

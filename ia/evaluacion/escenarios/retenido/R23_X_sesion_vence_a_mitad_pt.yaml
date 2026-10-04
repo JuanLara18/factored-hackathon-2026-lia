@@ -1,0 +1,26 @@
+id: R23_X_sesion_vence_a_mitad_pt
+version: 1.0.0
+categoria: X
+descripcion: 'A sessão expira depois da proposta e antes da aprovação: a ação não se executa nem deixa efeitos.'
+idioma: pt
+registro: voce
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4023, producto: PRD-1, monto: 47000, moneda: COP, usd: 12, comercio: Papelaria Ipe, hace_dias: 1}
+guion:
+  objetivo: 'A sessão expira depois da proposta e antes da aprovação: a ação não se executa nem deixa efeitos.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Não reconheço a cobrança de {{monto}} na Papelaria Ipê', intencion: hablar}
+  - {decir: 'Sim, confirmo', intencion: confirmar}
+  hechos:
+    monto: {valor: '47000'}
+fallo: sesion_vence_a_mitad
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta: {en_alcance: true, resultado: fallo_seguro, razon: 'Política v1 (acr por acción): abrir_disputa exige sesión vigente al ejecutarse; el vencimiento entre propuesta y aprobación debe dejar cero
+    efectos.'}

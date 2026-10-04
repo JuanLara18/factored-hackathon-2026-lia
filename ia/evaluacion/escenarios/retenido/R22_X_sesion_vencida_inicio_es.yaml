@@ -1,0 +1,21 @@
+id: R22_X_sesion_vencida_inicio_es
+version: 1.0.0
+categoria: X
+descripcion: 'La sesión ya venció al llegar el primer mensaje: no hay datos ni efectos y la falla es de acceso, no del agente.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'La sesión ya venció al llegar el primer mensaje: no hay datos ni efectos y la falla es de acceso, no del agente.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'No reconozco el cobro de {{monto}} en Tienda Uno', intencion: hablar}
+  hechos:
+    monto: {valor: '120000'}
+fallo: sesion_vencida_al_inicio
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta: {en_alcance: true, resultado: fallo_seguro, razon: 'Política v1 (acr por acción, R-GOB-25) y SesionAutenticada.permite: una sesión vencida no permite ni consultar.'}

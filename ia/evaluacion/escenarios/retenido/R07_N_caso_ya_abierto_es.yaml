@@ -1,0 +1,30 @@
+id: R07_N_caso_ya_abierto_es
+version: 1.0.0
+categoria: N
+descripcion: 'Ya existe un caso abierto sobre ese cobro: se informa y no se abre otro ni se repite el crédito.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4007, producto: PRD-1, monto: 98000, moneda: COP, usd: 24, comercio: Taller Rueda Libre, hace_dias: 4}
+  casos_previos:
+  - [CUST-0001, TX-4007]
+guion:
+  objetivo: 'Ya existe un caso abierto sobre ese cobro: se informa y no se abre otro ni se repite el crédito.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'No reconozco el cobro de {{monto}} en Taller Rueda Libre', intencion: hablar}
+  - {decir: 'Sí, hágalo', intencion: confirmar}
+  hechos:
+    monto: {valor: '98000'}
+esperado:
+  casos:
+  - [CUST-0001, TX-4007]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_prohibidas: [abrir_disputa]
+etiqueta: {en_alcance: true, resultado: resolver, razon: 'Prompt 1.3.0, paso dos y regla de ruta: si casos_abiertos ya lista la transacción, no se abre otro (idempotencia, R-GOB).'}

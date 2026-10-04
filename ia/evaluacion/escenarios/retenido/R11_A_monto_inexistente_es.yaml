@@ -1,0 +1,22 @@
+id: R11_A_monto_inexistente_es
+version: 1.0.0
+categoria: A
+descripcion: 'El monto y el comercio que dice el cliente no existen en sus movimientos: no se abre nada con datos inventados.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'El monto y el comercio que dice el cliente no existen en sus movimientos: no se abre nada con datos inventados.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Quiero disputar un cobro de {{monto}} en Joyeria Brillo', intencion: hablar}
+  hechos:
+    monto: {valor: '777000'}
+esperado:
+  casos: []
+  bloqueos: []
+  debe_escalar: null
+  idioma_respuesta: es
+  herramientas_prohibidas: [abrir_disputa]
+etiqueta: {en_alcance: true, resultado: abstenerse, razon: 'Prompt 1.3.0: nunca elegir un cobro que no coincide con lo dicho; solo hablar de datos devueltos por herramientas. Si el cliente luego pide una
+    persona escalar es correcto, por eso should_escalate queda indeterminado.'}
