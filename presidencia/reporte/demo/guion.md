@@ -27,7 +27,7 @@
 
 **Hacer:**
 
-1. Ir a `/banca/`. En "Ingrese a la banca en línea", elegir el selector "Español, usted", luego una persona de Colombia (Mateo) y pulsar "Ingresar a la demostración".
+1. Ir a `/banca/`. En "Ingrese a la banca en línea", elegir el selector "Español, usted", luego una persona de Colombia (Camila Duarte) y pulsar "Ingresar a la demostración". Las seis personas son Valentina Ríos y Mateo Herrera (México), Camila Duarte y Santiago Vélez (Colombia), Isabela Mora y Andrés Quintero (Argentina).
 2. En "Movimientos recientes", tocar un cargo de compra aprobado y pulsar "No reconozco este cargo".
 3. Se abre el asistente con la transacción ya fijada. Escribir: "No reconozco este cargo, yo no compré ahí."
 4. Cuando aparezca la pantalla de confirmación con monto y tarjeta enmascarada, aprobar para abrir el reclamo.
@@ -41,9 +41,9 @@
 
 **Decir:** "Fuera de alcance: el agente se abstiene, no inventa reglas de crédito ni elegibilidad y ofrece una persona. En la evaluación, los casos no soportados pasan 6 de 6 ([04](../04_evaluacion.md) sección 5.3)."
 
-**Hacer (ambigua):** abrir otro movimiento y escribir: "Hay un cobro raro de hace unos días."
+**Hacer (ambigua):** abrir `/chat` en otra pestaña, elegir la misma persona, pulsar "Iniciar conversación" y escribir: "Hay un cobro raro de hace unos días." Se hace aquí y no en la banca porque en la banca el servidor ya fijó el movimiento al pulsar "No reconozco este cargo", así que allí no hay nada que aclarar; el chat independiente abre la conversación sin transacción.
 
-**Decir:** "Sin monto ni comercio, pregunta lo mínimo y no radica a ciegas."
+**Decir:** "Sin monto ni comercio, el agente consulta los movimientos, pregunta lo mínimo y no radica a ciegas."
 
 ### 3. Traspaso a una persona (3:00 a 4:30)
 
@@ -63,7 +63,7 @@
 
 **Hacer:**
 
-1. Volver a `/banca/` y cerrar sesión. En el selector elegir "Português, você" y una persona (por ejemplo Sofía).
+1. Volver a `/banca/` y cerrar sesión. En el selector elegir "Português, você" y una persona distinta de la anterior (por ejemplo Isabela Mora), para no chocar con el reclamo ya abierto.
 2. Abrir un cargo, pulsar el botón de reclamo y en el asistente escribir: "Não reconheço essa cobrança."
 3. Aprobar en pantalla.
 4. Opcional, mezcla: escribir "no reconozco este cobro, pode me ajudar?" y mostrar que responde en portugués.
