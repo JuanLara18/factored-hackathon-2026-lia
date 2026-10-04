@@ -13,7 +13,7 @@
 <body data-pagina="inicio">
 <a class="salto" href="#principal">Ir al contenido</a>
 <div class="bn-demo"><div class="contenedor"><p><strong>Demostración</strong></p><p>Clientes y movimientos ficticios. LATAM Bank no es un banco real.</p><p id="modo-local" class="oculto">Datos de ejemplo locales, sin servidor.</p></div></div>
-<header class="cabecera">
+<header class="cabecera bn-cabecera">
   <div class="contenedor">
     <a class="marca" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 8v14h9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="10" r="2.2" fill="#fff"/></svg><span>LATAM Bank</span></a>
     <nav class="nav" aria-label="Banca en línea">
@@ -29,35 +29,56 @@
   <div class="contenedor bn-pagina">
     <h1 class="visualmente-oculto">Banca en línea</h1>
     <section id="ingreso" class="bn-ingreso oculto" aria-labelledby="ingreso-titulo">
-      <p class="sobretitulo">Demostración</p>
-      <h2 id="ingreso-titulo">Ingrese a la banca en línea</h2>
-      <p class="nota">Elija un cliente ficticio para recorrer la demostración. No se pide ninguna clave ni dato personal.</p>
-      <div id="ingreso-cuerpo"></div>
+      <div class="bn-ingreso-marca">
+        <p class="bn-etiqueta-demo">Demostración</p>
+        <p class="bn-ingreso-lema">Su dinero, claro y con una persona cuando la necesite.</p>
+        <ul class="bn-ingreso-puntos">
+          <li>Revise sus movimientos con nombres claros</li>
+          <li>Reporte un cargo que no reconoce en un minuto</li>
+          <li>Hable con una persona cuando prefiera</li>
+        </ul>
+      </div>
+      <div class="bn-ingreso-forma">
+        <div id="ingreso-idioma" class="bn-ingreso-idioma"></div>
+        <h2 id="ingreso-titulo">Ingrese a la banca en línea</h2>
+        <p class="nota">Elija un cliente ficticio para recorrer la demostración. No se pide ninguna clave ni dato personal.</p>
+        <div id="ingreso-cuerpo"></div>
+      </div>
     </section>
     <div id="tablero" class="oculto">
-      <h2 id="saludo" class="bn-saludo">Hola</h2>
-      <p class="bn-sub">Estos son sus productos y sus últimos movimientos.</p>
-      <h2 id="t-productos">Sus productos</h2>
-      <ul id="productos" class="bn-productos" aria-labelledby="t-productos"></ul>
-      <h2 id="t-mov">Movimientos recientes</h2>
-      <div class="bn-filtros" role="search" aria-label="Buscar movimientos">
-        <div><label for="f-texto">Buscar</label><input id="f-texto" type="search" placeholder="Comercio, categoría o monto" autocomplete="off"></div>
-        <div><label for="f-producto">Producto</label><select id="f-producto"><option value="">Todos los productos</option></select></div>
-        <div><label for="f-estado">Estado</label><select id="f-estado"><option value="">Todos</option><option value="aprobada">Aprobada</option><option value="pendiente">Pendiente</option><option value="rechazada">Rechazada</option></select></div>
+      <div class="bn-cabeza">
+        <div>
+          <h2 id="saludo" class="bn-saludo">Hola</h2>
+          <p class="bn-sub">Estos son sus productos y sus últimos movimientos.</p>
+        </div>
+        <ul id="rapidas" class="bn-rapidas" aria-label="Acciones rápidas"></ul>
       </div>
+      <section id="resumen" class="bn-resumen" aria-label="Resumen"></section>
+      <h2 id="t-productos" class="bn-titulo-seccion">Sus productos</h2>
+      <ul id="productos" class="bn-productos" aria-labelledby="t-productos"></ul>
+      <h2 id="t-mov" class="bn-titulo-seccion">Movimientos recientes</h2>
+      <p id="pista-reporte" class="bn-pista oculto" role="note">Toque el cargo que no reconoce y elija No reconozco este cargo.</p>
+      <div class="bn-filtros" role="search" aria-label="Buscar movimientos">
+        <div class="bn-buscar"><label for="f-texto">Buscar</label><input id="f-texto" type="search" placeholder="Comercio, categoría o monto" autocomplete="off"></div>
+        <div class="bn-producto-sel"><label for="f-producto">Producto</label><select id="f-producto"><option value="">Todos los productos</option></select></div>
+      </div>
+      <div id="f-estado" class="bn-segmentos" role="group" aria-label="Estado del movimiento"></div>
       <p id="cuenta-resultados" class="bn-cuenta" role="status"></p>
       <div id="movimientos"></div>
       <div id="mas" class="bn-mas oculto"><button type="button">Ver más movimientos</button></div>
     </div>
     <dialog id="detalle" aria-labelledby="detalle-titulo">
-      <div class="bn-detalle-cab"><h2 id="detalle-titulo"></h2><button id="detalle-cerrar" type="button">Cerrar</button></div>
+      <div class="bn-detalle-cab"><p class="bn-detalle-tipo">Detalle del movimiento</p><button id="detalle-cerrar" type="button" class="bn-cerrar" aria-label="Cerrar el detalle">Cerrar</button></div>
+      <h2 id="detalle-titulo" class="visualmente-oculto"></h2>
       <div id="detalle-cuerpo"></div>
     </dialog>
     <dialog id="confirmar" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
       <h2 id="confirmar-titulo">Bloquear tarjeta</h2>
       <p id="confirmar-texto"></p>
+      <fieldset id="confirmar-opciones" class="bn-opciones oculto"><legend>Tarjeta que quiere bloquear</legend></fieldset>
       <div class="acciones"><button id="confirmar-si" type="button" class="primario">Bloquear tarjeta</button><button id="confirmar-no" type="button">Cancelar</button></div>
     </dialog>
+    <p id="toast" class="bn-toast oculto" role="status"></p>
   </div>
 </main>
 <footer class="pie">

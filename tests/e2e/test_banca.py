@@ -10,7 +10,7 @@ CLIENTES = range(6)
 
 def ingresar(page, indice: int) -> None:
     page.goto(URL + "/banca/", wait_until="networkidle")
-    page.select_option("#cliente-demo", str(indice))
+    page.locator(f"input[name=cliente][value='{indice}']").check()
     page.click("#form-ingreso button[type=submit]")
     page.wait_for_selector("#productos .bn-producto")
     page.wait_for_selector("#movimientos .bn-fila")
@@ -53,9 +53,9 @@ def test_filtros_y_busqueda(abrir):
     assert page.text_content("#cuenta-resultados").startswith("0 ")
     page.fill("#f-texto", "")
     assert page.locator("#movimientos .bn-fila").count() == total
-    page.select_option("#f-estado", "rechazada")
+    page.click("#f-estado [data-estado=rechazada]")
     assert page.locator("#movimientos .bn-fila").count() <= total
-    page.select_option("#f-estado", "")
+    page.click("#f-estado [data-estado='']")
     opciones = page.locator("#f-producto option").count()
     assert opciones >= 2
     page.select_option("#f-producto", index=1)
@@ -78,7 +78,7 @@ def test_bloqueo_tarjeta_cancelar_no_cambia(abrir):
     page, _ = abrir()
     ingresar(page, 0)
     page.locator("#movimientos .bn-fila").first.click()
-    boton = page.get_by_role("button", name="Bloquear tarjeta").first
+    boton = page.locator("#detalle-cuerpo").get_by_role("button", name="Bloquear tarjeta")
     if boton.count() == 0:
         pytest.skip("la tarjeta ya esta bloqueada")
     boton.click()

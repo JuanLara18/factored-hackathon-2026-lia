@@ -7,6 +7,8 @@
   const B = window.Banca;
   if (!B) return;
   const { h, T, registro } = B;
+  const IC = (slug) => B.icono(slug, "bn-ico");
+  const ESTADO_FICHA = { approved: "Aprobada", declined: "Rechazada", pending: "Pendiente", aprobada: "Aprobada", rechazada: "Rechazada", pendiente: "Pendiente", reversada: "Reversada" };
   const FICHA_TOOL = {
     name: "FichaTransaccion",
     description: "Dibuja la ficha de una transacción del cliente",
@@ -50,33 +52,42 @@
   const tx = (k) => est.textos.textos[k] || T(RESPALDO.textos[k] || "");
 
   function construir() {
-    el.lanzador = h("button", { type: "button", id: "asistente-lanzador", clase: "bw-lanzador", "aria-expanded": "false", "aria-controls": "asistente-panel", texto: T("Asistente") });
+    el.lanzadorTxt = h("span", { texto: T("Asistente") });
+    el.lanzador = h("button", { type: "button", id: "asistente-lanzador", clase: "bw-lanzador", "aria-expanded": "false", "aria-controls": "asistente-panel" }, IC("chat"), el.lanzadorTxt);
     el.ia = h("p", { id: "asistente-ia", clase: "bw-ia", role: "note", texto: T(RESPALDO.etiquetas.ia) });
-    el.persona = h("button", { type: "button", clase: "bw-persona", texto: T(RESPALDO.etiquetas.persona) });
-    el.cerrar = h("button", { type: "button", clase: "bw-cerrar", "aria-label": T("Cerrar el asistente"), texto: T("Cerrar") });
+    el.personaTxt = h("span", { texto: T(RESPALDO.etiquetas.persona) });
+    el.persona = h("button", { type: "button", clase: "bw-persona" }, IC("persona"), el.personaTxt);
+    el.cerrar = h("button", { type: "button", clase: "bw-cerrar", "aria-label": T("Cerrar el asistente") }, IC("cerrar"));
     el.titulo = h("h2", { id: "asistente-titulo", tabindex: "-1", texto: T("Asistente de LATAM Bank") });
     el.log = h("div", { id: "asistente-log", clase: "bw-log", role: "log", "aria-live": "polite", "aria-relevant": "additions", tabindex: "0", "aria-label": T("Conversación") });
+    el.sugeridas = h("div", { clase: "bw-sugeridas", role: "group", "aria-label": T("Respuestas sugeridas") });
     el.estado = h("p", { clase: "nota bw-estado", role: "status" });
     el.entrada = h("input", { id: "asistente-mensaje", type: "text", maxlength: "500", required: true, autocomplete: "off" });
     el.etiquetaEntrada = h("label", { for: "asistente-mensaje", clase: "visualmente-oculto", texto: T(RESPALDO.etiquetas.escribir) });
     el.enviar = h("button", { type: "submit", clase: "primario", texto: T(RESPALDO.etiquetas.enviar) });
     el.form = h("form", { clase: "bw-form" }, el.etiquetaEntrada, el.entrada, el.enviar);
     el.panel = h("section", { id: "asistente-panel", clase: "bw-panel oculto", role: "dialog", "aria-modal": "false", "aria-labelledby": "asistente-titulo" },
-      h("div", { clase: "bw-cab" }, el.titulo, el.cerrar), h("div", { clase: "bw-sub" }, el.ia, el.persona),
-      el.log, el.estado, el.form);
+      h("div", { clase: "bw-cab" }, h("span", { clase: "bn-avatar", "aria-hidden": "true", texto: "IA" }), h("div", { clase: "bw-cab-txt" }, el.titulo, el.ia), el.cerrar),
+      h("div", { clase: "bw-sub" }, el.persona),
+      el.log, el.sugeridas, el.estado, el.form);
     el.anuncio = h("p", { id: "asistente-anuncio", clase: "visualmente-oculto", role: "status", "aria-live": "assertive" });
     el.apTexto = h("p", { id: "ap-texto" });
-    el.apVence = h("p", { id: "ap-vence", clase: "nota" });
+    el.apVence = h("p", { id: "ap-vence", clase: "bw-ap-tiempo" });
+    el.apRelleno = h("span", { clase: "bw-ap-relleno" });
     el.apSi = h("button", { type: "button", clase: "primario" });
     el.apNo = h("button", { type: "button" });
     el.apRenovar = h("button", { type: "button", clase: "oculto" });
     el.dialogo = h("dialog", { id: "aprobacion", "aria-labelledby": "ap-texto", "aria-describedby": "ap-vence" },
-      el.apTexto, el.apVence, h("div", { clase: "acciones" }, el.apSi, el.apNo, el.apRenovar));
+      h("div", { clase: "bw-ap-cab" }, h("span", { clase: "bn-ico-caja" }, IC("escudo")), h("p", { texto: T("Necesito su confirmación") })),
+      el.apTexto, el.apVence, h("div", { clase: "bw-ap-barra", "aria-hidden": "true" }, el.apRelleno), h("div", { clase: "acciones" }, el.apSi, el.apNo, el.apRenovar));
     document.body.append(el.lanzador, el.panel, el.dialogo, el.anuncio);
 
     el.lanzador.addEventListener("click", () => (est.abierto ? cerrar() : abrir({})));
     el.cerrar.addEventListener("click", cerrar);
-    el.panel.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !el.dialogo.open) cerrar(); });
+    el.panel.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && !el.dialogo.open) cerrar();
+      if (ev.key === "Tab" && window.matchMedia("(max-width: 40rem)").matches) atraparFoco(ev);
+    });
     el.persona.addEventListener("click", () => pedirPersona(null));
     el.form.addEventListener("submit", (ev) => {
       ev.preventDefault();
@@ -88,6 +99,16 @@
     aplicarTextos();
   }
 
+  // En móvil el asistente ocupa toda la pantalla: el foco no se escapa hacia la página de atrás.
+  function atraparFoco(ev) {
+    const f = Array.from(el.panel.querySelectorAll("button, input, [tabindex]:not([tabindex='-1'])")).filter((x) => !x.disabled && x.offsetParent !== null);
+    if (!f.length) return;
+    const primero = f[0];
+    const ultimo = f[f.length - 1];
+    if (ev.shiftKey && (document.activeElement === primero || document.activeElement === el.titulo)) { ev.preventDefault(); ultimo.focus(); }
+    else if (!ev.shiftKey && document.activeElement === ultimo) { ev.preventDefault(); primero.focus(); }
+  }
+
   function anunciar(texto) {
     el.anuncio.textContent = "";
     window.setTimeout(() => { el.anuncio.textContent = texto; }, 50);
@@ -95,7 +116,7 @@
 
   function aplicarTextos() {
     el.ia.textContent = et("ia");
-    el.persona.textContent = et("persona");
+    el.personaTxt.textContent = et("persona");
     el.etiquetaEntrada.textContent = et("escribir");
     el.entrada.placeholder = et("escribir");
     el.enviar.textContent = et("enviar");
@@ -115,9 +136,29 @@
   function burbuja(clase, texto) {
     const d = h("div", { clase: "bw-msg " + clase });
     if (texto !== undefined) d.textContent = texto;
-    el.log.append(d);
+    insertar(d);
     d.scrollIntoView({ block: "end" });
     return d;
+  }
+  // El indicador de escritura siempre queda al final del registro, debajo de lo último que llega.
+  function insertar(nodo) {
+    if (el.escribiendo && el.escribiendo.parentNode === el.log) el.log.insertBefore(nodo, el.escribiendo);
+    else el.log.append(nodo);
+  }
+  function escribiendo(si) {
+    if (si && !(el.escribiendo && el.escribiendo.parentNode === el.log)) {
+      el.escribiendo = h("div", { clase: "bw-escribiendo", "aria-hidden": "true" }, h("span"), h("span"), h("span"));
+      el.log.append(el.escribiendo);
+      el.escribiendo.scrollIntoView({ block: "end" });
+    } else if (!si && el.escribiendo) { el.escribiendo.remove(); }
+  }
+  function sugerir(lista) {
+    el.sugeridas.textContent = "";
+    lista.forEach((t) => {
+      const b = h("button", { type: "button", clase: "bw-sugerida", texto: T(t) });
+      b.addEventListener("click", () => { sugerir([]); enviar(T(t)); });
+      el.sugeridas.append(b);
+    });
   }
   function etiquetaAutor(autor) { return h("span", { clase: "bw-autor", texto: autor }); }
 
@@ -128,15 +169,20 @@
     est.abierto = true;
     el.panel.classList.remove("oculto");
     el.lanzador.setAttribute("aria-expanded", "true");
-    el.lanzador.textContent = T("Asistente");
+    el.lanzador.classList.add("oculto");
+    el.lanzador.classList.remove("nuevo");
+    el.lanzadorTxt.textContent = T("Asistente");
+    el.titulo.focus();
     if (o.conversacion && o.conversacion !== est.conversacion) await empezar(o.conversacion, o.contexto);
     else if (!est.conversacion && !o.conversacion) mostrarSinContexto();
+    if (o.persona) pedirPersona(null);
     el.titulo.focus();
   }
   function cerrar() {
     est.abierto = false;
     el.panel.classList.add("oculto");
     el.lanzador.setAttribute("aria-expanded", "false");
+    el.lanzador.classList.remove("oculto");
     el.lanzador.focus();
   }
 
@@ -145,6 +191,7 @@
     cargarTextos().then(() => {
       burbuja("asistente", tx("aviso"));
       burbuja("asistente", T("Para revisar un cargo, ábralo desde sus movimientos y elija No reconozco este cargo. También puede pedir hablar con una persona."));
+      if (!est.conversacion) sugerir(["No reconozco un cargo", "¿Cómo bloqueo mi tarjeta?"]);
     });
   }
 
@@ -155,6 +202,7 @@
     est.traspaso = false;
     est.ultimoMensaje = null;
     recordar();
+    sugerir([]);
     el.log.textContent = "";
     await cargarTextos();
     burbuja("asistente", tx("aviso")); // aviso de IA en el primer turno (R-CLI-13)
@@ -198,8 +246,8 @@
         recordar();
         if (m.autor !== "persona") continue;
         const b = burbuja("persona");
-        if (!est.abierto) el.lanzador.textContent = T("Asistente, mensaje nuevo");
-        b.append(etiquetaAutor(T("Persona de LATAM Bank")), h("span", { texto: m.texto }));
+        if (!est.abierto) { el.lanzadorTxt.textContent = T("Asistente, mensaje nuevo"); el.lanzador.classList.add("nuevo"); }
+        b.append(etiquetaAutor(T("Persona del equipo")), h("span", { texto: m.texto }));
         anunciar(T("Nueva respuesta de una persona de LATAM Bank"));
         el.estado.textContent = "";
       }
@@ -232,6 +280,8 @@
 
   async function correr(resume) {
     est.ocupado = true;
+    sugerir([]);
+    escribiendo(true);
     el.estado.textContent = tx("procesando");
     const s = B.sesion();
     const cuerpo = {
@@ -263,6 +313,7 @@
     } catch (e) {
       burbuja("asistente error", tx("falla"));
     } finally {
+      escribiendo(false);
       est.ocupado = false;
       el.estado.textContent = est.traspaso ? T("Esperando a una persona") : "";
     }
@@ -335,7 +386,7 @@
     const monto = `${datos.monto || ""} ${datos.moneda || ""}`.trim();
     if (monto) filas.push(h("dt", { texto: et("monto") }), h("dd", { clase: "bn-num", texto: monto }));
     if (datos.fecha) filas.push(h("dt", { texto: T("Fecha") }), h("dd", { texto: String(datos.fecha) }));
-    if (datos.estado) filas.push(h("dt", { texto: T("Estado") }), h("dd", { texto: String(datos.estado) }));
+    if (datos.estado) filas.push(h("dt", { texto: T("Estado") }), h("dd", { texto: T(ESTADO_FICHA[String(datos.estado).toLowerCase()] || String(datos.estado)) }));
     if (datos.tarjeta_final) filas.push(h("dt", { texto: et("tarjeta") }), h("dd", { clase: "bn-num", texto: "···· " + String(datos.tarjeta_final).replace(/\D/g, "").slice(-4) }));
     const acciones = h("div", { clase: "acciones" });
     for (const clave of ["reconozco", "no_reconozco"]) {
@@ -346,8 +397,8 @@
       });
       acciones.append(b);
     }
-    const caja = h("section", { clase: "bw-ficha", "aria-label": T("Transacción") }, h("h3", { texto: String(datos.comercio || "") }), h("dl", {}, filas), acciones);
-    el.log.append(caja);
+    const caja = h("section", { clase: "bw-ficha", "aria-label": T("Transacción") }, h("div", { clase: "bw-ficha-cab" }, h("span", { clase: "bn-ico-caja" }, IC("pago")), h("h3", { texto: String(datos.comercio || "") })), h("dl", {}, filas), acciones);
+    insertar(caja);
     caja.scrollIntoView({ block: "end" });
   }
 
@@ -356,6 +407,7 @@
     const dlg = el.dialogo;
     const expira = Date.parse(interrupcion.expiresAt || "") || ahora() + 300000;
     let avisado = false;
+    const total = Math.max(1, Math.round((expira - ahora()) / 1000));
     el.apTexto.textContent = interrupcion.message || "";
     el.apSi.disabled = false;
     el.apNo.disabled = false;
@@ -365,6 +417,7 @@
     const pintar = () => {
       const resta = Math.max(0, Math.round((expira - ahora()) / 1000));
       el.apVence.textContent = `${et("vence")} ${Math.floor(resta / 60)}:${String(resta % 60).padStart(2, "0")}`;
+      el.apRelleno.style.width = Math.min(100, (resta / total) * 100).toFixed(1) + "%";
       if (resta <= AVISO_S && !avisado) { avisado = true; anunciar(et("vence_pronto")); }
       if (resta === 0) vencer();
     };

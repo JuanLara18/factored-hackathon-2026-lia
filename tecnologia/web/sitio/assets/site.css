@@ -15,6 +15,22 @@
   --sombra: 0 1px 2px rgb(15 30 45 / .06), 0 8px 24px rgb(15 30 45 / .06);
   --marino: #0b2a3f;
   --ancho: 68rem;
+  /* Tokens de la banca y de componentes (se agregan, no se renombran) */
+  --acento-2: #0f7ea8;
+  --credito: #0d6b3f;
+  --credito-fondo: #e2f4ea;
+  --aviso-texto: #8a4a06;
+  --aviso-fondo: #fdf0dc;
+  --error-fondo: #fbe6e6;
+  --neutro-fondo: #eceff2;
+  --tarjeta-a: #0b2a3f;
+  --tarjeta-b: #0f6f95;
+  --tarjeta-texto: #ffffff;
+  --tarjeta-bloq-a: #3c4651;
+  --tarjeta-bloq-b: #5b6672;
+  --radio-l: 18px;
+  --sombra-2: 0 2px 4px rgb(15 30 45 / .08), 0 18px 48px rgb(15 30 45 / .16);
+  --velo: rgb(8 20 30 / .5);
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -31,6 +47,19 @@
     --sombra: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .3);
     --foco: #fbbf24;
     --error: #f4a3a3;
+    --acento-2: #4fa6d1;
+    --credito: #6fd09c;
+    --credito-fondo: #12301f;
+    --aviso-texto: #f6c667;
+    --aviso-fondo: #33260d;
+    --error-fondo: #3a1818;
+    --neutro-fondo: #1d2630;
+    --tarjeta-a: #12384f;
+    --tarjeta-b: #1f7aa3;
+    --tarjeta-bloq-a: #343e48;
+    --tarjeta-bloq-b: #4d5864;
+    --sombra-2: 0 2px 4px rgb(0 0 0 / .4), 0 18px 48px rgb(0 0 0 / .5);
+    --velo: rgb(0 0 0 / .62);
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
