@@ -17,6 +17,13 @@ reglas:
     motivo: producto_no_encontrado
     fundamento: A-21
     razon: "Sin producto verificable en la base no se afirma ni se radica nada: ninguna acción y a revisión humana."
+# Urgencia (P1): la decide el motivo, de una lista cerrada. La bandera `urgente` que traiga el modelo no vale
+# por sí sola: un cliente no puede subir su propio caso de prioridad con una orden escrita (R27).
+urgencia:
+  id: ESC-05
+  motivos: [urgente, transferencia_en_curso, fraude_en_curso, suplantacion]
+  fundamento: R-GOB-28
+  razon: "Solo una transferencia inmediata no reconocida, un fraude en curso o una suplantación del banco son P1; pedirlo en el chat no lo es."
 # Monto sobre el umbral (A-07): la disputa se radica y ADEMÁS el caso pasa a un humano (R5); no la reemplaza.
 # Umbral por moneda del registro, en USD a la fecha del evento; si no hay entrada aplica `por_defecto`.
 radicar_y_escalar:

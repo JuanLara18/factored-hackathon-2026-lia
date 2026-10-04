@@ -41,6 +41,7 @@ from latam_tecnologia.canales.frases import (
     filtrar_frase,
     respaldo_de,
 )
+from latam_tecnologia.canales.textos import texto_falla
 from latam_tecnologia.runtime.agente import crear_cliente_sdk
 
 VARIABLE_RECURSO = "LATAM_AGENT_RUNTIME_RECURSO"
@@ -151,6 +152,17 @@ def _cerrar_texto(abierto: bool, mensaje_id: str) -> list[str]:
     return [_evento(TextMessageEndEvent(message_id=mensaje_id))] if abierto else []
 
 
+def _eventos_falla(registro: str, code: str) -> list[str]:
+    """La falla se dice con el texto de la plantilla, con la opción de una persona; nunca en silencio."""
+    mensaje_id = f"m-{secrets.token_hex(6)}"
+    return [
+        _evento(TextMessageStartEvent(message_id=mensaje_id)),
+        _evento(TextMessageContentEvent(message_id=mensaje_id, delta=texto_falla(registro))),
+        _evento(TextMessageEndEvent(message_id=mensaje_id)),
+        _evento(RunErrorEvent(message=falla_de(registro), code=code)),
+    ]
+
+
 async def flujo_agui(
     cliente: ClienteRuntime,
     *,
@@ -244,21 +256,24 @@ async def flujo_agui(
                     fallo()
                     for cierre in _cerrar_texto(abierto, mensaje_id):
                         yield cierre
-                    yield _evento(RunErrorEvent(message=falla_de(registro), code=str(ev.get("codigo"))))
+                    for e in _eventos_falla(registro, str(ev.get("codigo"))):
+                        yield e
                     return
     except TimeoutError:
         traza.append("runtime_tiempo_agotado")
         fallo()
         for cierre in _cerrar_texto(abierto, mensaje_id):
             yield cierre
-        yield _evento(RunErrorEvent(message=falla_de(registro), code="tiempo"))
+        for e in _eventos_falla(registro, "tiempo"):
+            yield e
         return
     except Exception as error:  # red, permisos o cuota: el cliente no ve detalles
         traza.append(f"runtime_falla {type(error).__name__}")
         fallo()
         for cierre in _cerrar_texto(abierto, mensaje_id):
             yield cierre
-        yield _evento(RunErrorEvent(message=falla_de(registro), code="runtime"))
+        for e in _eventos_falla(registro, "runtime"):
+            yield e
         return
     for delta in frases(seg.vaciar()):
         if not abierto:
@@ -269,7 +284,8 @@ async def flujo_agui(
         # Sin texto, ficha ni aprobación: el cliente no puede quedar frente a un turno vacío.
         traza.append("runtime_turno_vacio")
         fallo()
-        yield _evento(RunErrorEvent(message=falla_de(registro), code="vacio"))
+        for e in _eventos_falla(registro, "vacio"):
+            yield e
         return
     if abierto:
         yield _evento(TextMessageEndEvent(message_id=mensaje_id))

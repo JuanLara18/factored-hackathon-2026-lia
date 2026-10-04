@@ -18,7 +18,7 @@ _COLUMNAS_TX = (
     "transaction_id, product_id, event_ts, amount, currency, amount_usd, transaction_type,"
     " transaction_status, merchant_name, merchant_category, transaction_country, es_extranjera, channel"
 )
-_LIMITE_MAXIMO = 50
+_LIMITE_MAXIMO = 200
 
 
 def _decimal(valor: Any) -> Decimal:

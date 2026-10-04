@@ -191,7 +191,7 @@ def _inicio(usuarios: list[str], t: dict[str, str]) -> ModelResponse:
     if _cualquiera(actual, URGENTE):
         if _cualquiera(actual, ROBO):
             return _llamar("estado_productos")
-        return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
+        return _llamar("escalar", motivo="fraude_en_curso", urgente=True)
     if _cualquiera(actual, ROBO):
         return _llamar("estado_productos")
     if _cualquiera(actual, CREDITO):
@@ -310,14 +310,14 @@ def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
                 if activas:
                     return _llamar("bloquear_tarjeta", product_id=activas[0].product_id)
                 if urgente:
-                    return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
+                    return _llamar("escalar", motivo="fraude_en_curso", urgente=True)
                 return _llamar("listar_transacciones", limite=50)
             return _resolver(llamadas, usuarios, urgente, t)
         case "casos_abiertos":
             return _resolver(llamadas, usuarios, urgente, t)
         case "bloquear_tarjeta":
             if urgente:
-                return _llamar("escalar", motivo="posible_fraude_en_curso", urgente=True)
+                return _llamar("escalar", motivo="fraude_en_curso", urgente=True)
             return _llamar("listar_transacciones", limite=50)
         case "abrir_disputa":
             if _aviso_de_escalar(llamadas) is not None:

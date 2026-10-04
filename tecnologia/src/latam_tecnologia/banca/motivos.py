@@ -122,6 +122,7 @@ MOTIVOS: dict[str, Motivo] = {
 # Motivos con que llegan el botón de persona y el modelo (texto libre del motor) a su código cerrado.
 ALIAS = {
     "urgente": "URGENCIA_TRANSFERENCIA",
+    "transferencia_en_curso": "URGENCIA_TRANSFERENCIA",
     "transaccion_no_disputable": "TRANSACCION_NO_DISPUTABLE",
     "producto_no_encontrado": "DATO_INCONSISTENTE",
     "monto_sobre_umbral": "MONTO_SOBRE_UMBRAL",

@@ -9,7 +9,13 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ag_ui.core import BaseEvent, TextMessageContentEvent, TextMessageEndEvent, TextMessageStartEvent
+from ag_ui.core import (
+    BaseEvent,
+    RunErrorEvent,
+    TextMessageContentEvent,
+    TextMessageEndEvent,
+    TextMessageStartEvent,
+)
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
@@ -18,7 +24,14 @@ from pydantic_ai.messages import TextPart, TextPartDelta
 from pydantic_ai.models.function import AgentInfo, DeltaToolCall, DeltaToolCalls, FunctionModel
 from pydantic_ai.ui.ag_ui import AGUIAdapter, AGUIEventStream
 
-from latam_tecnologia.canales.frases import FiltroFrase, SegmentadorFrases, filtrar_frase, respaldo_de
+from latam_tecnologia.canales.frases import (
+    FiltroFrase,
+    SegmentadorFrases,
+    falla_de,
+    filtrar_frase,
+    respaldo_de,
+)
+from latam_tecnologia.canales.textos import texto_falla
 
 VIGENCIA_NONCE_S = 300.0
 PLANTILLA_RESPALDO = "Voy a revisar esto con un asesor para darte una respuesta correcta."
@@ -67,6 +80,16 @@ class FiltradoEventStream(AGUIEventStream[Confirmaciones, str | DeferredToolRequ
                 texto = r.texto
             eventos.append(TextMessageContentEvent(message_id=self.message_id, delta=texto + " "))
         return eventos
+
+    async def on_error(self, error: Exception) -> AsyncIterator[BaseEvent]:
+        """Falla en el turno (herramienta, base o modelo): texto de la plantilla, sin el detalle del error."""
+        self._error = True
+        self.traza.append(f"falla_turno {type(error).__name__}")
+        mensaje_id = self.new_message_id()
+        yield TextMessageStartEvent(message_id=mensaje_id)
+        yield TextMessageContentEvent(message_id=mensaje_id, delta=texto_falla(self.registro))
+        yield TextMessageEndEvent(message_id=mensaje_id)
+        yield RunErrorEvent(message=falla_de(self.registro), code="turno")
 
     async def handle_text_start(self, part: TextPart, follows_text: bool = False) -> AsyncIterator[BaseEvent]:
         if not follows_text:

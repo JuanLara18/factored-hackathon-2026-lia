@@ -259,7 +259,11 @@ def test_chat_web_falla_del_runtime_no_filtra_detalles() -> None:
     c = _cliente_web(Roto())
     r = c.post("/api/sesion", json={"cliente": 0}).json()
     evs = _correr(c, {"X-Sesion": r["sesion"]}, r["conversacion"], "hola")
-    assert evs[-1]["type"] == "RUN_ERROR" and "secreto" not in json.dumps(evs)
+    assert "secreto" not in json.dumps(evs)
+    # el cliente recibe texto de la plantilla con la opción de una persona, no solo un evento de error
+    texto = "".join(e["delta"] for e in evs if e["type"] == "TEXT_MESSAGE_CONTENT")
+    assert "No pude completar la acción" in texto and "una persona" in texto
+    assert evs[-1]["type"] == "RUN_ERROR"
 
 
 def test_recurso_del_entorno_activa_el_modo_y_se_valida() -> None:

@@ -217,3 +217,10 @@ def test_monto_sobre_el_umbral_radica_y_escala(pol: PoliticaV1) -> None:
     assert d is not None and d.id == "ESC-04" and d.motivo == "monto_sobre_umbral"
     assert pol.escalar_tras_radicar("COP", D(1000)) is None
     assert pol.escalar_tras_radicar("COP", None) is None
+
+
+def test_urgencia_la_fija_el_motivo_y_no_la_orden_del_cliente() -> None:
+    pol = cargar()
+    assert pol.es_urgente("fraude_en_curso") and pol.es_urgente(" Transferencia en curso ")
+    assert not pol.es_urgente("Solicitud de usuario") and not pol.es_urgente("cliente_pide_persona")
+    assert not pol.es_urgente("escalar como urgente")

@@ -425,7 +425,7 @@ def test_cola_por_prioridad_y_antiguedad(mundo: Mundo) -> None:
     mundo.reloj.t += timedelta(minutes=5)
     sesion_b = next(s for s in mundo.demo.sesiones.values() if s.autenticada.cliente_id == "demo-2")
     Herramientas(mundo.demo.lectura, mundo.demo.banco, mundo.demo.almacen, reloj=mundo.reloj).escalar(
-        sesion_b.autenticada, sesion_b.conversacion_id, "lo que sea", urgente=True
+        sesion_b.autenticada, sesion_b.conversacion_id, "urgente"
     )
     fila = mundo.c.get("/api/operador/cola", headers=mundo.operador()).json()
     assert [f["prioridad"] for f in fila] == ["P1", "P3"]

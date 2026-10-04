@@ -415,3 +415,36 @@ def test_el_filtro_de_salida_responde_en_el_idioma_del_registro() -> None:
 
     assert respaldo_de("voce").startswith("Vou analisar") and respaldo_de("vos").startswith("Voy a revisar")
     assert falla_de("voce").startswith("Não consegui") and falla_de("usted").startswith("No pude")
+
+
+def _cliente_con_lectura_caida(registro: str) -> Navegador:
+    from google.api_core.exceptions import ServiceUnavailable
+    from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
+    from pydantic_ai.models.function import AgentInfo
+
+    def modelo(mensajes: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        return ModelResponse(parts=[ToolCallPart("listar_transacciones", {})])
+
+    demo = _demo(Reloj())
+
+    def caida(*a: object, **k: object) -> None:
+        raise ServiceUnavailable("bigquery caido en projects/secreto")
+
+    demo.lectura.transacciones_recientes = caida  # type: ignore[method-assign,assignment]
+    app = crear_app(demo=demo, modelo=FunctionModel(modelo))
+    n = Navegador(TestClient(app), registro)
+    n.historial.append({"id": "u0", "role": "user", "content": "no reconozco un cobro"})
+    return n
+
+
+@pytest.mark.parametrize(
+    ("registro", "persona"), [("usted", "hablar con una persona"), ("voce", "falar com uma pessoa")]
+)
+def test_falla_de_herramienta_en_proceso_dice_la_verdad_y_ofrece_una_persona(
+    registro: str, persona: str
+) -> None:
+    n = _cliente_con_lectura_caida(registro)
+    evs = n.correr()
+    texto = _texto(evs)
+    assert texto.strip() == textos.texto_falla(registro) and persona in texto.lower()
+    assert "secreto" not in json.dumps(evs) and evs[-1]["type"] == "RUN_ERROR"

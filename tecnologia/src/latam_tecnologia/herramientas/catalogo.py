@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from typing import Any
 
 from latam_comun.dominio import AccionVerificada, Confirmacion, HechoVerificado, NivelAcr, SesionAutenticada
@@ -29,8 +30,31 @@ NUM_ESCALAR = 100
 NO_DISPUTABLES = ("declined", "failed", "reversed")  # ESC-02 de policy/v1
 
 
+LIMITE_DEFECTO = 50  # la línea de reglas lee 50; con 10 el cobro de hace cuatro días quedaba fuera (R07)
+LIMITE_MAXIMO = 200
+
+
+def _coincide(
+    t: Transaccion, comercio: str | None, monto: Decimal | None, desde: date | None, hasta: date | None
+) -> bool:
+    if comercio and comercio.strip().lower() not in (t.comercio or "").lower():
+        return False
+    if monto is not None and abs(t.monto.monto - monto) > monto * Decimal("0.01"):
+        return False
+    dia = t.event_ts.date()
+    return not ((desde and dia < desde) or (hasta and dia > hasta))
+
+
 class NoDisputable(Exception):
     """El movimiento está en un estado que no admite disputa (rechazado, fallido o revertido)."""
+
+
+class EscalacionRequerida(Exception):
+    """`policy/v1` manda pasar el caso a una persona en vez de radicar (producto desconocido, ESC-03)."""
+
+    def __init__(self, motivo: str) -> None:
+        super().__init__(motivo)
+        self.motivo = motivo
 
 
 class AccesoDenegado(Exception):
@@ -72,10 +96,26 @@ class Herramientas:
     # Lectura (acr1)
 
     def transacciones_recientes(
-        self, sesion: SesionAutenticada, limite: int = 10
+        self,
+        sesion: SesionAutenticada,
+        limite: int = LIMITE_DEFECTO,
+        *,
+        comercio: str | None = None,
+        monto: Decimal | None = None,
+        desde: date | None = None,
+        hasta: date | None = None,
     ) -> HechoVerificado[tuple[Transaccion, ...]]:
+        """Movimientos del cliente de la sesión, del más reciente al más antiguo, con tope duro.
+
+        Con filtros (comercio por subcadena, monto exacto o con 1% de holgura, rango de fechas) se busca sobre
+        el máximo de movimientos y se devuelven los que coinciden, para hallar el cobro descrito.
+        """
         ahora = self._exigir(sesion, "transacciones_recientes")
-        valor = self._lectura.transacciones_recientes(sesion.cliente_id, limite)
+        tope = max(1, min(limite, LIMITE_MAXIMO))
+        filtrado = any(f is not None for f in (comercio, monto, desde, hasta))
+        valor = self._lectura.transacciones_recientes(sesion.cliente_id, LIMITE_MAXIMO if filtrado else tope)
+        if filtrado:
+            valor = tuple(t for t in valor if _coincide(t, comercio, monto, desde, hasta))[:tope]
         return HechoVerificado(valor=valor, fuente="oro_operacional_transacciones_recientes", hora=ahora)
 
     def transaccion(
@@ -106,6 +146,25 @@ class Herramientas:
         """Lo que `policy/v1` decide para esa transacción; el modelo no lo elige."""
         return self._politica.credito_provisional_aplica(transaccion.monto.moneda, transaccion.amount_usd)
 
+    def rutas_obligadas(
+        self, sesion: SesionAutenticada, transacciones: tuple[Transaccion, ...]
+    ) -> list[str | None]:
+        """Por transacción, el motivo si `policy/v1` manda escalar en vez de radicar por el producto (ESC-03).
+
+        El estado del movimiento (ESC-02) se trata aparte con `NoDisputable`. Una sola lectura de productos.
+        """
+        ids = {p.product_id for p in self._lectura.productos(sesion.cliente_id)}
+        salida: list[str | None] = []
+        for t in transacciones:
+            d = self._politica.escalar(
+                urgente=False, estado_transaccion=None, producto_conocido=t.product_id in ids
+            )
+            salida.append(None if d is None else d.motivo)
+        return salida
+
+    def ruta_obligada(self, sesion: SesionAutenticada, transaccion: Transaccion) -> str | None:
+        return self.rutas_obligadas(sesion, (transaccion,))[0]
+
     def escalar_tras_radicar(self, transaccion: Transaccion) -> str | None:
         """Motivo si `policy/v1` manda pasar el caso a una persona además de radicar (A-07); si no, `None`."""
         d = self._politica.escalar_tras_radicar(transaccion.monto.moneda, transaccion.amount_usd)
@@ -129,6 +188,9 @@ class Herramientas:
             raise AccesoDenegado("la transacción no es del cliente de la sesión")
         if (transaccion.estado or "").lower() in NO_DISPUTABLES:
             raise NoDisputable(transaccion.estado)
+        ruta = self.ruta_obligada(sesion, transaccion)
+        if ruta is not None:  # lo hace cumplir la herramienta, no solo el prompt
+            raise EscalacionRequerida(ruta)
         cliente = sesion.cliente_id
 
         def ejecutor(llave: str) -> AccionVerificada:
@@ -183,7 +245,12 @@ class Herramientas:
     def escalar(
         self, sesion: SesionAutenticada, conversacion_id: str, motivo: str, urgente: bool = False
     ) -> tuple[AccionVerificada, bool]:
-        """Pasar a un humano no exige confirmación: nunca perjudica al cliente."""
+        """Pasar a un humano no exige confirmación: nunca perjudica al cliente.
+
+        La prioridad no es del modelo ni del cliente: el argumento `urgente` se ignora y la urgencia sale solo
+        del motivo, si `policy/v1` (ESC-05) lo marca como urgente (R27).
+        """
+        urgente = self._politica.es_urgente(motivo)
         ahora = self._exigir(sesion, "escalar")
         self._exigir_conversacion(sesion, conversacion_id)
         cliente = sesion.cliente_id
