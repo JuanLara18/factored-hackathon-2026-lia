@@ -35,4 +35,18 @@
     sel.addEventListener("change", function () { pais = sel.value; guardar(pais); aplicar(pais); });
   }
   aplicar(pais);
+  // Menú de la cabecera en pantallas angostas: botón de despliegue, Escape lo cierra.
+  var btn = document.querySelector(".menu-btn");
+  var cab = document.querySelector(".cabecera");
+  if (btn && cab) {
+    function menu(abrir) {
+      cab.classList.toggle("menu-abierto", abrir);
+      btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+    }
+    btn.addEventListener("click", function () { menu(btn.getAttribute("aria-expanded") !== "true"); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") { menu(false); btn.focus(); }
+    });
+    window.addEventListener("resize", function () { if (window.innerWidth > 768) { menu(false); } });
+  }
 })();
