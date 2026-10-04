@@ -1,8 +1,41 @@
 {
-  "cliente": {"alias": "Cliente 2 · Colombia", "pais": "CO", "moneda": "COP", "registro": "usted"},
-  "productos": [
-    {"producto_ref": "p-cred", "tipo": "tarjeta_credito", "etiqueta": "Tarjeta de crédito Platino", "final": "4821", "estado": "activa", "moneda": "COP", "saldo": "1.284.560,00", "limite": "8.000.000,00"},
-    {"producto_ref": "p-deb", "tipo": "tarjeta_debito", "etiqueta": "Tarjeta débito", "final": "9037", "estado": "activa", "moneda": "COP", "saldo": null, "limite": null},
-    {"producto_ref": "p-aho", "tipo": "cuenta_ahorros", "etiqueta": "Cuenta de ahorros", "final": "2210", "estado": "activa", "moneda": "COP", "saldo": "3.412.905,50", "limite": null}
-  ]
+ "cliente": {
+  "alias": "Cliente 2 · Colombia",
+  "pais": "CO",
+  "moneda": "COP",
+  "registro": "usted",
+  "nombre": "Mateo"
+ },
+ "productos": [
+  {
+   "producto_ref": "p-cred",
+   "tipo": "tarjeta_credito",
+   "etiqueta": "Tarjeta de crédito Platino",
+   "final": "4821",
+   "estado": "activa",
+   "moneda": "COP",
+   "saldo": "1.284.560,00",
+   "limite": "8.000.000,00"
+  },
+  {
+   "producto_ref": "p-deb",
+   "tipo": "tarjeta_debito",
+   "etiqueta": "Tarjeta débito",
+   "final": "9037",
+   "estado": "activa",
+   "moneda": "COP",
+   "saldo": null,
+   "limite": null
+  },
+  {
+   "producto_ref": "p-aho",
+   "tipo": "cuenta_ahorros",
+   "etiqueta": "Cuenta de ahorros",
+   "final": "2210",
+   "estado": "activa",
+   "moneda": "COP",
+   "saldo": "3.412.905,50",
+   "limite": null
+  }
+ ]
 }
