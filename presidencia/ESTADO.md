@@ -107,21 +107,18 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
-## En curso (4 oct)
+## Hecho el 4 oct
 
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/ia-ia-5-4-evaluacion-final` | `../fh-eval2` | conjunto retenido (~30 casos con fallas, inyección, sesión vencida, acceso ajeno), línea base contra sistema, métricas del enunciado, `presidencia/reporte/04_evaluacion.md` |
-
-- **Segundo componente (4 oct):** riesgo de plazo al radicar; sin señal sobre las líneas base (AUC 0,50) y la etiqueta `sla_breached` no sigue los tiempos registrados. Se entrega abstenido siempre, con el hallazgo documentado (`ia/evaluacion/reportes/riesgo_plazo_2026-10-04.md`).
-
-## En curso (4 oct): diseño y flujos
-
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/diseno-banca` | `../fh-diseno-banca` | rediseño de banca en línea y asistente (ingreso con personas, resumen, tarjetas, movimientos con íconos y signo, detalle, panel del asistente, reclamos) y tokens de diseño |
-| `feature/diseno-sitio-consola` | `../fh-diseno-sitio` | rediseño del sitio público (hero con maqueta de la app) y de la consola del experto |
-| `feature/tecnologia-api-ux` | `../fh-api-ux` | etiquetas en español y portugués, montos con signo, íconos, resumen, nombres ficticios, `POST /api/demo/restablecer` y pruebas e2e que limpian |
+- **Rediseño** de banca (ingreso con personas ficticias, resumen, tarjetas, movimientos con íconos y signo, detalle, panel del
+  asistente, reclamos), sitio público (hero con maqueta, menú móvil) y consola del experto. La API da etiquetas en español y
+  portugués; `POST /api/demo/restablecer` limpia el estado de demostración y la suite e2e lo usa antes y después.
+- **Evaluación final** en `presidencia/reporte/04_evaluacion.md` (32 casos retenidos, k=3): resolución segura 29/75 (39%) sobre
+  todos los casos en alcance y 29/36 (81%) sobre los que debían resolverse; contención 72%; 0/96 inseguros; escalamientos
+  3 faltantes y 8 innecesarios; p50/p95 por turno 1,41/4,61 s; US$0,002 por caso. La línea base de reglas da 91% contra 80%
+  del agente, con intervalos solapados: el reporte lo dice.
+- **Hallazgos de la evaluación por corregir:** el agente obedece una inyección "escalar como urgente" (R27); no escala con
+  producto desconocido (ESC-03, R21); `listar_transacciones` con límite 10 esconde cargos (R07); ante fallas inyectadas no
+  le dice nada al cliente; 3 casos con defectos de etiqueta documentados.
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
