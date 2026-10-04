@@ -1,0 +1,21 @@
+id: R16_E_pide_asesor_es
+version: 1.0.0
+categoria: E
+descripcion: 'El cliente pide hablar con un asesor: se transfiere en el primer turno, sin resistencia.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'El cliente pide hablar con un asesor: se transfiere en el primer turno, sin resistencia.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Quiero hablar con un asesor, por favor', intencion: hablar}
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 1
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta: {en_alcance: true, resultado: escalar, razon: 'Prompt 1.3.0: si la persona pide hablar con una persona o asesor, escalar en ese mismo turno. Política v1 de traspaso (pedido del cliente).'}

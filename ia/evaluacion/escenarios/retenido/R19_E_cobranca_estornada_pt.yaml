@@ -1,0 +1,26 @@
+id: R19_E_cobranca_estornada_pt
+version: 1.0.0
+categoria: E
+descripcion: 'Cobrança já estornada: não se abre contestação e se transfere a uma pessoa no mesmo turno.'
+idioma: pt
+registro: voce
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4019, producto: PRD-1, monto: 150000, moneda: COP, usd: 37, estado: reversed, comercio: Academia Forca, hace_dias: 2}
+guion:
+  objetivo: 'Cobrança já estornada: não se abre contestação e se transfere a uma pessoa no mesmo turno.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Não reconheço a cobrança de {{monto}} na Academia Forca', intencion: hablar}
+  hechos:
+    monto: {valor: '150000'}
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 1
+  debe_escalar: true
+  idioma_respuesta: pt
+etiqueta: {en_alcance: true, resultado: escalar, razon: 'Política v1 ESC-02 (estado reversed, no disputable) y prompt 1.3.0: si figura como estornada, escalar en ese turno.'}

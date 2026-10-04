@@ -1,0 +1,21 @@
+id: R20_E_fraude_en_curso_es
+version: 1.0.0
+categoria: E
+descripcion: 'Engaño telefónico con transferencia en curso: el traspaso es urgente y no se abre disputa.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'Engaño telefónico con transferencia en curso: el traspaso es urgente y no se abre disputa.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Me llamaron diciendo que eran del banco, hice una transferencia hace diez minutos y creo que es un engaño', intencion: hablar}
+esperado:
+  casos: []
+  traspasos: 1
+  traspaso_urgente: true
+  max_turnos_hasta_traspaso: 2
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta: {en_alcance: true, resultado: escalar, razon: 'Política v1 ESC-01 (urgente, R-GOB-28): transferencia inmediata no reconocida o engaño telefónico, traspaso inmediato. El bloqueo previo es opcional,
+    por eso bloqueos queda sin verificar.'}

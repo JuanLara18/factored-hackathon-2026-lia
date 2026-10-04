@@ -8,27 +8,32 @@ leen solo para verificar.
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+import time
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Literal
 
 from latam_comun.dominio import Canal
 from latam_tecnologia.canales.geap import VARIABLE_PROVEEDOR, crear_modelo_geap
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
+from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.motor.caso import MotorCaso
-from pydantic_ai import DeferredToolRequests, DeferredToolResults, ToolDenied
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, RunContext, ToolDenied
+from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.messages import (
     ModelMessage,
     ModelRequest,
+    ModelResponse,
     ToolCallPart,
     ToolReturnPart,
     UserPromptPart,
 )
 from pydantic_ai.models import Model
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from latam_ia.evaluacion.agente_referencia import crear_modelo_referencia
 from latam_ia.evaluacion.esquema import Escenario
-from latam_ia.evaluacion.mundo import AHORA, CONVERSACION_ID, MundoVivo, materializar
+from latam_ia.evaluacion.mundo import CONVERSACION_ID, AlmacenCaido, MundoVivo, materializar
 from latam_ia.evaluacion.simulador import (
     ContextoSimulador,
     Simulador,
@@ -76,6 +81,51 @@ class Corrida:
     reintentos_simulador: int
     modo_simulador: str
     traza: Traza = field(repr=False)
+    latencias_turno_s: list[float] = field(default_factory=list[float])  # solo el agente, sin el simulador
+    tokens_entrada: int = 0  # del agente (el simulador no cuenta como costo del sistema)
+    tokens_salida: int = 0
+    llamadas_agente: int = 0
+
+    @property
+    def latencia_s(self) -> float:
+        return sum(self.latencias_turno_s)
+
+
+@dataclass
+class Medicion:
+    latencias: list[float] = field(default_factory=list[float])
+    entrada: int = 0
+    salida: int = 0
+    llamadas: int = 0
+
+
+FabricaAgente = Callable[[Model], Agent[ContextoAgente, str | DeferredToolRequests]]
+
+
+def crear_agente_sin_herramientas(modelo: Model) -> Agent[ContextoAgente, str | DeferredToolRequests]:
+    """Línea base de un modelo sin herramientas: el mismo prompt, sin acceso a datos ni a acciones."""
+
+    def instrucciones(ctx: RunContext[ContextoAgente]) -> str:
+        return (
+            instrucciones_disputas(ctx.deps.registro)
+            + "\n\nEn esta conversación no tiene herramientas ni acceso a los datos del cliente."
+        )
+
+    return Agent(
+        modelo,
+        deps_type=ContextoAgente,
+        output_type=[str, DeferredToolRequests],
+        instructions=instrucciones,
+    )
+
+
+def modelo_caido() -> FunctionModel:
+    """Agent Runtime o proveedor del modelo no disponible: toda llamada devuelve 503."""
+
+    def funcion(mensajes: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        raise ModelHTTPError(503, "runtime-caido", "falla inyectada")
+
+    return FunctionModel(funcion, model_name="runtime-caido")
 
 
 def elegir_modelo_agente(escenario: Escenario, entorno: Mapping[str, str] | None = None) -> tuple[Model, str]:
@@ -145,12 +195,23 @@ def _llamadas(historial: list[ModelMessage], aprobaciones: dict[str, Aprobacion]
 
 
 def _correr(
-    escenario: Escenario, mv: MundoVivo, modelo: Model, sim: Simulador
+    escenario: Escenario,
+    mv: MundoVivo,
+    modelo: Model,
+    sim: Simulador,
+    med: Medicion,
+    fabrica: FabricaAgente = crear_agente_disputas,
 ) -> tuple[Traza, list[tuple[str | None, str]]]:
     traza = Traza()
     pares: list[tuple[str | None, str]] = []
-    MotorCaso(mv.almacen, mv.herramientas, reloj=lambda: AHORA).abrir(CONVERSACION_ID, mv.sesion, Canal.CHAT)
-    agente = crear_agente_disputas(modelo)
+    try:
+        MotorCaso(mv.almacen, mv.herramientas, reloj=mv.reloj).abrir(CONVERSACION_ID, mv.sesion, Canal.CHAT)
+    except Exception as error:  # sesión vencida al abrir: no hay conversación que atender
+        traza.errores.append(f"{type(error).__name__}: {error}")
+        return traza, pares
+    if isinstance(mv.almacen, AlmacenCaido):
+        mv.almacen.caido = True
+    agente = fabrica(modelo)
     deps = ContextoAgente(mv.herramientas, mv.sesion, CONVERSACION_ID, Canal.CHAT, escenario.registro)
     historial: list[ModelMessage] = []
     aprobaciones: dict[str, Aprobacion] = {}
@@ -174,7 +235,11 @@ def _correr(
                 if en_cola is None:
                     registrar(turno)
                 en_cola = None
-                res = agente.run_sync(turno.texto, message_history=historial, deps=deps)
+                t0 = time.monotonic()
+                try:
+                    res = agente.run_sync(turno.texto, message_history=historial, deps=deps)
+                finally:
+                    med.latencias.append(time.monotonic() - t0)
             else:
                 pedidas = [c for c in pendiente.approvals if c.tool_name in EFECTOS_CON_CONFIRMACION]
                 confirma = False
@@ -197,12 +262,22 @@ def _correr(
                         aprobaciones[c.tool_call_id] = (
                             "explicita" if c.tool_name in EFECTOS_CON_CONFIRMACION else "implicita"
                         )
-                res = agente.run_sync(
-                    None, message_history=historial, deferred_tool_results=resultados, deps=deps
-                )
+                t0 = time.monotonic()
+                try:
+                    res = agente.run_sync(
+                        None, message_history=historial, deferred_tool_results=resultados, deps=deps
+                    )
+                finally:
+                    med.latencias.append(time.monotonic() - t0)
         except Exception as error:
             traza.errores.append(f"{type(error).__name__}: {error}")
             break
+        uso = res.usage
+        med.entrada += uso.input_tokens
+        med.salida += uso.output_tokens
+        med.llamadas += uso.requests
+        if escenario.fallo == "sesion_vence_a_mitad":
+            mv.reloj.adelantar()  # la sesión expira tras el primer turno, antes de aprobar la acción
         historial = res.all_messages()
         if isinstance(res.output, DeferredToolRequests):
             pendiente = res.output
@@ -232,16 +307,20 @@ def ejecutar_corrida(
     entorno: Mapping[str, str] | None = None,
     modelo_agente: Model | None = None,
     modelo_simulador: Model | None = None,
+    fabrica_agente: FabricaAgente = crear_agente_disputas,
 ) -> Corrida:
     """Una corrida con el mundo en memoria recién materializado. Reintenta una vez si falla el simulador."""
     reintentos = 0
     while True:
         mv = materializar(escenario)
         modelo = modelo_agente or elegir_modelo_agente(escenario, entorno)[0]
+        if escenario.fallo == "runtime_caido":
+            modelo = modelo_caido()
         sim = crear_simulador(
             escenario.guion, escenario.idioma, escenario.registro, entorno, modelo_simulador
         )
-        traza, pares = _correr(escenario, mv, modelo, sim)
+        med = Medicion()
+        traza, pares = _correr(escenario, mv, modelo, sim, med, fabrica_agente)
         # El cliente LLM no sigue un guion turno a turno: se juzgan los resultados, no la fidelidad al guion.
         fallas = [] if sim.modo == "llm_cliente" else verificar_fidelidad(escenario.guion, pares)
         if not fallas or reintentos >= 1:
@@ -260,7 +339,17 @@ def ejecutar_corrida(
         reintentos_simulador=reintentos,
         modo_simulador=sim.modo,
         traza=traza,
+        latencias_turno_s=med.latencias,
+        tokens_entrada=med.entrada,
+        tokens_salida=med.salida,
+        llamadas_agente=med.llamadas,
     )
 
 
-__all__ = ["Corrida", "ejecutar_corrida", "elegir_modelo_agente"]
+__all__ = [
+    "Corrida",
+    "FabricaAgente",
+    "crear_agente_sin_herramientas",
+    "ejecutar_corrida",
+    "elegir_modelo_agente",
+]

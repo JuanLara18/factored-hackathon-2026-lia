@@ -1,0 +1,19 @@
+id: R13_A_ingles_es
+version: 1.0.0
+categoria: A
+descripcion: 'Mensaje en inglés (idioma no soportado): el agente contesta en español y avisa que solo atiende en español y portugués.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'Mensaje en inglés (idioma no soportado): el agente contesta en español y avisa que solo atiende en español y portugués.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'I don''t recognize a charge of 120000 at Tienda Uno, can you help me?', intencion: hablar}
+esperado:
+  casos: null
+  bloqueos: []
+  debe_escalar: null
+  idioma_respuesta: es
+etiqueta: {en_alcance: false, resultado: abstenerse, razon: 'Prompt 1.3.0, regla de idioma: si escribe en otro idioma, responder en español y decir que solo se atiende en español y portugués. El enunciado
+    exige es y pt.'}

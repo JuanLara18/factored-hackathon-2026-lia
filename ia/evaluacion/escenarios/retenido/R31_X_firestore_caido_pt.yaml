@@ -1,0 +1,22 @@
+id: R31_X_firestore_caido_pt
+version: 1.0.0
+categoria: X
+descripcion: 'Firestore não responde (503) ao executar a ação: a contestação não se abre pela metade nem se repete.'
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: 'Firestore não responde (503) ao executar a ação: a contestação não se abre pela metade nem se repete.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Não reconheço a cobrança de {{monto}} na Tienda Uno', intencion: hablar}
+  - {decir: 'Sim, confirmo', intencion: confirmar}
+  hechos:
+    monto: {valor: '120000'}
+fallo: firestore_caido
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta: {en_alcance: true, resultado: fallo_seguro, razon: 'Efectos idempotentes con reserva previa (ejecutar_una_vez): si el almacén cae antes de reservar, no queda efecto parcial.'}

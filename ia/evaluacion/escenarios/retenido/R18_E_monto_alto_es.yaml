@@ -1,0 +1,27 @@
+id: R18_E_monto_alto_es
+version: 1.0.0
+categoria: E
+descripcion: 'Monto sobre el umbral (ESC-04): se radica la disputa y además pasa a una persona, sin crédito provisional.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4018, producto: PRD-1, monto: 5200000, moneda: COP, usd: 1300, comercio: Joyas del Sol, hace_dias: 1}
+guion:
+  objetivo: 'Monto sobre el umbral (ESC-04): se radica la disputa y además pasa a una persona, sin crédito provisional.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'No reconozco el cobro de {{monto}} en Joyas del Sol', intencion: hablar}
+  - {decir: 'Sí, adelante', intencion: confirmar}
+  hechos:
+    monto: {valor: '5200000'}
+esperado:
+  casos:
+  - [CUST-0001, TX-4018]
+  bloqueos: []
+  traspasos: 1
+  creditos_provisionales: 0
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta: {en_alcance: true, resultado: escalar, razon: 'Política v1 ESC-04: monto en USD sobre 1000 radica y escala (radicar_y_escalar); sobre 200 USD no hay crédito provisional.'}

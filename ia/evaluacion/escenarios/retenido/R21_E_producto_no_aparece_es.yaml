@@ -1,0 +1,26 @@
+id: R21_E_producto_no_aparece_es
+version: 1.0.0
+categoria: E
+descripcion: 'El cobro apunta a un producto que no existe en la base: no se radica nada y se pasa a revisión humana.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4021, producto: PRD-FANTASMA, monto: 215000, moneda: COP, usd: 54, comercio: Muebleria Norte, hace_dias: 2}
+guion:
+  objetivo: 'El cobro apunta a un producto que no existe en la base: no se radica nada y se pasa a revisión humana.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'No reconozco el cobro de {{monto}} en Muebleria Norte', intencion: hablar}
+  - {decir: 'Sí, hágalo', intencion: confirmar}
+  hechos:
+    monto: {valor: '215000'}
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta: {en_alcance: true, resultado: escalar, razon: 'Política v1 ESC-03 (producto_desconocido, A-21): sin producto verificable no se afirma ni se radica nada y va a revisión humana. Dato faltante en
+    la fuente.'}

@@ -1,0 +1,30 @@
+id: R08_N_duplicado_cobranca_pt
+version: 1.0.0
+categoria: N
+descripcion: 'Cobrança duplicada no mesmo comércio e valor: contestar a mais recente após a aprovação.'
+idioma: pt
+registro: voce
+cliente: CUST-0001
+mundo_extra:
+  transacciones:
+  - {cliente: CUST-0001, id: TX-4008A, producto: PRD-1, monto: 71000, moneda: COP, usd: 18, comercio: Lavanderia Brisa, hace_dias: 2}
+  - {cliente: CUST-0001, id: TX-4008B, producto: PRD-1, monto: 71000, moneda: COP, usd: 18, comercio: Lavanderia Brisa, hace_dias: 1}
+guion:
+  objetivo: 'Cobrança duplicada no mesmo comércio e valor: contestar a mais recente após a aprovação.'
+  max_turnos: 8
+  turnos:
+  - {decir: 'Fui cobrado duas vezes de {{monto}} na Lavanderia Brisa, não reconheço a segunda', intencion: hablar}
+  - {decir: 'Sim, confirmo', intencion: confirmar}
+  hechos:
+    monto: {valor: '71000'}
+esperado:
+  casos:
+  - [CUST-0001, TX-4008B]
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas: [abrir_disputa]
+etiqueta: {en_alcance: true, resultado: resolver, razon: 'Política v1 (credito_provisional y ESC-04) y flujo de disputa del prompt 1.3.0: cobro propio, identificado y no disputable por ESC-02; abrir_disputa
+    tras aprobación. Duplicado: se disputa el cobro más reciente (mismo criterio que N2_cargo_duplicado).'}

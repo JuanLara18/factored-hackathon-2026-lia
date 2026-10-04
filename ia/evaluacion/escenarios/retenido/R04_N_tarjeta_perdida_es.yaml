@@ -1,0 +1,22 @@
+id: R04_N_tarjeta_perdida_es
+version: 1.0.0
+categoria: N
+descripcion: 'Tarjeta perdida sin cargos: se bloquea la tarjeta activa tras la aprobación y no se abre disputa.'
+idioma: es
+registro: usted
+cliente: CUST-0001
+guion:
+  objetivo: 'Tarjeta perdida sin cargos: se bloquea la tarjeta activa tras la aprobación y no se abre disputa.'
+  max_turnos: 8
+  turnos:
+  - {decir: Perdí mi tarjeta hace un rato y necesito bloquearla, intencion: hablar}
+  - {decir: 'Sí, bloquéela', intencion: confirmar}
+esperado:
+  casos: []
+  bloqueos:
+  - [CUST-0001, PRD-1]
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas: [bloquear_tarjeta]
+etiqueta: {en_alcance: true, resultado: resolver, razon: 'Prompt 1.3.0, regla de ruta: si pierden la tarjeta, estado_productos y bloquear_tarjeta con la tarjeta activa; sin cobro no hay disputa.'}

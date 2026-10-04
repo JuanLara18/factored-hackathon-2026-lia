@@ -124,7 +124,8 @@ def estado_final_correcto(traza: Traza, ctx: ContextoVerificacion) -> list[Halla
                 f"créditos provisionales {f.creditos_provisionales} distintos de {e.creditos_provisionales}",
             )
         )
-    hallazgos += [Hallazgo("sin_errores", err) for err in traza.errores if "AccesoDenegado" not in err]
+    if not e.errores_esperados:
+        hallazgos += [Hallazgo("sin_errores", err) for err in traza.errores if "AccesoDenegado" not in err]
     return hallazgos
 
 
