@@ -8,11 +8,13 @@ nombre, documento, correo, teléfono, número de tarjeta ni identificadores inte
 from __future__ import annotations
 
 import hmac
+import logging
 import os
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from decimal import Decimal
 from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, Request
@@ -47,6 +49,16 @@ from latam_tecnologia.herramientas.catalogo import NO_DISPUTABLES, AccesoDenegad
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.retoma import Conversacion
 
+log = logging.getLogger(__name__)
+# Nombres ficticios de los clientes demo, por índice (no son personas reales).
+NOMBRES_DEMO = (
+    "Valentina Ríos",
+    "Mateo Herrera",
+    "Camila Duarte",
+    "Santiago Vélez",
+    "Isabela Mora",
+    "Andrés Quintero",
+)
 VARIABLE_CODIGO = "LATAM_OPERADOR_CODIGO"
 MAX_MOVIMIENTOS = 50  # por página
 MAX_HISTORIAL = 200  # lo que se lee del oro para paginar y filtrar por producto
@@ -165,20 +177,36 @@ def crear_router(
     def _casos_abiertos(cliente: str) -> dict[str, str]:
         return {c.transaccion_id: c.caso_ref for c in banco.casos_de(cliente) if c.estado == "abierto"}
 
+    def _cliente_vista(indice: int, pais: str) -> dict[str, Any]:
+        return {
+            "nombre": NOMBRES_DEMO[indice % len(NOMBRES_DEMO)],
+            "alias": f"Cliente {indice + 1} · {PAISES.get(pais, pais)}",
+            "pais": pais,
+        }
+
     def _movimiento(s: Sesion, tx: Transaccion, abiertos: dict[str, str]) -> dict[str, Any]:
         cliente = s.autenticada.cliente_id
         caso = abiertos.get(tx.transaction_id)
+        lado = textos.sentido(tx.tipo, tx.estado)
+        texto_monto = monto(tx.monto.monto, tx.monto.moneda, demo.pais_de(cliente))
         return {
             "tx_ref": ref("tx", cliente, tx.transaction_id),
             "fecha": fecha(tx.event_ts),  # Bogotá; el oro guarda UTC
             "hora": hora(tx.event_ts),
-            "descripcion": textos.describir_comercio(tx.comercio, tx.tipo),
+            "descripcion": textos.describir_comercio(tx.comercio, tx.tipo, s.registro),
             "categoria": tx.categoria,
+            "categoria_texto": textos.categoria_texto(tx.categoria, s.registro),
             "tipo": tx.tipo,
+            "tipo_texto": textos.tipo_texto(tx.tipo, s.registro),
             "canal": tx.canal,
-            "monto": monto(tx.monto.monto, tx.monto.moneda, demo.pais_de(cliente)),
+            "canal_texto": textos.canal_texto(tx.canal, s.registro),
+            "icono": textos.icono(tx.tipo, tx.categoria),
+            "sentido": lado,
+            "monto": texto_monto,
+            "monto_con_signo": ("+" if lado == "abono" else "-") + texto_monto,
             "moneda": tx.monto.moneda,
             "estado": tx.estado,
+            "estado_texto": textos.estado_texto(tx.estado, s.registro),
             "pais": tx.pais,
             "es_extranjera": tx.es_extranjera,
             "tarjeta_final": final(tx.product_id),
@@ -203,7 +231,7 @@ def crear_router(
         salida: list[dict[str, Any]] = []
         for i, cliente in enumerate(demo.clientes):
             pais = demo.pais_de(cliente)
-            salida.append({"indice": i, "alias": f"Cliente {i + 1} · {PAISES.get(pais, pais)}", "pais": pais})
+            salida.append({"indice": i, **_cliente_vista(i, pais)})
         return salida
 
     @router.post("/api/banca/ingresar")
@@ -223,13 +251,43 @@ def crear_router(
             {
                 "sesion": s.autenticada.id_sesion,
                 "cliente": {
-                    "alias": f"Cliente {indice + 1} · {PAISES.get(pais, pais)}",
-                    "pais": pais,
+                    **_cliente_vista(indice, pais),
                     "moneda": moneda or {v: k for k, v in PAIS_POR_MONEDA.items()}.get(pais, "COP"),
                     "registro": s.registro,
                 },
             }
         )
+
+    def _totales(s: Sesion, cliente: str, pais: str, saldos: dict[str, tuple[Any, Any]]) -> dict[str, Any]:
+        """Saldo disponible por moneda, gasto del mes en tarjetas y reclamos abiertos."""
+        productos = lectura.productos(cliente)
+        tarjetas = {p.product_id for p in productos if es_tarjeta(p.tipo)}
+        disponible: dict[str, Decimal] = {}
+        for p in productos:
+            saldo = saldos.get(p.product_id, (None, None))[0]
+            if saldo is not None and p.moneda and p.product_id not in tarjetas:
+                tipo = (p.tipo or "").lower()
+                if "préstamo" not in tipo and "loan" not in tipo and "seguro" not in tipo:
+                    disponible[p.moneda] = disponible.get(p.moneda, Decimal(0)) + Decimal(str(saldo))
+        mes = fecha(demo.reloj())[:7]
+        gasto: dict[str, Decimal] = {}
+        for t in lectura.transacciones_recientes(cliente, MAX_HISTORIAL):
+            if (
+                t.product_id in tarjetas
+                and fecha(t.event_ts)[:7] == mes
+                and textos.sentido(t.tipo, t.estado) == "cargo"
+                and (t.estado or "").lower() in ("approved", "pending")
+            ):
+                gasto[t.monto.moneda] = gasto.get(t.monto.moneda, Decimal(0)) + Decimal(str(t.monto.monto))
+
+        def _por_moneda(valores: dict[str, Decimal]) -> list[dict[str, Any]]:
+            return [{"moneda": m, "monto": monto(v, m, pais)} for m, v in sorted(valores.items())]
+
+        return {
+            "saldo_disponible": _por_moneda(disponible),
+            "gasto_mes_tarjetas": _por_moneda(gasto),
+            "reclamos_abiertos": len(_casos_abiertos(cliente)),
+        }
 
     @router.get("/api/banca/resumen")
     def resumen(request: Request) -> Response:
@@ -262,12 +320,12 @@ def crear_router(
         return JSONResponse(
             {
                 "cliente": {
-                    "alias": f"Cliente {indice + 1} · {PAISES.get(pais, pais)}",
-                    "pais": pais,
+                    **_cliente_vista(indice, pais),
                     "moneda": next((p["moneda"] for p in productos if p["moneda"]), None),
                     "registro": s.registro,
                 },
                 "productos": productos,
+                "resumen": _totales(s, cliente, pais, saldos),
             }
         )
 
@@ -500,6 +558,31 @@ def crear_router(
         operadores[token] = (f"Experto {numeracion.siguiente}", ahora + VIGENCIA_OPERADOR)
         numeracion.siguiente += 1
         return JSONResponse({"sesion_operador": token})
+
+    @router.post("/api/demo/restablecer")
+    def restablecer(request: Request, cuerpo_json: CuerpoJson) -> Response:
+        """Deja limpio el estado de los clientes demo; lo pide el operador (sesión o código)."""
+        if isinstance(_operador(request), JSONResponse):
+            esperado = env.get(VARIABLE_CODIGO, "")
+            if not esperado:
+                return _error("operador_no_configurado", 503)
+            ahora = demo.reloj()
+            if ahora - numeracion.desde > VENTANA_FALLOS:
+                numeracion.fallos, numeracion.desde = 0, ahora
+            if numeracion.fallos >= MAX_FALLOS_CODIGO:
+                return _error("demasiados_intentos", 429)
+            codigo = str(cuerpo_json.get("codigo", ""))
+            if not hmac.compare_digest(codigo.encode(), esperado.encode()):
+                numeracion.fallos += 1
+                return _error("operador", 401)
+        cuentas = banco.restablecer(demo.clientes)
+        propios = set(demo.clientes)
+        for sesion in demo.sesiones.values():
+            if sesion.autenticada.cliente_id in propios:
+                sesion.reclamos.clear()
+                sesion.contextos.clear()
+        log.info("demo restablecida: %s", cuentas)  # solo conteos
+        return JSONResponse({"restablecido": True, **cuentas})
 
     def _fila(t: Traspaso) -> dict[str, Any]:
         p = t.paquete
