@@ -305,5 +305,39 @@ code { font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; back
   .cta-caja { margin-inline: 1.25rem; width: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .tarjeta:hover, .boton:active, button:active { transform: none; } }
-.nav { flex-wrap: nowrap; white-space: nowrap; }
+#nav-principal { flex-wrap: nowrap; white-space: nowrap; }
 .hero { padding-bottom: clamp(2rem, 1.5rem + 3vw, 4rem); }
+
+/* Cabecera móvil: menú desplegable */
+.menu-btn { display: none; gap: .4rem; min-height: 40px; padding: .4rem .8rem; }
+.menu-btn svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+@media (max-width: 768px) {
+  .cabecera-fila { flex-wrap: wrap; gap: .5rem .75rem; }
+  .cabecera-acciones { display: contents; }
+  .marca { order: 1; margin-right: auto; }
+  .cabecera-acciones > .boton { order: 2; }
+  .menu-btn { display: inline-flex; order: 3; }
+  #nav-principal, .cabecera-acciones > .pais, .cabecera-acciones > .selector-idioma { display: none; }
+  .menu-abierto #nav-principal { order: 4; display: flex; flex-direction: column; flex-basis: 100%; margin: 0; gap: 0; overflow: visible; border-top: 1px solid var(--borde); padding-top: .25rem; }
+  .menu-abierto #nav-principal a, .menu-abierto #nav-principal .nav-pronto { padding: .8rem .25rem; border-bottom: 1px solid var(--borde); min-height: 44px; }
+  .menu-abierto .cabecera-acciones > .selector-idioma { order: 5; display: flex; flex-basis: 100%; margin: 0; }
+  .menu-abierto .cabecera-acciones > .pais { order: 6; display: block; flex-basis: 100%; padding-bottom: .5rem; }
+  .menu-abierto .pais select, .menu-abierto .idioma select { width: 100%; }
+  .cabecera-acciones .boton { padding-inline: .9rem; }
+}
+@media (max-width: 768px) {
+  .cabecera-acciones > .boton { padding-inline: .7rem; font-size: .88rem; }
+  .menu-btn { padding-inline: .6rem; }
+  .marca span { font-size: .98rem; white-space: nowrap; }
+}
+@media (max-width: 30rem) {
+  .menu-btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .menu-btn { width: 44px; padding: 0; }
+}
+@media (max-width: 30rem) {
+  .cabecera .contenedor { padding-inline: .9rem; }
+  .cabecera-fila { column-gap: .4rem; }
+  .cabecera-acciones > .boton { padding-inline: .55rem; font-size: .84rem; }
+  .marca { gap: .4rem; }
+  .marca span { font-size: .92rem; }
+}

@@ -190,3 +190,14 @@ blockquote { border-left-color: var(--acento); font-style: italic; padding-left:
   .op-detalle { padding: 1rem; }
   .op-app { grid-template-columns: 1fr; }
 }
+@media (max-width: 60rem) {
+  .op-barra { flex-wrap: wrap; gap: .35rem .6rem; padding: .5rem .75rem; }
+  .op-marca { white-space: nowrap; }
+  .op-marca-sub { display: none; }
+  .op-espacio { display: none; }
+  .op-barra #op-estado-cola { margin-left: auto; }
+  .op-ingreso { margin: 1.5rem 1rem; }
+  #op-caso, .op-detalle { min-width: 0; max-width: 100%; }
+  .op-tabla { display: block; overflow-x: auto; }
+  .op-datos dd, .op-motivo, .op-msg-texto, .op-lista-simple li { overflow-wrap: anywhere; }
+}
