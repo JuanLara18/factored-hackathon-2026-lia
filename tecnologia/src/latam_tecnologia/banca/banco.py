@@ -11,7 +11,7 @@ import os
 import secrets
 import threading
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, Protocol, runtime_checkable
 
@@ -144,6 +144,10 @@ class Banco(ServiciosBanco, Protocol):
     def resolver(
         self, id_traspaso: str, resultado: str, etiqueta: dict[str, Any] | str | None, nota: str | None
     ) -> Traspaso | None: ...
+
+    def restablecer(self, clientes: Sequence[str]) -> dict[str, int]:
+        """Borra casos, bloqueos, traspasos y conversaciones (y mensajes) de esos clientes; idempotente."""
+        ...
 
 
 def orden_cola(t: Traspaso) -> tuple[int, datetime]:
@@ -309,6 +313,31 @@ class BancoMemoria:
         )
         self._traspasos[id_traspaso] = nuevo
         return nuevo
+
+    def restablecer(self, clientes: Sequence[str]) -> dict[str, int]:
+        return _restablecer_memoria(self, clientes)
+
+
+def _restablecer_memoria(b: BancoMemoria, clientes: Sequence[str]) -> dict[str, int]:
+    propios = set(clientes)
+    casos = [k for k, c in b._casos.items() if c.cliente_id in propios]  # pyright: ignore[reportPrivateUsage]
+    bloqueos = {x for x in b._bloqueos if x[0] in propios}  # pyright: ignore[reportPrivateUsage]
+    traspasos = [k for k, t in b._traspasos.items() if t.cliente_id in propios]  # pyright: ignore[reportPrivateUsage]
+    convs = [k for k, c in b._conversaciones.items() if c.cliente_id in propios]  # pyright: ignore[reportPrivateUsage]
+    for k in casos:
+        del b._casos[k]  # pyright: ignore[reportPrivateUsage]
+    b._bloqueos -= bloqueos  # pyright: ignore[reportPrivateUsage]
+    for k in traspasos:
+        del b._traspasos[k]  # pyright: ignore[reportPrivateUsage]
+    for k in convs:
+        del b._conversaciones[k]  # pyright: ignore[reportPrivateUsage]
+        b._mensajes.pop(k, None)  # pyright: ignore[reportPrivateUsage]
+    return {
+        "casos": len(casos),
+        "bloqueos": len(bloqueos),
+        "traspasos": len(traspasos),
+        "conversaciones": len(convs),
+    }
 
 
 def crear_banco(entorno: Mapping[str, str] | None = None, reloj: Callable[[], datetime] = _ahora) -> Banco:
