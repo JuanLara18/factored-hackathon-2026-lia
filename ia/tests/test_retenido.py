@@ -67,6 +67,9 @@ def test_una_falla_inyectada_no_deja_efectos(id_: str) -> None:
     assert c.traza.errores
     assert c.traza.efectos_banco == []
     assert c.estado == "pasa"
+    # hallazgo 5: el cliente recibe texto honesto de la plantilla con la opción de una persona
+    dicho = c.traza.texto_de("agente")
+    assert dicho and ("persona" in dicho[-1].lower() or "pessoa" in dicho[-1].lower())
 
 
 def test_la_referencia_resuelve_un_caso_normal_sin_red() -> None:

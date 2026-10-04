@@ -15,6 +15,7 @@ from typing import Literal
 
 from latam_comun.dominio import Canal
 from latam_tecnologia.canales.geap import VARIABLE_PROVEEDOR, crear_modelo_geap
+from latam_tecnologia.canales.textos import texto_falla
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
 from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.motor.caso import MotorCaso
@@ -208,6 +209,7 @@ def _correr(
         MotorCaso(mv.almacen, mv.herramientas, reloj=mv.reloj).abrir(CONVERSACION_ID, mv.sesion, Canal.CHAT)
     except Exception as error:  # sesión vencida al abrir: no hay conversación que atender
         traza.errores.append(f"{type(error).__name__}: {error}")
+        traza.turnos.append(Turno("agente", texto_falla(escenario.registro)))
         return traza, pares
     if isinstance(mv.almacen, AlmacenCaido):
         mv.almacen.caido = True
@@ -271,6 +273,8 @@ def _correr(
                     med.latencias.append(time.monotonic() - t0)
         except Exception as error:
             traza.errores.append(f"{type(error).__name__}: {error}")
+            # Como el canal: una falla del turno se le dice al cliente con la plantilla, nunca en silencio.
+            traza.turnos.append(Turno("agente", texto_falla(escenario.registro)))
             break
         uso = res.usage
         med.entrada += uso.input_tokens

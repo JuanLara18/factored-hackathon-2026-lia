@@ -308,6 +308,11 @@ def plantilla(plantilla_id: str, registro: str, **valores: str) -> str:
     return _MARCADOR.sub(lambda m: valores[m.group(1)], texto)
 
 
+def texto_falla(registro: str | None) -> str:
+    """Lo que ve el cliente si algo falla: la plantilla `falla_segura.chat`, con la opción de una persona."""
+    return plantilla(PLANTILLAS_PAGINA["falla"], registro_valido(registro))
+
+
 def registro_valido(registro: str | None) -> str:
     return registro if registro in REGISTROS else "usted"
 
