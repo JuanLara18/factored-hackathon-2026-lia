@@ -617,3 +617,54 @@ def test_ids_de_mensaje_estrictamente_crecientes() -> None:
 
     ids = [id_mensaje() for _ in range(2000)]
     assert ids == sorted(ids) and len(set(ids)) == len(ids)
+
+
+class _Pista:
+    def __init__(self, en_riesgo: bool) -> None:
+        self.en_riesgo = en_riesgo
+
+
+def _paquete_con_riesgo(
+    riesgo: _Pista | None, motivo: str = "cliente_pidio_persona", urgente: bool = False
+) -> Any:
+    from latam_gobierno.politica import cargar
+    from latam_tecnologia.banca.paquete import construir_paquete
+
+    m = Mundo()
+    h = m.ingresar()
+    conv = m.reclamar(h, m.movimientos(h)[0]["tx_ref"])
+    sesion = next(iter(m.demo.sesiones.values())).autenticada
+    return construir_paquete(
+        politica=cargar(),
+        lectura=m.demo.lectura,
+        banco=m.demo.banco,
+        almacen=m.demo.almacen,
+        sesion=sesion,
+        conversacion_id=conv,
+        motivo=motivo,
+        urgente=urgente,
+        ahora=AHORA,
+        riesgo_plazo=riesgo,
+    )
+
+
+def test_riesgo_de_plazo_sube_un_nivel_y_marca_el_paquete() -> None:
+    from latam_tecnologia.banca.paquete import REGLA_EN_RIESGO
+
+    base = _paquete_con_riesgo(None)
+    alto = _paquete_con_riesgo(_Pista(True))
+    assert base.prioridad == "P3" and alto.prioridad == "P2"
+    assert REGLA_EN_RIESGO in [p.regla for p in alto.plazos_en_curso]
+    assert REGLA_EN_RIESGO not in [p.regla for p in base.plazos_en_curso]
+    assert alto.motivo == base.motivo and alto.hechos == base.hechos  # solo prioridad y plazo
+
+
+def test_riesgo_de_plazo_con_abstencion_no_cambia_nada() -> None:
+    base = _paquete_con_riesgo(None)
+    sin = _paquete_con_riesgo(_Pista(False))
+    ruido = {"evidencia", "hilo_id", "transcripcion_ref"}  # dependen de la conversación nueva de cada mundo
+    assert sin.model_dump(exclude=ruido) == base.model_dump(exclude=ruido)
+
+
+def test_riesgo_de_plazo_no_toca_un_p1() -> None:
+    assert _paquete_con_riesgo(_Pista(True), urgente=True).prioridad == "P1"
