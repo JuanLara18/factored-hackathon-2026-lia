@@ -42,3 +42,14 @@ agente en Agent Runtime corre con esa misma cuenta (`identity_type: SERVICE_ACCO
 proyecto esté en una organización y no lo está (`iam.sh agente` queda para ese día). Así se deja de depender de la
 cuenta de Compute por defecto con `roles/editor`, que sigue asignada porque Cloud Build la usa.
 
+## Restablecer el estado de la demostración
+
+Las pruebas con navegador y las demostraciones dejan reclamos y tarjetas bloqueadas en Firestore. Para dejar los
+clientes demo como nuevos (solo ellos; idempotente), con el código del experto:
+
+```bash
+curl -sS -X POST "$LATAM_API/api/demo/restablecer" -H "Content-Type: application/json"   -d "{\"codigo\": \"$LATAM_OPERADOR_CODIGO\"}"
+```
+
+`LATAM_API` es la URL del backend (`https://latam-chat-47808508188.us-central1.run.app` en producción). Las pruebas de
+`tests/e2e` lo hacen solas antes y después de la suite cuando se define `LATAM_E2E_OPERADOR`.

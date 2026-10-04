@@ -149,6 +149,7 @@ def test_banca_axe_autenticado(abrir, axe_js, oscuro):
     assert axe(page, axe_js) == []
 
 
+@pytest.mark.usefixtures("limpia_estado")
 def test_bloqueo_tarjeta_confirmado(abrir):
     """Bloquea de verdad una tarjeta de demostracion (idempotente); salta si todas ya estan bloqueadas."""
     for indice in CLIENTES:
