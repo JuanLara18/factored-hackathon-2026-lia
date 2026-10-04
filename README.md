@@ -1,8 +1,34 @@
 # LATAM Bank: atención AI-first para cargos no reconocidos
 
-Solución para la **Factored AI & Data Hackathon 2026**: un banco inventado, LATAM Bank, que atiende por
-**chat, WhatsApp y voz** (navegador y teléfono) en **español y portugués** la recepción de disputas por
-cargos no reconocidos, con un núcleo determinista que decide y modelos que entienden y redactan.
+Solución para la **Factored AI & Data Hackathon 2026**: un banco inventado, LATAM Bank, con datos sintéticos de México, Colombia y Argentina. Un agente (Gemini 3.1 Flash-Lite en Agent Runtime de GEAP) recibe disputas por cargos no reconocidos en **español (usted y vos) y portugués (você)**; el código decide (política `policy/v1`, autenticación por acción, aprobación en pantalla) y el modelo entiende y redacta. Si el caso lo requiere, pasa a una persona con un paquete de traspaso de 19 campos.
+
+## Para el jurado
+
+| Qué | Dónde |
+|---|---|
+| Reporte final (resumen, mapa de criterios, AI-first) | [`presidencia/reporte/00_reporte_final.md`](presidencia/reporte/00_reporte_final.md) |
+| Capítulos | [problema](presidencia/reporte/01_problema.md), [solución](presidencia/reporte/02_solucion.md), [datos y ML](presidencia/reporte/03_datos_y_ml.md), [evaluación](presidencia/reporte/04_evaluacion.md), [equidad](presidencia/reporte/05_equidad.md), [producción](presidencia/reporte/06_produccion.md) |
+| Guion de la demostración | [`presidencia/reporte/demo/guion.md`](presidencia/reporte/demo/guion.md) |
+| Sitio en vivo | https://latam-bank-hackaton-2026.web.app |
+| Banca en línea de demostración | https://latam-bank-hackaton-2026.web.app/banca/ |
+| Consola del experto humano (pide un código de demostración) | https://latam-bank-hackaton-2026.web.app/operador/ |
+| Dictamen preliminar de Auditoría | [`auditoria/reportes/dictamen_borrador.md`](auditoria/reportes/dictamen_borrador.md) |
+
+**Alcance honesto.** Todo es evaluación fuera de línea sobre datos sintéticos; no hay medición de producción. En producción corre el chat web; WhatsApp y voz son diseño. El portugués es atención a clientes de la región (no hay cuentas de Brasil) y no lo ha revisado un hablante nativo. Los límites y las fallas halladas están en el reporte final y en [producción](presidencia/reporte/06_produccion.md).
+
+## Correr en local (5 comandos)
+
+Requisitos: Python 3.12, [uv](https://docs.astral.sh/uv/) y [just](https://github.com/casey/just). Sin credenciales corre con un modelo de guion determinista (sin llamadas a Gemini ni a Google Cloud).
+
+```bash
+git clone https://github.com/JuanLara18/factored-hackathon-2026.git   # el repositorio es privado hasta la calificación
+cd factored-hackathon-2026
+uv sync --all-packages --all-groups
+just check          # formato, tipos y pruebas
+just chat           # chat web local en http://localhost:8765
+```
+
+Con `GEMINI_API_KEY` el chat usa Gemini; con `LATAM_GCP_PROJECT` y credenciales de Google Cloud usa GEAP. La evaluación: `uv run python -m latam_ia.evaluacion --retenido` (la línea base de reglas corre sin red).
 
 **¿Sesión nueva?** Empieza por [`presidencia/ESTADO.md`](presidencia/ESTADO.md): dónde estamos y qué sigue.
 
