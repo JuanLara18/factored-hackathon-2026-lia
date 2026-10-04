@@ -120,6 +120,13 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   producto desconocido (ESC-03, R21); `listar_transacciones` con límite 10 esconde cargos (R07); ante fallas inyectadas no
   le dice nada al cliente; 3 casos con defectos de etiqueta documentados.
 
+## En curso (5 oct)
+
+| Rama | Worktree | Qué hace |
+|---|---|---|
+| `feature/qa-hallazgos-evaluacion` | `../fh-hallazgos` | corrige R27 (inyección de prioridad), R21 (producto desconocido), R07 (límite de movimientos) y el silencio ante fallas; repite esos casos en GEAP y agrega un anexo a 04 |
+| `feature/presidencia-reporte-final` | `../fh-reporte` | reporte final (00, 02, 03, 06), guion de la demo, sección del README para jurados y borrador del dictamen de Auditoría |
+
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
 `main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:
