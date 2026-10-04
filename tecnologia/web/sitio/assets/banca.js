@@ -502,7 +502,11 @@
     const mes = ultimo ? ultimo.slice(0, 7) : "";
     const delMes = cargos.filter((m) => m.fecha.slice(0, 7) === mes);
     let gasto = null;
-    if (b.gasto_tarjetas_mes !== undefined && b.gasto_tarjetas_mes !== null) gasto = { monto: String(b.gasto_tarjetas_mes), moneda: monedaPrincipal, mes: T("este mes") };
+    const bg = b.gasto_mes_tarjetas !== undefined ? b.gasto_mes_tarjetas : b.gasto_tarjetas_mes;
+    if (Array.isArray(bg) && bg.length) {
+      const x = bg.find((e) => e.moneda === monedaPrincipal) || bg[0];
+      gasto = { monto: String(x.monto), moneda: x.moneda, mes: T("este mes") };
+    } else if (bg !== undefined && bg !== null && !Array.isArray(bg)) gasto = { monto: String(bg), moneda: monedaPrincipal, mes: T("este mes") };
     else if (tablero.movimientos.length) gasto = { monto: escribirMonto(delMes.reduce((a, m) => a + leerMonto(m.monto), 0)), moneda: (delMes[0] || {}).moneda || monedaPrincipal, mes: mes ? mesDe(ultimo) : "" };
     const abiertos = b.reclamos_abiertos !== undefined && b.reclamos_abiertos !== null ? Number(b.reclamos_abiertos) : tablero.movimientos.filter((m) => m.caso_ref).length;
     return { saldo, gasto, abiertos };
