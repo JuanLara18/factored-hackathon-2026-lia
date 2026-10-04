@@ -370,3 +370,14 @@ code { font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; back
   .marca { gap: .4rem; }
   .marca span { font-size: .92rem; }
 }
+
+/* Escritorio: cabecera en una sola línea. "Empresas (próximamente)" se oculta antes de partir la fila. */
+@media (min-width: 48.01rem) {
+  .cabecera .contenedor { flex-wrap: nowrap; }
+  .cabecera .nav { flex-wrap: nowrap; gap: .25rem 1.1rem; min-width: 0; }
+  .cabecera .nav a, .cabecera .nav-pronto { white-space: nowrap; }
+  .cabecera-acciones { flex-wrap: nowrap; flex-shrink: 0; }
+}
+@media (min-width: 48.01rem) and (max-width: 90rem) {
+  .cabecera .nav-pronto { display: none; }
+}
