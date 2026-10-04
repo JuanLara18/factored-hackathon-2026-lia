@@ -1,14 +1,16 @@
 """E2E con navegador real contra produccion. Se omite salvo LATAM_E2E=1.
 
 Uso: LATAM_E2E=1 uv run --with playwright pytest tests/e2e -x -q
-Variables: LATAM_E2E_URL (por defecto el arbol local en :5000; pon la URL de produccion para probar lo desplegado), LATAM_E2E_OPERADOR (codigo del experto), LATAM_E2E_HEADED=1.
+Variables: LATAM_E2E_URL (por defecto el arbol local en :5000; pon la URL de produccion para probar lo desplegado), LATAM_E2E_OPERADOR (codigo del experto; con el, el estado de demostracion se restablece antes y despues), LATAM_E2E_API (backend, por defecto el de produccion), LATAM_E2E_HEADED=1.
 Las pruebas con LLM real (marca `llm`) gastan conversaciones: se excluyen con -m "not llm".
 """
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -23,6 +25,7 @@ PRODUCCION = "https://latam-bank-hackaton-2026.web.app"
 # Por defecto se sirve el arbol de trabajo en http://localhost:5000 (origen permitido por el CORS del backend de produccion).
 URL = os.environ.get("LATAM_E2E_URL", "http://localhost:5000").rstrip("/")
 CODIGO_OPERADOR = os.environ.get("LATAM_E2E_OPERADOR", "")
+API = os.environ.get("LATAM_E2E_API", "https://latam-chat-47808508188.us-central1.run.app").rstrip("/")
 ANCHOS = (390, 768, 1280)
 AXE_URL = "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js"
 
@@ -53,6 +56,39 @@ class Vigia:
 
     def limpio(self, tolerar: tuple[str, ...] = ()) -> list[str]:
         return [p for p in self.problemas if not any(t in p for t in tolerar)]
+
+
+def restablecer_demo() -> bool:
+    """POST /api/demo/restablecer con el codigo del experto; sin LATAM_E2E_OPERADOR no hace nada."""
+    if not CODIGO_OPERADOR:
+        return False
+    peticion = urllib.request.Request(  # noqa: S310
+        API + "/api/demo/restablecer",
+        data=json.dumps({"codigo": CODIGO_OPERADOR}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(peticion, timeout=60) as r:  # noqa: S310
+            return r.status == 200
+    except (urllib.error.URLError, TimeoutError) as error:
+        print(f"aviso: no se pudo restablecer la demo ({type(error).__name__})", file=sys.stderr)
+        return False
+
+
+@pytest.fixture(scope="session", autouse=True)
+def demo_limpia():
+    """Estado de demostracion limpio al empezar y al terminar la suite, para no ensuciar produccion."""
+    restablecer_demo()
+    yield
+    restablecer_demo()
+
+
+@pytest.fixture
+def limpia_estado():
+    """Para pruebas que bloquean tarjetas o abren reclamos: restablece al terminar."""
+    yield
+    restablecer_demo()
 
 
 @pytest.fixture(scope="session", autouse=True)

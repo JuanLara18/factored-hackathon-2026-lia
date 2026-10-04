@@ -27,6 +27,7 @@ def _fila_reclamable(page):
 
 
 @pytest.mark.llm
+@pytest.mark.usefixtures("limpia_estado")
 def test_reclamo_persona_experto_resolucion(abrir):
     if not CODIGO_OPERADOR:
         pytest.skip("falta LATAM_E2E_OPERADOR")

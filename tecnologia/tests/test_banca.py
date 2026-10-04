@@ -125,9 +125,20 @@ def _sin_pii(*cargas: Any) -> None:
 def test_clientes_demo_y_ingreso(mundo: Mundo) -> None:
     lista = mundo.c.get("/api/banca/clientes-demo").json()
     assert [c["indice"] for c in lista] == [0, 1, 2]
-    assert lista[0] == {"indice": 0, "alias": "Cliente 1 · Colombia", "pais": "CO"}
+    assert lista[0] == {
+        "indice": 0,
+        "nombre": "Valentina Ríos",
+        "alias": "Cliente 1 · Colombia",
+        "pais": "CO",
+    }
     r = mundo.c.post("/api/banca/ingresar", json={"indice": 1, "registro": "vos"}).json()
-    assert r["cliente"] == {"alias": "Cliente 2 · Colombia", "pais": "CO", "moneda": "COP", "registro": "vos"}
+    assert r["cliente"] == {
+        "nombre": "Mateo Herrera",
+        "alias": "Cliente 2 · Colombia",
+        "pais": "CO",
+        "moneda": "COP",
+        "registro": "vos",
+    }
     assert mundo.c.post("/api/banca/ingresar", json={"indice": 9}).status_code == 400
     assert mundo.c.post("/api/banca/ingresar", json={"indice": "0"}).status_code == 400
     _sin_pii(lista, r)
@@ -617,3 +628,131 @@ def test_ids_de_mensaje_estrictamente_crecientes() -> None:
 
     ids = [id_mensaje() for _ in range(2000)]
     assert ids == sorted(ids) and len(set(ids)) == len(ids)
+
+
+class _Pista:
+    def __init__(self, en_riesgo: bool) -> None:
+        self.en_riesgo = en_riesgo
+
+
+def _paquete_con_riesgo(
+    riesgo: _Pista | None, motivo: str = "cliente_pidio_persona", urgente: bool = False
+) -> Any:
+    from latam_gobierno.politica import cargar
+    from latam_tecnologia.banca.paquete import construir_paquete
+
+    m = Mundo()
+    h = m.ingresar()
+    conv = m.reclamar(h, m.movimientos(h)[0]["tx_ref"])
+    sesion = next(iter(m.demo.sesiones.values())).autenticada
+    return construir_paquete(
+        politica=cargar(),
+        lectura=m.demo.lectura,
+        banco=m.demo.banco,
+        almacen=m.demo.almacen,
+        sesion=sesion,
+        conversacion_id=conv,
+        motivo=motivo,
+        urgente=urgente,
+        ahora=AHORA,
+        riesgo_plazo=riesgo,
+    )
+
+
+def test_riesgo_de_plazo_sube_un_nivel_y_marca_el_paquete() -> None:
+    from latam_tecnologia.banca.paquete import REGLA_EN_RIESGO
+
+    base = _paquete_con_riesgo(None)
+    alto = _paquete_con_riesgo(_Pista(True))
+    assert base.prioridad == "P3" and alto.prioridad == "P2"
+    assert REGLA_EN_RIESGO in [p.regla for p in alto.plazos_en_curso]
+    assert REGLA_EN_RIESGO not in [p.regla for p in base.plazos_en_curso]
+    assert alto.motivo == base.motivo and alto.hechos == base.hechos  # solo prioridad y plazo
+
+
+def test_riesgo_de_plazo_con_abstencion_no_cambia_nada() -> None:
+    base = _paquete_con_riesgo(None)
+    sin = _paquete_con_riesgo(_Pista(False))
+    ruido = {"evidencia", "hilo_id", "transcripcion_ref"}  # dependen de la conversación nueva de cada mundo
+    assert sin.model_dump(exclude=ruido) == base.model_dump(exclude=ruido)
+
+
+def test_riesgo_de_plazo_no_toca_un_p1() -> None:
+    assert _paquete_con_riesgo(_Pista(True), urgente=True).prioridad == "P1"
+
+
+# Textos en español, resumen, nombres y restablecimiento
+
+
+def test_campos_de_texto_en_espanol_y_portugues(mundo: Mundo) -> None:
+    from latam_tecnologia.canales import textos
+
+    assert textos.estado_texto("Approved") == "Aprobada"
+    assert textos.estado_texto("approved", "voce") == "Aprovada"
+    assert textos.categoria_texto("Entertainment") == "Entretenimiento"
+    assert textos.categoria_texto("Health", "voce") == "Saúde"
+    assert textos.canal_texto("ATM") == "Cajero automático"
+    assert textos.tipo_texto("Withdrawal", "voce") == "Saque"
+    assert textos.sentido("Deposit", "Approved") == "abono"
+    assert textos.sentido("Purchase", "Reversed") == "abono"
+    assert textos.sentido("Purchase", "Approved") == "cargo"
+    assert textos.icono("Withdrawal", "Other") == "efectivo"
+    assert textos.icono("Purchase", "Food") == "comida"
+    assert textos.icono("Purchase", "Other") == "compras"
+    assert textos.icono("Service", "Other") == "otro"
+    h = mundo.ingresar()
+    m = mundo.movimientos(h)[0]
+    assert m["estado"] == "approved" and m["estado_texto"] == "Aprobada"
+    assert m["tipo_texto"] == "Compra" and m["sentido"] == "cargo"
+    assert m["monto_con_signo"] == "-" + m["monto"]
+    assert {"categoria_texto", "canal_texto", "icono"} <= m.keys()
+
+
+def test_etiquetas_coinciden_con_el_csv() -> None:
+    import csv
+    from pathlib import Path
+
+    from latam_tecnologia.canales import textos
+
+    ruta = Path(__file__).resolve().parents[2] / "datos" / "dominios" / "dominios_canonicos.csv"
+    filas = list(csv.DictReader(ruta.open(encoding="utf-8")))
+    for dominio, tabla in (
+        ("categoria_comercio", textos.CATEGORIAS),
+        ("canal_transaccion", textos.CANALES),
+        ("estado_transaccion", textos.ESTADOS_TRANSACCION),
+        ("tipo_transaccion", textos.TIPOS_TRANSACCION),
+    ):
+        esperado = {f["valor"]: f["etiqueta_es"] for f in filas if f["dominio"] == dominio}
+        assert tabla == esperado, dominio
+
+
+def test_nombres_demo_y_resumen(mundo: Mundo) -> None:
+    lista = mundo.c.get("/api/banca/clientes-demo").json()
+    assert lista[0]["nombre"] == "Valentina Ríos" and lista[0]["alias"].startswith("Cliente 1")
+    r = mundo.c.post("/api/banca/ingresar", json={"indice": 1}).json()
+    assert r["cliente"]["nombre"] == "Mateo Herrera"
+    h = {"X-Sesion": r["sesion"]}
+    resumen = mundo.c.get("/api/banca/resumen", headers=h).json()
+    assert resumen["cliente"]["nombre"] == "Mateo Herrera"
+    assert resumen["resumen"]["reclamos_abiertos"] == 0
+    assert isinstance(resumen["resumen"]["saldo_disponible"], list)
+    gasto = resumen["resumen"]["gasto_mes_tarjetas"]
+    assert gasto == [{"moneda": "COP", "monto": "68,90"}]
+
+
+def test_restablecer_demo_exige_operador_y_es_idempotente(mundo: Mundo) -> None:
+    h = mundo.ingresar()
+    tx = mundo.movimientos(h)[0]["tx_ref"]
+    mundo.reclamar(h, tx)
+    prod = mundo.c.get("/api/banca/resumen", headers=h).json()["productos"][0]["producto_ref"]
+    mundo.c.post(f"/api/banca/tarjetas/{prod}/bloqueo", headers=h, json={"confirmo": True})
+    assert mundo.c.post("/api/demo/restablecer", json={}).status_code == 401
+    assert mundo.c.post("/api/demo/restablecer", json={"codigo": "mal"}).status_code == 401
+    r = mundo.c.post("/api/demo/restablecer", json={"codigo": CODIGO})
+    assert r.status_code == 200 and r.json()["bloqueos"] == 1 and r.json()["conversaciones"] >= 1
+    assert mundo.c.get("/api/banca/reclamos", headers=h).json() == []
+    assert mundo.c.get("/api/banca/resumen", headers=h).json()["productos"][0]["estado"] == "activa"
+    assert mundo.movimientos(h)[0]["reclamable"] is True
+    again = mundo.c.post("/api/demo/restablecer", headers=mundo.operador()).json()
+    assert again["casos"] == again["bloqueos"] == again["traspasos"] == 0
+    mundo.reclamar(h, tx)  # el mismo movimiento se vuelve a poder reclamar

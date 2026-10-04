@@ -186,6 +186,99 @@ ESTADOS_TRANSACCION_PT = {
 SIN_COMERCIO = {"es": "Movimiento sin comercio", "pt": "Movimento sem estabelecimento"}
 
 
+# Etiquetas de `categoria_comercio` y `canal_transaccion` (mismo CSV); se copian aquí porque la imagen de
+# Cloud Run no trae `datos/`. Una prueba las compara con el CSV. Las del portugués son del canal.
+CATEGORIAS = {
+    "Food": "Alimentos",
+    "Services": "Servicios",
+    "Other": "Otros",
+    "Transport": "Transporte",
+    "Entertainment": "Entretenimiento",
+    "Health": "Salud",
+}
+CATEGORIAS_PT = {
+    "Food": "Alimentação",
+    "Services": "Serviços",
+    "Other": "Outros",
+    "Transport": "Transporte",
+    "Entertainment": "Entretenimento",
+    "Health": "Saúde",
+}
+CANALES = {
+    "POS": "Punto de venta",
+    "ATM": "Cajero automático",
+    "Web": "Web",
+    "App": "Aplicación móvil",
+    "Branch": "Sucursal",
+    "Transfer": "Transferencia",
+}
+CANALES_PT = {
+    "POS": "Ponto de venda",
+    "ATM": "Caixa eletrônico",
+    "Web": "Web",
+    "App": "Aplicativo",
+    "Branch": "Agência",
+    "Transfer": "Transferência",
+}
+# Claves estables que el sitio mapea a SVG.
+ICONOS_CATEGORIA = {
+    "food": "comida",
+    "transport": "transporte",
+    "entertainment": "entretenimiento",
+    "services": "servicios",
+    "health": "salud",
+    "other": "otro",
+}
+ICONOS_TIPO = {
+    "withdrawal": "efectivo",
+    "transfer": "transferencia",
+    "payment": "pago",
+    "deposit": "deposito",
+}
+
+
+def _buscar(tabla: dict[str, str], valor: object) -> str | None:
+    clave = str(valor or "").strip().lower()
+    return next((v for k, v in tabla.items() if k.lower() == clave), None)
+
+
+def estado_texto(estado: object, registro: str = "usted") -> str:
+    tabla = ESTADOS_TRANSACCION_PT if idioma_de(registro) == "pt" else ESTADOS_TRANSACCION
+    return _buscar(tabla, estado) or str(estado or "")
+
+
+def tipo_texto(tipo: object, registro: str = "usted") -> str:
+    tabla = TIPOS_TRANSACCION_PT if idioma_de(registro) == "pt" else TIPOS_TRANSACCION
+    return _buscar(tabla, tipo) or str(tipo or "")
+
+
+def categoria_texto(categoria: object, registro: str = "usted") -> str:
+    tabla = CATEGORIAS_PT if idioma_de(registro) == "pt" else CATEGORIAS
+    return _buscar(tabla, categoria) or str(categoria or "")
+
+
+def canal_texto(canal: object, registro: str = "usted") -> str:
+    tabla = CANALES_PT if idioma_de(registro) == "pt" else CANALES
+    return _buscar(tabla, canal) or str(canal or "")
+
+
+def sentido(tipo: object, estado: object) -> str:
+    """`abono` si el dinero entra al cliente (depósito, reverso); `cargo` en el resto."""
+    t, e = str(tipo or "").lower(), str(estado or "").lower()
+    return "abono" if t == "deposit" or e == "reversed" else "cargo"
+
+
+def icono(tipo: object, categoria: object) -> str:
+    """Lo que no es compra se dibuja por su tipo; la compra, por su categoría (`compras` si no hay)."""
+    por_tipo = ICONOS_TIPO.get(str(tipo or "").lower())
+    if por_tipo:
+        return por_tipo
+    por_categoria = ICONOS_CATEGORIA.get(str(categoria or "").lower())
+    if por_categoria and por_categoria != "otro":
+        return por_categoria
+    return "compras" if str(tipo or "").lower() == "purchase" else "otro"
+
+
 def idioma_de(registro: str | None) -> str:
     return IDIOMA_POR_REGISTRO.get(registro_valido(registro), "es")
 

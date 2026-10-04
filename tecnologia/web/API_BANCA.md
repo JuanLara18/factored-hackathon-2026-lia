@@ -9,8 +9,8 @@ opacas y la interfaz nunca las muestra. Montos como texto con formato del país 
 
 | Método y ruta | Entrada | Salida |
 |---|---|---|
-| `GET /api/banca/clientes-demo` | | `[{indice, alias, pais}]` (alias ficticio, p. ej. "Cliente 1 · Argentina") |
-| `POST /api/banca/ingresar` | `{indice, registro?}` (`registro`: `usted`, `vos` o `voce`; `voce` es portugués y fija el idioma del agente, las plantillas y `idioma = pt` en el traspaso) | `{sesion, cliente: {alias, pais, moneda, registro}}` |
+| `GET /api/banca/clientes-demo` | | `[{indice, nombre, alias, pais}]` (`nombre` ficticio fijo por índice, p. ej. "Valentina Ríos"; `alias` ("Cliente 1 · Argentina") queda de respaldo) |
+| `POST /api/banca/ingresar` | `{indice, registro?}` (`registro`: `usted`, `vos` o `voce`; `voce` es portugués y fija el idioma del agente, las plantillas y `idioma = pt` en el traspaso) | `{sesion, cliente: {nombre, alias, pais, moneda, registro}}` |
 | `GET /api/banca/resumen` | | `{cliente, productos: [{producto_ref, tipo, etiqueta, final, estado, moneda, saldo, limite}]}` (`saldo` y `limite` pueden ser `null`) |
 | `GET /api/banca/movimientos?producto_ref=&limite=50&antes_de=` | | `{movimientos: [Movimiento], siguiente}` |
 | `GET /api/banca/movimientos/{tx_ref}` | | `Movimiento` |
@@ -63,8 +63,26 @@ mensajes [{id, autor, texto, en}]`.
   `reclamar`; sin él usa la de la sesión. `POST /api/agui` acepta ese `threadId`. Otra conversación responde 403.
 - `reclamar` responde 409 `{error: "ya_reclamado", caso_ref}` si el movimiento ya tiene caso y 409
   `no_reclamable` si su estado no permite disputa; pedirlo dos veces devuelve la misma conversación.
-- `resumen` incluye también `cliente {alias, pais, moneda, registro}`; `producto.tipo` es el código
+- Textos de pantalla: cada movimiento trae, además de los códigos crudos (`estado`, `categoria`, `tipo`, `canal`, que
+  siguen igual), `estado_texto`, `categoria_texto`, `tipo_texto` y `canal_texto` en español (portugués si el
+  registro es `voce`), `sentido` (`cargo` o `abono`: depósito y reverso son abono), `monto_con_signo` (`-1.234,56` o
+  `+1.234,56`, con el formato del país) e `icono`, un slug estable para el SVG: `compras`, `comida`, `transporte`,
+  `entretenimiento`, `servicios`, `salud`, `efectivo`, `transferencia`, `pago`, `deposito`, `otro`. Si el movimiento no
+  es compra, el icono sale del tipo; si es compra, de la categoría (`compras` si no la tiene). Las etiquetas son las
+  de `datos/dominios/dominios_canonicos.csv`, copiadas al código (la imagen no trae `datos/`) y verificadas por prueba.
+- `resumen` trae el bloque `resumen {saldo_disponible: [{moneda, monto}], gasto_mes_tarjetas: [{moneda, monto}],
+  reclamos_abiertos}`: el saldo suma cuentas (no tarjetas, préstamos ni seguros); el gasto es de compras aprobadas o
+  pendientes en tarjetas durante el mes de Bogotá en curso.
+- `resumen` incluye también `cliente {nombre, alias, pais, moneda, registro}`; `producto.tipo` es el código
   (`credit_card`) y `etiqueta` el texto en español.
+
+## Restablecer la demostración
+
+`POST /api/demo/restablecer` borra casos, bloqueos, traspasos y conversaciones con sus mensajes de los clientes demo
+(solo de ellos) y los reclamos en memoria de sus sesiones. Exige `X-Operador` válido o `{codigo}` en el cuerpo (el
+código del experto; 401 si falla, con el mismo límite de intentos que el ingreso). Idempotente: responde
+`{restablecido: true, casos, bloqueos, traspasos, conversaciones}` con los conteos borrados. El registro solo
+guarda conteos.
 
 ## Almacén
 

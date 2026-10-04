@@ -181,7 +181,7 @@ function pintarCola(primera) {
   $("op-estado-cola").textContent = abiertos.length + (abiertos.length === 1 ? " traspaso abierto" : " traspasos abiertos");
   if (!est.cola.length) { ul.appendChild(el("li", "op-suave op-vacio-cola", "No hay traspasos en cola.")); return; }
   for (const c of est.cola) {
-    const li = el("li", "op-item" + (est.actual === c.id_traspaso ? " op-activo" : "") + (c.estado === "resuelto" ? " op-resuelto" : ""));
+    const li = el("li", "op-item op-i-" + String(c.prioridad).toLowerCase() + (est.actual === c.id_traspaso ? " op-activo" : "") + (c.estado === "resuelto" ? " op-resuelto" : ""));
     li.dataset.id = c.id_traspaso;
     const b = el("button", "op-item-boton", null, { type: "button", "aria-current": est.actual === c.id_traspaso ? "true" : "false" });
     const fila1 = el("span", "op-fila");
@@ -295,7 +295,7 @@ function proc(tipo, texto) {
   const clases = { verificado: "op-proc-v", cliente: "op-proc-c", ia: "op-proc-i" };
   return el("span", "op-proc " + clases[tipo], texto);
 }
-function vacio(t) { return el("p", "op-suave", t); }
+function vacio(t) { return el("p", "op-suave op-vacio-sec", t); }
 function fuenteHora(x) { return [x.fuente, x.hora].filter(Boolean).join(", "); }
 
 function pintarCaso() {
@@ -332,8 +332,15 @@ function pintarCaso() {
     b.addEventListener("click", tomar);
     bar.appendChild(b);
   }
+  if (tomado) {
+    const r = el("button", "op-boton op-secundario", "Responder", { type: "button", id: "op-ir-responder" });
+    r.addEventListener("click", () => { const t = $("op-texto"); if (t) { t.scrollIntoView({ block: "center" }); t.focus(); } });
+    const v = el("button", "op-boton op-secundario", "Resolver", { type: "button", id: "op-ir-resolver" });
+    v.addEventListener("click", () => { const t = $("op-resultado"); if (t) { t.scrollIntoView({ block: "center" }); t.focus(); } });
+    bar.append(r, v);
+  }
   if (motivo.regla) bar.appendChild(el("span", "op-suave", "Regla " + motivo.regla.id + " (" + motivo.regla.version + ")"));
-  cab.appendChild(bar);
+  if (bar.children.length) bar.classList.add("op-barra-acc");
   cab.appendChild(el("p", "op-error", "", { id: "op-error-caso", role: "alert" }));
   caso.appendChild(cab);
 
@@ -494,6 +501,7 @@ function pintarCaso() {
     s.appendChild(el("ul", "op-hilo", null, { id: "op-mensajes", "aria-label": "Mensajes del hilo" }));
   }
   caso.appendChild(s);
+  if (bar.children.length) caso.appendChild(bar);
   pintarMensajes(false);
   tic();
 }

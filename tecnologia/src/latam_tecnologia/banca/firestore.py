@@ -9,7 +9,7 @@ Las consultas filtran por un solo campo: no piden índices compuestos.
 from __future__ import annotations
 
 import contextlib
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from typing import Any
 
@@ -264,3 +264,18 @@ class BancoFirestore:
         transaccional: Any = getattr(firestore, "transactional")  # noqa: B009
         transaccional(_resolver)(self._db.transaction())
         return self.traspaso(id_traspaso)
+
+    def restablecer(self, clientes: Sequence[str]) -> dict[str, int]:
+        cuentas = {"casos": 0, "bloqueos": 0, "traspasos": 0, "conversaciones": 0}
+        for cliente in clientes:
+            for coleccion in ("casos", "bloqueos", "traspasos", "conversaciones"):
+                consulta = self._db.collection(coleccion).where(
+                    filter=FieldFilter("cliente_id", "==", cliente)
+                )
+                for d in list(consulta.stream()):
+                    if coleccion == "conversaciones":
+                        for m in list(d.reference.collection("mensajes").stream()):
+                            m.reference.delete()
+                    d.reference.delete()
+                    cuentas[coleccion] += 1
+        return cuentas

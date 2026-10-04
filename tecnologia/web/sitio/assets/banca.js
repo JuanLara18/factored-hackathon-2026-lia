@@ -93,6 +93,32 @@
   }
   function guardarLocal(e) { guardar.escribir("banca_mock_estado", JSON.stringify(e)); }
 
+  // Las fixtures están en pesos colombianos: se llevan al país y la moneda del cliente para que sean coherentes.
+  const MONEDAS = { MX: "MXN", CO: "COP", AR: "ARS" };
+  const FACTOR = { COP: 1, MXN: 1 / 215, ARS: 0.34 };
+  function leerMonto(t) {
+    const x = String(t);
+    if (/,\d{1,2}$/.test(x) || (x.includes(".") && x.includes(","))) return Number(x.replace(/\./g, "").replace(",", "."));
+    return Number(x.replace(/[^\d.-]/g, ""));
+  }
+  function escribirMonto(n) { return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function localizar(datos, cliente) {
+    const pais = (cliente && cliente.pais) || "CO";
+    const moneda = MONEDAS[pais] || "COP";
+    const f = FACTOR[moneda] || 1;
+    const conv = (v) => (v === null || v === undefined || v === "" ? v : escribirMonto(Math.round(leerMonto(v) * f / (f < 1 ? 10 : 1)) * (f < 1 ? 10 : 1)));
+    const signo = (v) => (typeof v === "string" && /^[+-]/.test(v) ? v[0] + conv(v.slice(1)) : conv(v));
+    const lista = Array.isArray(datos) ? datos : datos.productos || datos.movimientos || [];
+    lista.forEach((x) => {
+      if (x.moneda) x.moneda = moneda;
+      ["saldo", "limite", "monto", "credito_provisional"].forEach((k) => { if (k in x) x[k] = conv(x[k]); });
+      if ("monto_con_signo" in x) x.monto_con_signo = signo(x.monto_con_signo);
+      if (x.pais === "CO" && pais !== "CO") x.pais = pais;
+      else if (x.pais === pais && pais !== "CO" && x.es_extranjera) x.pais = "CO";
+    });
+    return datos;
+  }
+
   async function mock(ruta, metodo, cuerpo) {
     await pausa(280);
     const [camino, consulta] = ruta.split("?");
@@ -105,19 +131,20 @@
     if (camino === "/api/banca/ingresar") {
       const lista = await fixture("clientes-demo");
       const c = lista.find((x) => x.indice === (cuerpo && cuerpo.indice)) || lista[0];
-      const moneda = { MX: "MXN", CO: "COP", AR: "ARS" }[c.pais] || "USD";
-      return { sesion: "demo-local", cliente: { alias: c.alias, pais: c.pais, moneda, registro: registro() } };
+      return { sesion: "demo-local", cliente: { alias: c.alias, nombre: c.nombre, indice: c.indice, pais: c.pais, moneda: MONEDAS[c.pais] || "USD", registro: registro() } };
     }
     if (camino === "/api/banca/resumen") {
       const r = await fixture("resumen");
       const s = sesion();
       if (s && s.cliente) r.cliente = s.cliente;
+      localizar(r, r.cliente);
       r.productos.forEach((p) => { if (loc.bloqueadas.includes(p.producto_ref)) p.estado = "bloqueada"; });
       return r;
     }
     if (camino === "/api/banca/movimientos") {
       const d = await fixture("movimientos");
       const res = await fixture("resumen");
+      localizar(d, (sesion() || {}).cliente);
       const prod = res.productos.find((p) => p.producto_ref === q.get("producto_ref"));
       if (prod) d.movimientos = d.movimientos.filter((t) => t.tarjeta_final === prod.final);
       d.movimientos.forEach((t) => { if (loc.reclamadas[t.tx_ref]) t.caso_ref = loc.reclamadas[t.tx_ref]; });
@@ -125,6 +152,7 @@
     }
     if ((m = camino.match(/^\/api\/banca\/movimientos\/([^/]+)\/reclamar$/))) {
       const d = await fixture("movimientos");
+      localizar(d, (sesion() || {}).cliente);
       const t = d.movimientos.find((x) => x.tx_ref === m[1]);
       if (!t) throw new ErrorApi(404);
       loc.reclamadas[t.tx_ref] = loc.reclamadas[t.tx_ref] || "c-" + t.tx_ref;
@@ -134,6 +162,7 @@
     }
     if ((m = camino.match(/^\/api\/banca\/movimientos\/([^/]+)$/))) {
       const d = await fixture("movimientos");
+      localizar(d, (sesion() || {}).cliente);
       const t = d.movimientos.find((x) => x.tx_ref === m[1]);
       if (!t) throw new ErrorApi(404);
       return t;
@@ -141,6 +170,8 @@
     if (camino === "/api/banca/reclamos") {
       const lista = await fixture("reclamos");
       const d = await fixture("movimientos");
+      localizar(lista, (sesion() || {}).cliente);
+      localizar(d, (sesion() || {}).cliente);
       for (const [tx, ref] of Object.entries(loc.reclamadas)) {
         if (lista.some((c) => c.caso_ref === ref)) continue;
         const t = d.movimientos.find((x) => x.tx_ref === tx);
@@ -166,11 +197,16 @@
     throw new ErrorApi(404);
   }
 
+
   // Formato ----------------------------------------------------------------------------------------------------
 
+  const hoyIso = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
   function fechaLarga(iso) {
     const d = new Date(String(iso) + "T12:00:00");
     if (Number.isNaN(d.getTime())) return String(iso || "");
+    const dia = Math.round((new Date(hoyIso() + "T12:00:00") - d) / 86400000);
+    if (dia === 0) return T("Hoy");
+    if (dia === 1) return T("Ayer");
     return d.toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" });
   }
   function fechaCorta(iso) {
@@ -178,20 +214,134 @@
     if (Number.isNaN(d.getTime())) return String(iso || "");
     return d.toLocaleDateString(locale(), { day: "numeric", month: "short", year: "numeric" });
   }
-  const dinero = (monto, moneda) => (monto === null || monto === undefined ? "" : String(monto) + " " + String(moneda || ""));
+  const limpio = (monto) => String(monto).replace(/,00$/, "");
+  const dinero = (monto, moneda) => (monto === null || monto === undefined ? "" : limpio(monto) + " " + String(moneda || ""));
+  // Cifra con el código de moneda en pequeño: nunca se muestra un monto sin su moneda.
+  function cifra(monto, moneda, clase) {
+    return h("span", { clase: "bn-cifra bn-num " + (clase || "") }, h("span", { texto: limpio(monto) }), h("small", { texto: " " + String(moneda || "") }));
+  }
   const enmascarar = (final) => "···· " + String(final || "").replace(/\D/g, "").slice(-4);
+  const minuscula = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  // El backend manda el tipo como texto ("Tarjeta Crédito"), no como código: se normaliza antes de comparar.
+  const esTarjeta = (p) => /tarjeta|card/.test(minuscula(p.tipo) + " " + minuscula(p.etiqueta));
+  const esCredito = (p) => /credit/.test(minuscula(p.tipo) + " " + minuscula(p.etiqueta));
+  const esCuenta = (p) => !esTarjeta(p);
+
   const ESTADOS = {
     aprobada: ["Aprobada", "ok"], pendiente: ["Pendiente", "aviso"], rechazada: ["Rechazada", "mal"], reversada: ["Reversada", "neutro"],
     activa: ["Activa", "ok"], bloqueada: ["Bloqueada", "mal"],
     abierto: ["Abierto", "aviso"], en_revision: ["En revisión", "aviso"], resuelto: ["Resuelto", "ok"], cerrado: ["Cerrado", "neutro"],
   };
+  // Respaldo: el backend puede mandar códigos en inglés ("Approved", "Entertainment"...); se pasan a español aquí.
+  const ESTADO_EN = { approved: "aprobada", declined: "rechazada", rejected: "rechazada", pending: "pendiente", reversed: "reversada", refunded: "reversada" };
+  const CATEGORIA_EN = {
+    entertainment: "Entretenimiento", services: "Servicios", food: "Comida", purchase: "Compras", purchases: "Compras", withdrawal: "Retiro",
+    deposit: "Abono", transfer: "Transferencia", transport: "Transporte", travel: "Viajes", health: "Salud", shopping: "Compras", cash: "Efectivo",
+    groceries: "Supermercado", restaurants: "Restaurantes", subscriptions: "Suscripciones", payment: "Pago", income: "Ingresos",
+  };
+  const TIPO_EN = { purchase: "Compra", withdrawal: "Retiro", deposit: "Abono", transfer: "Transferencia", payment: "Pago", compra: "Compra", retiro: "Retiro en cajero", deposito: "Abono recibido", pago: "Pago", transferencia: "Transferencia" };
+  const ICONO_DE = [
+    [/supermerc|restaur|comida|food|grocer|caf[eé]/, "comida"], [/compra|purchase|shopping|tienda|retail/, "compras"],
+    [/transporte|taxi|transport|uber|gasolina/, "transporte"], [/entreten|suscrip|stream|cine|entertain|subscri/, "entretenimiento"],
+    [/servicio|service|energ|agua|luz|internet/, "servicios"], [/salud|farmacia|health|clinic/, "salud"],
+    [/efectivo|retiro|cajero|withdraw|cash/, "efectivo"], [/transfer/, "transferencia"], [/pago|payment/, "pago"],
+    [/ingreso|deposit|abono|n[oó]mina|income/, "deposito"], [/viaje|hotel|travel|vuelo/, "viajes"],
+  ];
+  const clave = (v) => minuscula(v).trim();
+
+  // Normaliza un movimiento: prefiere los campos en español del backend y rellena lo que falte.
+  function norm(m) {
+    if (m.__n) return m;
+    const ek = clave(m.estado);
+    m.estado = ESTADO_EN[ek] || ek.replace(/\s+/g, "_");
+    const cat = String(m.categoria || "");
+    m.categoria_es = m.categoria_texto || CATEGORIA_EN[clave(cat)] || cat;
+    m.tipo_es = m.tipo_texto || TIPO_EN[clave(m.tipo)] || String(m.tipo || "");
+    m.estado_es = m.estado_texto || (ESTADOS[m.estado] ? ESTADOS[m.estado][0] : m.estado);
+    m.canal_es = m.canal_texto || String(m.canal || "");
+    const texto = clave(cat + " " + m.tipo);
+    m.sentido = m.sentido || (/deposit|abono|ingreso|income|nomina|reembolso|refund/.test(texto) ? "abono" : "cargo");
+    let icono = m.icono;
+    if (!icono || !ICONOS[icono]) {
+      icono = "otro";
+      for (const [re, slug] of ICONO_DE) if (re.test(texto)) { icono = slug; break; }
+    }
+    m.icono = icono;
+    m.__n = true;
+    return m;
+  }
+  const esAbono = (m) => m.sentido === "abono";
+  function textoMonto(m) {
+    return (esAbono(m) ? "+" : "−") + limpio(String(m.monto).replace(/^[+-]/, "")) + " " + String(m.moneda || "");
+  }
+  function chip(texto, tono, clase) {
+    return h("span", { clase: "bn-insignia bn-" + (tono || "neutro") + (clase ? " " + clase : ""), texto });
+  }
   function insignia(estado) {
     const [texto, tono] = ESTADOS[estado] || [String(estado || "").replace(/_/g, " "), "neutro"];
-    return h("span", { clase: "bn-insignia bn-" + tono, texto: T(texto) });
+    return chip(T(texto), tono);
   }
-  // El backend manda el tipo como texto ("Tarjeta Crédito"), no como código: se normaliza antes de comparar.
-  const minuscula = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const esTarjeta = (p) => /tarjeta|card/.test(minuscula(p.tipo) + " " + minuscula(p.etiqueta));
+
+  // Personas de demostración: nombres ficticios por índice, sin relación con personas reales.
+  const NOMBRES = ["Valentina", "Mateo", "Sofía", "Santiago", "Luciana", "Andrés"];
+  const PAISES = { MX: "México", CO: "Colombia", AR: "Argentina", BR: "Brasil", US: "Estados Unidos", CL: "Chile", PE: "Perú", UY: "Uruguay", ES: "España" };
+  const indiceDe = (c) => {
+    if (c && typeof c.indice === "number") return c.indice;
+    const n = /(\d+)/.exec((c && c.alias) || "");
+    return n ? Number(n[1]) - 1 : 0;
+  };
+  const nombreDe = (c) => (c && c.nombre) || NOMBRES[indiceDe(c) % NOMBRES.length];
+  const iniciales = (n) => String(n).trim().split(/\s+/).slice(0, 2).map((p) => p.charAt(0)).join("").toUpperCase();
+  const pais = (c) => T(PAISES[c] || c || "");
+
+  // Iconos en línea (SVG de trazo, sin dependencias) ------------------------------------------------------------
+
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const ICONOS = {
+    compras: ["M6 8h12l1 12H5L6 8z", "M9 8a3 3 0 0 1 6 0"],
+    comida: ["M7 3v7", "M4.5 3v4.5a2.5 2.5 0 0 0 5 0V3", "M7 11v10", "M17 3c-2.2 1.4-3 3.8-3 6.5h3V21"],
+    transporte: ["M5 17V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v9", "M5 17h14", "M7 17v2.5", "M17 17v2.5", "M8 12h.01", "M16 12h.01"],
+    entretenimiento: ["M4 5h16v14H4z", "M10 9l5 3-5 3V9z"],
+    servicios: ["M13 2 5 14h6l-1 8 8-12h-6l1-8z"],
+    salud: ["M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"],
+    efectivo: ["M3 7h18v10H3z", "M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z", "M6.5 10v.01", "M17.5 14v.01"],
+    transferencia: ["M4 8h15", "M15 4l4 4-4 4", "M20 16H5", "M9 12l-4 4 4 4"],
+    pago: ["M3 6h18v12H3z", "M3 10h18", "M7 15h3"],
+    deposito: ["M12 4v11", "M7 10.5l5 5 5-5", "M4 20h16"],
+    viajes: ["M21 3 3 10l7 3 3 7 8-17z", "M10 13l11-10"],
+    otro: ["M5 12h.01", "M12 12h.01", "M19 12h.01"],
+    persona: ["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M4.5 20a7.5 7.5 0 0 1 15 0"],
+    alerta: ["M12 3 2.5 20h19L12 3z", "M12 10v4", "M12 17.2v.01"],
+    candado: ["M6 11h12v9H6z", "M8.5 11V8a3.5 3.5 0 0 1 7 0v3"],
+    reclamos: ["M6 3h9l4 4v14H6z", "M14 3v5h5", "M9 13h7", "M9 17h5"],
+    chat: ["M4 5h16v11H9l-5 4V5z"],
+    cuenta: ["M3 10 12 4l9 6", "M5 10v8", "M10 10v8", "M14 10v8", "M19 10v8", "M3 20h18"],
+    cerrar: ["M6 6l12 12", "M18 6 6 18"],
+    buscar: ["M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13z", "M15.5 15.5 20 20"],
+    escudo: ["M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z", "M9 12l2 2 4-4"],
+    mundo: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z", "M3 12h18", "M12 3c2.6 2.6 3.6 5.6 3.6 9S14.6 18.4 12 21c-2.6-2.6-3.6-5.6-3.6-9S9.4 5.6 12 3z"],
+    chip: ["M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z", "M3 11h18", "M9 5v14"],
+  };
+  function icono(slug, clase) {
+    const s = document.createElementNS(SVGNS, "svg");
+    s.setAttribute("viewBox", "0 0 24 24");
+    s.setAttribute("fill", "none");
+    s.setAttribute("stroke", "currentColor");
+    s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round");
+    s.setAttribute("stroke-linejoin", "round");
+    s.setAttribute("aria-hidden", "true");
+    s.setAttribute("focusable", "false");
+    if (clase) s.setAttribute("class", clase);
+    (ICONOS[slug] || ICONOS.otro).forEach((d) => {
+      const p = document.createElementNS(SVGNS, "path");
+      p.setAttribute("d", d);
+      s.appendChild(p);
+    });
+    return s;
+  }
+  const avatar = (nombre, clase) => h("span", { clase: "bn-avatar " + (clase || ""), "aria-hidden": "true", texto: iniciales(nombre) });
+  const IC = (slug) => icono(slug, "bn-ico");
 
   // Piezas comunes ---------------------------------------------------------------------------------------------
 
@@ -200,6 +350,16 @@
     if (!n) return;
     n.textContent = "";
     window.setTimeout(() => { n.textContent = texto; }, 50);
+  }
+  let temporizadorAviso = null;
+  function aviso(texto) {
+    anunciar(texto);
+    const t = $("toast");
+    if (!t) return;
+    t.textContent = texto;
+    t.classList.remove("oculto");
+    window.clearTimeout(temporizadorAviso);
+    temporizadorAviso = window.setTimeout(() => t.classList.add("oculto"), 6000);
   }
   function esqueleto(clase, n) {
     return Array.from({ length: n }, () => h("div", { clase: "bn-esq " + clase, "aria-hidden": "true" }));
@@ -235,20 +395,31 @@
     if (!zona) return;
     zona.textContent = "";
     if (!s) return;
+    const nombre = nombreDe(s.cliente);
     const b = h("button", { type: "button", clase: "bn-enlace", texto: T("Salir") });
     b.addEventListener("click", () => { salir(); window.location.href = "/banca/index.html"; });
-    zona.append(h("span", { clase: "bn-quien", texto: s.cliente.alias }), b);
+    zona.append(
+      h("span", { clase: "bn-quien", title: s.cliente.alias }, avatar(nombre), h("span", { clase: "bn-quien-nombre", texto: nombre })),
+      b);
   }
 
   // Abre el widget ya dentro de la conversación de un reclamo.
   function abrirAsistente(conversacion, contexto) {
     if (window.BancaWidget) window.BancaWidget.abrir({ conversacion, contexto });
   }
+  function hablarConPersona() {
+    if (window.BancaWidget) window.BancaWidget.abrir({ persona: true });
+  }
+  const urlBanca = (ruta) => ruta + (MOCK ? "?demo=local" : "");
 
   // Ingreso ----------------------------------------------------------------------------------------------------
 
   async function pintarIngreso() {
     const cont = $("ingreso-cuerpo");
+    // El selector de idioma vive dentro de la tarjeta de ingreso mientras no hay sesión.
+    const sitioIdioma = $("ingreso-idioma");
+    const selIdioma = $("selector-idioma");
+    if (sitioIdioma && selIdioma && !sitioIdioma.contains(selIdioma)) sitioIdioma.append(selIdioma);
     cont.textContent = "";
     cont.append(...esqueleto("bn-esq-linea", 3));
     let lista;
@@ -258,22 +429,36 @@
       return;
     }
     cont.textContent = "";
-    const sel = h("select", { id: "cliente-demo", name: "cliente" });
-    lista.forEach((c) => sel.append(h("option", { value: String(c.indice), texto: c.alias })));
-    const btn = h("button", { type: "submit", clase: "primario", texto: T("Ingresar a la demostración") });
+    const tarjetas = lista.map((c, i) => {
+      const nombre = nombreDe(c);
+      const n = typeof c.productos === "number" ? c.productos : (typeof c.num_productos === "number" ? c.num_productos : null);
+      const detalle = pais(c.pais) + (n ? " · " + T(n === 1 ? "{n} producto" : "{n} productos", { n }) : "");
+      const radio = h("input", { type: "radio", name: "cliente", value: String(c.indice), id: "cliente-" + c.indice, checked: i === 0 });
+      return h("label", { clase: "bn-persona", for: "cliente-" + c.indice },
+        radio,
+        h("span", { clase: "bn-persona-cuerpo" },
+          avatar(nombre, "bn-avatar-g"),
+          h("span", { clase: "bn-persona-txt" }, h("span", { clase: "bn-persona-nombre", texto: nombre }), h("span", { clase: "bn-persona-meta", texto: detalle })),
+          h("span", { clase: "bn-persona-marca", "aria-hidden": "true" })));
+    });
+    const btn = h("button", { type: "submit", clase: "primario bn-grande", texto: T("Ingresar a la demostración") });
     const aviso = guardar.leer("banca_aviso") || "";
     guardar.borrar("banca_aviso");
     const err = h("p", { id: "ingreso-error", clase: "bn-msg-error", role: "alert", texto: aviso });
     const form = h("form", { id: "form-ingreso" },
-      h("div", { clase: "campo" }, h("label", { for: "cliente-demo", texto: T("Cliente de demostración") }), sel),
-      btn, err);
+      h("fieldset", { clase: "bn-personas" }, h("legend", { texto: T("Cliente de demostración") }), h("div", { clase: "bn-personas-lista" }, tarjetas)),
+      btn, err,
+      h("p", { clase: "nota bn-ficticio", texto: T("Personas ficticias. No se usa ningún dato real.") }));
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       btn.disabled = true;
       err.textContent = "";
+      const elegido = form.querySelector("input[name=cliente]:checked");
+      const indice = Number(elegido ? elegido.value : 0);
       try {
-        const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice: Number(sel.value), registro: registro() } });
-        guardarSesion({ sesion: r.sesion, cliente: r.cliente });
+        const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice, registro: registro() } });
+        const base = lista.find((c) => c.indice === indice) || {};
+        guardarSesion({ sesion: r.sesion, cliente: Object.assign({ indice, nombre: base.nombre }, r.cliente) });
         window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
       } catch (e) {
         err.textContent = mensajeDeError(e);
@@ -285,40 +470,188 @@
 
   // Tablero ----------------------------------------------------------------------------------------------------
 
-  const tablero = { productos: [], movimientos: [], siguiente: null, producto: "", estado: "", texto: "" };
+  const tablero = { productos: [], movimientos: [], siguiente: null, producto: "", estado: "", texto: "", resumen: null };
+
+  const mesDe = (iso) => { const d = new Date(String(iso) + "T12:00:00"); return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(locale(), { month: "long" }); };
+
+  // Resumen: usa el bloque del backend si existe y, si no, lo calcula con lo que ya se cargó.
+  function sumar(lista, moneda) {
+    return lista.filter((p) => p.moneda === moneda).reduce((a, p) => a + leerMonto(p.saldo), 0);
+  }
+  function datosResumen() {
+    const r = tablero.resumen || {};
+    const b = r.panorama || r.totales || r.resumen || {};
+    const cuentas = tablero.productos.filter((p) => esCuenta(p) && p.saldo !== null && p.saldo !== undefined);
+    const monedaPrincipal = (r.cliente && r.cliente.moneda) || (cuentas[0] && cuentas[0].moneda) || "";
+    let saldo = null;
+    const bs = b.saldo_disponible;
+    if (bs && typeof bs === "object" && !Array.isArray(bs)) {
+      const m = bs[monedaPrincipal] !== undefined ? monedaPrincipal : Object.keys(bs)[0];
+      if (m) saldo = { monto: String(bs[m]), moneda: m };
+    } else if (Array.isArray(bs) && bs.length) {
+      const x = bs.find((e) => e.moneda === monedaPrincipal) || bs[0];
+      saldo = { monto: String(x.saldo !== undefined ? x.saldo : x.monto), moneda: x.moneda };
+    } else if (bs !== undefined && bs !== null) {
+      saldo = { monto: String(bs), moneda: monedaPrincipal };
+    } else if (cuentas.length) {
+      saldo = { monto: escribirMonto(sumar(cuentas, monedaPrincipal)), moneda: monedaPrincipal };
+    }
+    const tarjetas = tablero.productos.filter(esTarjeta).map((p) => p.final);
+    const cargos = tablero.movimientos.filter((m) => !esAbono(m) && m.estado === "aprobada" && tarjetas.includes(m.tarjeta_final));
+    const ultimo = cargos.map((m) => m.fecha).sort().pop() || "";
+    const mes = ultimo ? ultimo.slice(0, 7) : "";
+    const delMes = cargos.filter((m) => m.fecha.slice(0, 7) === mes);
+    let gasto = null;
+    const bg = b.gasto_mes_tarjetas !== undefined ? b.gasto_mes_tarjetas : b.gasto_tarjetas_mes;
+    if (Array.isArray(bg) && bg.length) {
+      const x = bg.find((e) => e.moneda === monedaPrincipal) || bg[0];
+      gasto = { monto: String(x.monto), moneda: x.moneda, mes: T("este mes") };
+    } else if (bg !== undefined && bg !== null && !Array.isArray(bg)) gasto = { monto: String(bg), moneda: monedaPrincipal, mes: T("este mes") };
+    else if (tablero.movimientos.length) gasto = { monto: escribirMonto(delMes.reduce((a, m) => a + leerMonto(m.monto), 0)), moneda: (delMes[0] || {}).moneda || monedaPrincipal, mes: mes ? mesDe(ultimo) : "" };
+    const abiertos = b.reclamos_abiertos !== undefined && b.reclamos_abiertos !== null ? Number(b.reclamos_abiertos) : tablero.movimientos.filter((m) => m.caso_ref).length;
+    return { saldo, gasto, abiertos };
+  }
+
+  function pintarResumen() {
+    const cont = $("resumen");
+    if (!cont) return;
+    const d = datosResumen();
+    cont.textContent = "";
+    const kpi = (titulo, valor, pie, extra) => h("div", { clase: "bn-kpi " + (extra || "") },
+      h("p", { clase: "bn-kpi-titulo", texto: titulo }), valor, pie ? h("p", { clase: "bn-kpi-pie", texto: pie }) : null);
+    cont.append(
+      kpi(T("Saldo disponible"), d.saldo ? cifra(d.saldo.monto, d.saldo.moneda, "bn-kpi-valor") : h("span", { clase: "bn-kpi-valor", texto: "—" }),
+        T("Suma de sus cuentas"), "bn-kpi-principal"),
+      kpi(d.gasto && d.gasto.mes && d.gasto.mes !== T("este mes") ? T("Gasto con tarjetas en {mes}", { mes: d.gasto.mes }) : T("Gasto con tarjetas este mes"),
+        d.gasto ? cifra(d.gasto.monto, d.gasto.moneda, "bn-kpi-valor") : h("span", { clase: "bn-kpi-valor", texto: "—" }), T("Compras aprobadas")),
+      kpi(T("Reclamos abiertos"), h("span", { clase: "bn-kpi-valor bn-num", texto: String(d.abiertos) }),
+        d.abiertos ? T("Ver cómo van") : T("Ninguno por ahora")));
+    const ult = cont.lastElementChild;
+    if (d.abiertos) {
+      const a = h("a", { clase: "bn-kpi-enlace", href: urlBanca("/banca/reclamos.html"), texto: T("Ver mis reclamos") });
+      ult.append(a);
+    }
+  }
 
   function tarjetaProducto(p) {
-    const cifras = [];
-    if (p.saldo !== null && p.saldo !== undefined) {
-      cifras.push(h("div", {}, h("dt", { texto: T(esTarjeta(p) && p.limite ? "Saldo utilizado" : "Saldo") }), h("dd", { clase: "bn-num", texto: dinero(p.saldo, p.moneda) })));
+    const bloq = p.estado === "bloqueada";
+    if (esTarjeta(p)) {
+      const barra = [];
+      let uso = null;
+      if (p.saldo !== null && p.saldo !== undefined && p.limite) {
+        const pct = Math.min(100, Math.max(0, (leerMonto(p.saldo) / leerMonto(p.limite)) * 100));
+        const rel = h("span", { clase: "bn-barra-relleno" });
+        rel.style.width = pct.toFixed(0) + "%";
+        barra.push(h("div", { clase: "bn-barra", role: "img", "aria-label": T("Usa el {n}% de su cupo", { n: pct.toFixed(0) }) }, rel));
+        uso = h("div", { clase: "bn-tarjeta-cifras" },
+          h("div", {}, h("p", { clase: "bn-tarjeta-rot", texto: T(esCredito(p) ? "Saldo utilizado" : "Saldo") }), cifra(p.saldo, p.moneda, "bn-tarjeta-cifra")),
+          h("div", {}, h("p", { clase: "bn-tarjeta-rot", texto: T("Cupo") }), cifra(p.limite, p.moneda, "bn-tarjeta-cifra")));
+      } else if (p.saldo !== null && p.saldo !== undefined) {
+        uso = h("div", { clase: "bn-tarjeta-cifras" }, h("div", {}, h("p", { clase: "bn-tarjeta-rot", texto: T("Saldo") }), cifra(p.saldo, p.moneda, "bn-tarjeta-cifra")));
+      } else {
+        uso = h("p", { clase: "bn-tarjeta-nota", texto: T(bloq ? "Bloqueada. No se puede usar." : "Se paga con el saldo de su cuenta.") });
+      }
+      return h("li", { clase: "bn-producto bn-plastico" + (bloq ? " bn-bloqueado" : "") },
+        h("div", { clase: "bn-plastico-cab" },
+          h("div", {}, h("p", { clase: "bn-plastico-marca", texto: "LATAM Bank" }), h("h3", { texto: p.etiqueta })),
+          h("span", { clase: "bn-plastico-estado " + (bloq ? "bn-mal" : "bn-ok"), texto: T(bloq ? "Bloqueada" : "Activa") })),
+        h("div", { clase: "bn-plastico-medio" }, icono("chip", "bn-plastico-chip"), h("p", { clase: "bn-final bn-num", "aria-label": T("Tarjeta terminada en {n}", { n: String(p.final).slice(-4) }), texto: enmascarar(p.final) })),
+        uso, barra);
     }
-    if (p.limite !== null && p.limite !== undefined) {
-      cifras.push(h("div", {}, h("dt", { texto: T("Cupo") }), h("dd", { clase: "bn-num", texto: dinero(p.limite, p.moneda) })));
-    }
-    return h("li", { clase: "bn-producto" + (p.estado === "bloqueada" ? " bn-bloqueado" : "") },
-      h("div", { clase: "bn-producto-cab" },
-        h("h3", { texto: p.etiqueta }),
-        insignia(p.estado)),
-      h("p", { clase: "bn-final bn-num", texto: enmascarar(p.final) }),
-      cifras.length ? h("dl", { clase: "bn-cifras" }, cifras) : h("p", { clase: "nota", texto: T("Sin saldo para mostrar.") }));
+    return h("li", { clase: "bn-producto bn-cuenta-tile" + (bloq ? " bn-bloqueado" : "") },
+      h("div", { clase: "bn-tile-cab" },
+        h("span", { clase: "bn-ico-caja" }, IC("cuenta")),
+        h("div", { clase: "bn-tile-txt" }, h("h3", { texto: p.etiqueta }), h("p", { clase: "bn-final bn-num", texto: enmascarar(p.final) })),
+        bloq ? insignia(p.estado) : null),
+      p.saldo !== null && p.saldo !== undefined
+        ? h("div", {}, h("p", { clase: "bn-tarjeta-rot", texto: T("Saldo disponible") }), cifra(p.saldo, p.moneda, "bn-tile-cifra"))
+        : h("p", { clase: "nota", texto: T("Sin saldo para mostrar.") }));
+  }
+
+  function pintarProductos() {
+    const cont = $("productos");
+    cont.textContent = "";
+    if (!tablero.productos.length) { cont.append(estadoVacio(T("No tiene productos en esta demostración"), "", null)); return; }
+    const orden = [...tablero.productos].sort((a, b) => Number(esTarjeta(b)) - Number(esTarjeta(a)));
+    cont.append(...orden.map(tarjetaProducto));
+  }
+
+  const SEGMENTOS = [["", "Todos"], ["aprobada", "Aprobados"], ["pendiente", "Pendientes"], ["rechazada", "Rechazados"], ["reclamo", "En reclamo"]];
+  function pintarSegmentos() {
+    const cont = $("f-estado");
+    cont.textContent = "";
+    SEGMENTOS.forEach(([valor, texto]) => {
+      const b = h("button", { type: "button", clase: "bn-segmento", "data-estado": valor, "aria-pressed": String(tablero.estado === valor), texto: T(texto) });
+      b.addEventListener("click", () => {
+        tablero.estado = valor;
+        cont.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        pintarMovimientos();
+      });
+      cont.append(b);
+    });
   }
 
   function filtrados() {
-    const t = tablero.texto.trim().toLowerCase();
+    const t = minuscula(tablero.texto).trim();
     return tablero.movimientos.filter((m) =>
-      (!tablero.estado || m.estado === tablero.estado) &&
-      (!t || [m.descripcion, m.categoria, m.monto].some((x) => String(x || "").toLowerCase().includes(t))));
+      (!tablero.estado || (tablero.estado === "reclamo" ? Boolean(m.caso_ref) : m.estado === tablero.estado)) &&
+      (!t || [m.descripcion, m.categoria_es, m.categoria, m.monto, m.tipo_es].some((x) => minuscula(x).includes(t))));
+  }
+
+  const RAPIDAS = [
+    ["alerta", "Reportar un cargo", () => reportarCargo()],
+    ["candado", "Bloquear tarjeta", () => bloquearDesdeInicio()],
+    ["reclamos", "Mis reclamos", null],
+    ["chat", "Hablar con una persona", () => hablarConPersona()],
+  ];
+  function pintarRapidas() {
+    const cont = $("rapidas");
+    cont.textContent = "";
+    RAPIDAS.forEach(([ic, texto, fn]) => {
+      const cuerpo = [h("span", { clase: "bn-ico-caja" }, IC(ic)), h("span", { texto: T(texto) })];
+      let el;
+      if (fn) { el = h("button", { type: "button", clase: "bn-rapida" }, cuerpo); el.addEventListener("click", fn); }
+      else el = h("a", { clase: "bn-rapida", href: urlBanca("/banca/reclamos.html") }, cuerpo);
+      cont.append(h("li", {}, el));
+    });
+  }
+  function reportarCargo() {
+    $("pista-reporte").classList.remove("oculto");
+    $("t-mov").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    const primera = document.querySelector("#movimientos .bn-fila");
+    if (primera) primera.focus({ preventScroll: true });
+    anunciar(T("Toque el cargo que no reconoce y elija No reconozco este cargo."));
+  }
+  function bloquearDesdeInicio() {
+    const activas = tablero.productos.filter((p) => esTarjeta(p) && p.estado !== "bloqueada");
+    if (!activas.length) { aviso(T("No tiene tarjetas activas para bloquear.")); return; }
+    confirmarBloqueo(activas, null);
+  }
+
+  function marcasMovimiento(m, sinEstado) {
+    const marcas = [];
+    if (!sinEstado && (m.estado === "rechazada" || m.estado === "pendiente" || m.estado === "reversada")) marcas.push(chip(T(m.estado_es), (ESTADOS[m.estado] || [])[1]));
+    if (m.caso_ref) marcas.push(chip(T("En reclamo"), "aviso"));
+    if (m.es_extranjera) marcas.push(chip(T("Exterior"), "neutro"));
+    return marcas;
   }
 
   function filaMovimiento(m) {
-    const b = h("button", { type: "button", clase: "bn-fila", "aria-label": T("{desc}, {monto}, {estado}. Ver detalle", { desc: m.descripcion, monto: dinero(m.monto, m.moneda), estado: T((ESTADOS[m.estado] || [m.estado])[0]) }) },
+    const abono = esAbono(m);
+    const a11y = T("{desc}, {monto}, {estado}. Ver detalle", {
+      desc: m.descripcion,
+      monto: (abono ? T("abono de ") : T("cargo de ")) + dinero(String(m.monto).replace(/^[+-]/, ""), m.moneda),
+      estado: m.estado_es,
+    });
+    const b = h("button", { type: "button", clase: "bn-fila" + (m.estado === "rechazada" ? " bn-fila-rechazada" : ""), "aria-label": a11y },
+      h("span", { clase: "bn-ico-caja " + (abono ? "bn-ico-abono" : "") }, IC(m.icono)),
       h("span", { clase: "bn-fila-txt" },
         h("span", { clase: "bn-fila-desc", texto: m.descripcion }),
-        h("span", { clase: "bn-fila-meta", texto: `${m.hora} · ${m.categoria || m.tipo} · ${enmascarar(m.tarjeta_final)}` }),
-        h("span", { clase: "bn-fila-marcas" }, insignia(m.estado),
-          m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: T("Compra en el exterior") }) : null,
-          m.caso_ref ? h("span", { clase: "bn-insignia bn-neutro", texto: T("Con reclamo") }) : null)),
-      h("span", { clase: "bn-monto bn-num", texto: dinero(m.monto, m.moneda) }));
+        h("span", { clase: "bn-fila-meta", texto: `${T(m.categoria_es || m.tipo_es)} · ${m.hora} · ${enmascarar(m.tarjeta_final)}` }),
+        (() => { const x = marcasMovimiento(m); return x.length ? h("span", { clase: "bn-fila-marcas" }, x) : null; })()),
+      h("span", { clase: "bn-monto bn-num " + (abono ? "bn-abono" : "") },
+        h("span", { clase: "bn-monto-num", texto: (abono ? "+" : "−") + limpio(String(m.monto).replace(/^[+-]/, "")) }),
+        h("small", { texto: String(m.moneda || "") })));
     b.addEventListener("click", () => abrirDetalle(m, b));
     return h("li", {}, b);
   }
@@ -336,11 +669,11 @@
     }
     const grupos = new Map();
     lista.forEach((m) => { if (!grupos.has(m.fecha)) grupos.set(m.fecha, []); grupos.get(m.fecha).push(m); });
+    const ul = h("ul", { clase: "bn-lista" });
     for (const [fecha, filas] of grupos) {
-      cont.append(h("section", { clase: "bn-grupo", "aria-label": fechaLarga(fecha) },
-        h("h3", { texto: fechaLarga(fecha) }),
-        h("ul", { clase: "bn-lista" }, filas.map(filaMovimiento))));
+      ul.append(h("li", { clase: "bn-dia" }, h("h3", { texto: fechaLarga(fecha) })), ...filas.map(filaMovimiento));
     }
+    cont.append(ul);
   }
 
   async function cargarMovimientos(mas) {
@@ -351,9 +684,10 @@
     if (mas && tablero.siguiente) q.set("antes_de", tablero.siguiente);
     try {
       const d = await llamar("/api/banca/movimientos?" + q.toString());
-      tablero.movimientos = tablero.movimientos.concat(d.movimientos || []);
+      tablero.movimientos = tablero.movimientos.concat((d.movimientos || []).map(norm));
       tablero.siguiente = d.siguiente || null;
       pintarMovimientos();
+      pintarResumen();
       $("mas").classList.toggle("oculto", !tablero.siguiente);
     } catch (e) {
       if (sesionVencida(e)) return;
@@ -366,19 +700,25 @@
     const cont = $("productos");
     cont.textContent = "";
     cont.append(...esqueleto("bn-esq-tarjeta", 3));
+    const kp = $("resumen");
+    kp.textContent = "";
+    kp.append(...esqueleto("bn-esq-kpi", 3));
     try {
       const r = await llamar("/api/banca/resumen");
+      tablero.resumen = r;
       tablero.productos = r.productos || [];
-      $("saludo").textContent = T("Hola, {nombre}", { nombre: r.cliente && r.cliente.alias ? r.cliente.alias : T("cliente") });
-      cont.textContent = "";
-      if (!tablero.productos.length) cont.append(estadoVacio(T("No tiene productos en esta demostración"), "", null));
-      else cont.append(...tablero.productos.map(tarjetaProducto));
+      const s = sesion();
+      const cliente = Object.assign({}, (s && s.cliente) || {}, r.cliente || {});
+      $("saludo").textContent = T("Hola, {nombre}", { nombre: nombreDe(cliente) });
+      pintarProductos();
+      pintarResumen();
       const sel = $("f-producto");
       sel.textContent = "";
       sel.append(h("option", { value: "", texto: T("Todos los productos") }));
       tablero.productos.forEach((p) => sel.append(h("option", { value: p.producto_ref, texto: `${p.etiqueta} ${enmascarar(p.final)}` })));
     } catch (e) {
       cont.textContent = "";
+      kp.textContent = "";
       cont.append(estadoError(mensajeDeError(e), cargarResumen));
       sesionVencida(e);
     }
@@ -390,38 +730,56 @@
 
   function filaDetalle(k, v) { return h("div", {}, h("dt", { texto: k }), h("dd", { clase: "bn-num", texto: v })); }
 
+  // Una explicación breve y serena, sin prometer lo que el banco no decide aquí.
+  function explicacion(m, propio) {
+    const lugar = m.es_extranjera ? T("Se hizo desde {pais}, fuera de su país.", { pais: pais(m.pais) }) : "";
+    if (m.estado === "rechazada") return T("Este intento fue rechazado, por eso no se descontó de su dinero. Si no lo reconoce, puede reportarlo igual.") + " " + lugar;
+    if (m.estado === "pendiente") return T("Este cargo todavía no es definitivo. Puede cambiar de monto o caer cuando el comercio lo confirme.") + " " + lugar;
+    if (esAbono(m)) return T("Este dinero ya está en su cuenta.");
+    if (m.estado === "reversada") return T("Este cargo fue reversado y el dinero volvió a su producto.");
+    return (m.es_extranjera ? lugar + " " : "") + T("Si reconoce este cargo, no tiene que hacer nada. Si no, puede reportarlo y lo revisamos.");
+  }
+
   function abrirDetalle(m, origen) {
     disparador = origen;
     const dlg = $("detalle");
     const cuerpo = $("detalle-cuerpo");
     cuerpo.textContent = "";
-    const producto = tablero.productos.find((p) => esTarjeta(p) && p.final === m.tarjeta_final);
+    const abono = esAbono(m);
+    const producto = tablero.productos.find((p) => p.final === m.tarjeta_final);
     $("detalle-titulo").textContent = m.descripcion;
-    const marcas = h("p", { clase: "bn-fila-marcas" }, insignia(m.estado),
-      m.es_extranjera ? h("span", { clase: "bn-insignia bn-aviso", texto: T("Compra en el exterior ({pais})", { pais: m.pais }) }) : h("span", { clase: "bn-insignia bn-neutro", texto: T("País: {pais}", { pais: m.pais }) }));
+    const marcas = marcasMovimiento(m, true);
+    if (!m.es_extranjera) marcas.push(chip(T("País: {pais}", { pais: pais(m.pais) }), "neutro"));
     cuerpo.append(
-      h("p", { clase: "bn-detalle-monto bn-num", texto: dinero(m.monto, m.moneda) }),
-      marcas,
+      h("div", { clase: "bn-hero" },
+        h("span", { clase: "bn-ico-caja bn-ico-g " + (abono ? "bn-ico-abono" : "") }, IC(m.icono)),
+        h("p", { clase: "bn-hero-comercio", texto: m.descripcion }),
+        h("p", { clase: "bn-detalle-monto bn-num " + (abono ? "bn-abono" : ""), "aria-label": textoMonto(m) },
+          h("span", { texto: (abono ? "+" : "−") + limpio(String(m.monto).replace(/^[+-]/, "")) }), h("small", { texto: " " + String(m.moneda || "") })),
+        h("p", { clase: "bn-fila-marcas bn-centro" }, chip(T(m.estado_es), (ESTADOS[m.estado] || [])[1]), marcas)),
+      h("p", { clase: "bn-explica", texto: explicacion(m, producto).trim() }),
       h("dl", { clase: "bn-datos" },
         filaDetalle(T("Fecha"), fechaCorta(m.fecha)), filaDetalle(T("Hora"), m.hora),
-        filaDetalle(T("Tarjeta"), enmascarar(m.tarjeta_final)), filaDetalle(T("Categoría"), m.categoria || m.tipo),
-        filaDetalle(T("Canal"), m.canal || "")));
+        filaDetalle(T(producto && esTarjeta(producto) ? "Tarjeta" : "Producto"), enmascarar(m.tarjeta_final)), filaDetalle(T("Categoría"), T(m.categoria_es || m.tipo_es)),
+        filaDetalle(T("Canal"), T(m.canal_es))));
     const res = h("p", { id: "detalle-resultado", clase: "bn-resultado", role: "status" });
     const acciones = h("div", { clase: "bn-acciones-detalle" });
     if (m.caso_ref) {
-      acciones.append(h("a", { clase: "boton", href: "/banca/reclamos.html" + (MOCK ? "?demo=local" : ""), texto: T("Ver mi reclamo") }));
+      cuerpo.append(h("div", { clase: "bn-callout" }, IC("reclamos"),
+        h("div", {}, h("p", { clase: "bn-callout-t", texto: T("Ya tiene un reclamo por este cargo") }),
+          h("a", { href: urlBanca("/banca/reclamos.html"), texto: T("Ver mi reclamo") }))));
     } else if (m.reclamable) {
-      const b = h("button", { type: "button", clase: "primario", texto: T("No reconozco este cargo") });
+      const b = h("button", { type: "button", clase: "primario bn-grande", texto: T("No reconozco este cargo") });
       b.addEventListener("click", () => reclamar(m, b, res));
       acciones.append(b);
     } else {
       acciones.append(h("p", { clase: "nota", texto: T("Este movimiento no admite reclamos.") }));
     }
-    if (producto && producto.estado !== "bloqueada") {
+    if (producto && esTarjeta(producto) && producto.estado !== "bloqueada") {
       const b = h("button", { type: "button", texto: T("Bloquear tarjeta") });
-      b.addEventListener("click", () => confirmarBloqueo(producto, res));
+      b.addEventListener("click", () => confirmarBloqueo([producto], res));
       acciones.append(b);
-    } else if (producto) {
+    } else if (producto && esTarjeta(producto)) {
       acciones.append(h("p", { clase: "nota", texto: T("La tarjeta {t} está bloqueada.", { t: enmascarar(producto.final) }) }));
     }
     cuerpo.append(acciones, res);
@@ -437,6 +795,7 @@
       m.caso_ref = m.caso_ref || "abierto";
       $("detalle").close();
       pintarMovimientos();
+      pintarResumen();
       abrirAsistente(r.conversacion, m);
     } catch (e) {
       boton.disabled = false;
@@ -444,30 +803,44 @@
     }
   }
 
-  function confirmarBloqueo(p, res) {
+  // Confirmación previa al bloqueo: con varias tarjetas se elige cuál; Cancelar no cambia nada.
+  function confirmarBloqueo(tarjetas, res) {
     const dlg = $("confirmar");
-    $("confirmar-texto").textContent = T("Va a bloquear la tarjeta {t}. No podrá usarla para compras ni retiros hasta que se reponga. Si no quiere bloquearla, elija Cancelar y no se hará ningún cambio.", { t: `${p.etiqueta} ${enmascarar(p.final)}` });
+    const ops = $("confirmar-opciones");
     const si = $("confirmar-si");
     const no = $("confirmar-no");
+    let elegida = tarjetas[0];
+    const texto = (p) => T("Va a bloquear la tarjeta {t}. No podrá usarla para compras ni retiros hasta que se reponga. Si no quiere bloquearla, elija Cancelar y no se hará ningún cambio.", { t: `${p.etiqueta} ${enmascarar(p.final)}` });
+    ops.querySelectorAll("label").forEach((x) => x.remove());
+    ops.classList.toggle("oculto", tarjetas.length < 2);
+    if (tarjetas.length > 1) {
+      tarjetas.forEach((p, i) => {
+        const r = h("input", { type: "radio", name: "tarjeta-bloq", value: p.producto_ref, checked: i === 0 });
+        r.addEventListener("change", () => { elegida = p; $("confirmar-texto").textContent = texto(p); });
+        ops.append(h("label", { clase: "bn-opcion" }, r, h("span", { texto: `${p.etiqueta} ${enmascarar(p.final)}` })));
+      });
+    }
+    $("confirmar-texto").textContent = texto(elegida);
     si.disabled = false;
     si.onclick = async () => {
       si.disabled = true;
+      const p = elegida;
       try {
         const r = await llamar(`/api/banca/tarjetas/${encodeURIComponent(p.producto_ref)}/bloqueo`, { metodo: "POST", cuerpo: { confirmo: true } });
         p.estado = "bloqueada";
         dlg.close();
         const t = r.ya_estaba ? T("La tarjeta {t} ya estaba bloqueada. No hicimos ningún cambio.", { t: enmascarar(p.final) }) : T("Bloqueamos la tarjeta {t}.", { t: enmascarar(p.final) });
-        res.textContent = t;
-        anunciar(t);
-        const cont = $("productos");
-        cont.textContent = "";
-        cont.append(...tablero.productos.map(tarjetaProducto));
+        if (res) res.textContent = t;
+        aviso(t);
+        pintarProductos();
       } catch (e) {
         si.disabled = false;
         dlg.close();
-        res.textContent = e.status === 400 || e.status === 404
+        const t = e.status === 400 || e.status === 404
           ? T("No pudimos bloquear esta tarjeta desde aquí. Puede pedir ayuda a una persona desde el asistente.")
           : mensajeDeError(e);
+        if (res) res.textContent = t;
+        aviso(t);
       }
     };
     no.onclick = () => dlg.close();
@@ -478,14 +851,17 @@
   function iniciarTablero() {
     $("ingreso").classList.add("oculto");
     $("tablero").classList.remove("oculto");
+    pintarRapidas();
+    pintarSegmentos();
     cargarResumen();
     cargarMovimientos(false);
     $("f-producto").addEventListener("change", (ev) => { tablero.producto = ev.target.value; cargarMovimientos(false); });
-    $("f-estado").addEventListener("change", (ev) => { tablero.estado = ev.target.value; pintarMovimientos(); });
     $("f-texto").addEventListener("input", (ev) => { tablero.texto = ev.target.value; pintarMovimientos(); });
     $("mas").addEventListener("click", () => cargarMovimientos(true));
     $("detalle-cerrar").addEventListener("click", () => $("detalle").close());
     $("detalle").addEventListener("close", () => { if (disparador && document.contains(disparador)) disparador.focus(); });
+    // Se cierra el panel al pulsar el velo (fuera del contenido).
+    ["detalle", "confirmar"].forEach((id) => $(id).addEventListener("click", (ev) => { if (ev.target === ev.currentTarget) ev.currentTarget.close(); }));
     // Revisión visual en modo local: ?abrir=t1 abre el detalle y ?asistente=1 abre el asistente.
     if (MOCK && params.get("abrir")) {
       const timer = window.setInterval(() => {
@@ -497,15 +873,37 @@
 
   // Reclamos ---------------------------------------------------------------------------------------------------
 
+  const ETAPAS = [["abierto", "Recibido"], ["en_revision", "En revisión"], ["resuelto", "Resuelto"]];
+  function etapaDe(estado) { return estado === "cerrado" ? 2 : Math.max(0, ETAPAS.findIndex((e) => e[0] === estado)); }
+
+  function plazoTexto(c) {
+    if (!c.plazo) return T("Se lo informaremos pronto");
+    const dias = Math.round((new Date(c.plazo + "T12:00:00") - new Date(hoyIso() + "T12:00:00")) / 86400000);
+    const cierre = c.estado === "resuelto" || c.estado === "cerrado";
+    let extra = "";
+    if (!cierre) extra = dias > 1 ? " · " + T("quedan {n} días", { n: dias }) : dias === 1 ? " · " + T("queda 1 día") : dias === 0 ? " · " + T("vence hoy") : " · " + T("el plazo ya pasó");
+    return fechaCorta(c.plazo) + extra;
+  }
+
   function tarjetaReclamo(c) {
+    const etapa = etapaDe(c.estado);
     const eventos = (c.historial || []).map((e) => h("li", {}, h("span", { clase: "bn-punto", "aria-hidden": "true" }),
       h("div", {}, h("p", { clase: "bn-evento", texto: T(e.evento) }), h("p", { clase: "nota", texto: fechaCorta(e.fecha) }))));
-    const cifras = [filaDetalle(T("Monto reclamado"), dinero(c.monto, c.moneda)), filaDetalle(T("Abierto el"), fechaCorta(c.abierto_en))];
-    cifras.push(filaDetalle(T("Devolución provisional"), c.credito_provisional ? dinero(c.credito_provisional, c.moneda) : T("Todavía no aplica")));
-    cifras.push(filaDetalle(T("Plazo de respuesta"), c.plazo ? fechaCorta(c.plazo) : T("Se lo informaremos pronto")));
+    const pasos = h("ol", { clase: "bn-pasos", "aria-label": T("Etapas del reclamo") },
+      ETAPAS.map(([k, t], i) => h("li", { clase: "bn-paso" + (i < etapa ? " hecho" : "") + (i === etapa ? " actual" : ""), "aria-current": i === etapa ? "step" : null },
+        h("span", { clase: "bn-paso-bola", "aria-hidden": "true", texto: i < etapa ? "✓" : String(i + 1) }), h("span", { texto: T(t) }))));
+    const prov = c.credito_provisional;
     return h("li", { clase: "bn-reclamo" },
-      h("div", { clase: "bn-producto-cab" }, h("h2", { texto: c.descripcion || T("Cargo reclamado") }), insignia(c.estado)),
-      h("dl", { clase: "bn-datos" }, cifras),
+      h("div", { clase: "bn-reclamo-cab" },
+        h("span", { clase: "bn-ico-caja" }, IC("reclamos")),
+        h("div", { clase: "bn-reclamo-tit" }, h("h2", { texto: c.descripcion || T("Cargo reclamado") }), h("p", { clase: "nota", texto: T("Abierto el {fecha}", { fecha: fechaCorta(c.abierto_en) }) })),
+        insignia(c.estado)),
+      pasos,
+      c.traspaso ? h("p", { clase: "bn-persona-aviso" }, IC("persona"), h("span", { texto: T("Una persona del equipo tiene su caso y le responderá en la conversación.") })) : null,
+      h("dl", { clase: "bn-datos bn-datos-rec" },
+        h("div", {}, h("dt", { texto: T("Monto reclamado") }), h("dd", {}, cifra(c.monto, c.moneda))),
+        h("div", { clase: prov ? "bn-prov" : "" }, h("dt", { texto: T("Devolución provisional") }), h("dd", {}, prov ? cifra(prov, c.moneda) : T("Todavía no aplica"))),
+        h("div", {}, h("dt", { texto: T("Plazo de respuesta") }), h("dd", { texto: plazoTexto(c) }))),
       h("h3", { texto: T("Historial") }),
       h("ol", { clase: "bn-linea", "aria-label": T("Historial del reclamo") }, eventos));
   }
@@ -520,7 +918,7 @@
         cont.textContent = "";
         if (!lista.length) {
           cont.append(estadoVacio(T("No tiene reclamos"), T("Si no reconoce un cargo, ábralo desde sus movimientos y le ayudamos."),
-            h("a", { clase: "boton", href: "/banca/index.html" + (MOCK ? "?demo=local" : ""), texto: T("Ver mis movimientos") })));
+            h("a", { clase: "boton", href: urlBanca("/banca/index.html"), texto: T("Ver mis movimientos") })));
           return;
         }
         cont.append(...lista.map(tarjetaReclamo));
@@ -552,6 +950,6 @@
     }
   }
 
-  window.Banca = { llamar, h, sesion, MOCK, BASE, guardar, ErrorApi, pausa, anunciar, fixture, estadoLocal, T, registro };
+  window.Banca = { llamar, h, sesion, MOCK, BASE, guardar, ErrorApi, pausa, anunciar, fixture, estadoLocal, T, registro, icono, avatar, nombreDe, iniciales };
   arrancar();
 })();
