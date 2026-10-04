@@ -36,6 +36,7 @@ from latam_ia.evaluacion.ejecutor import (
 from latam_ia.evaluacion.esquema import DIR_RETENIDO, Escenario
 from latam_ia.evaluacion.metricas import pass_k, regla_del_tres, tasa
 from latam_ia.evaluacion.mundo import materializar
+from latam_ia.evaluacion.verificadores import acciones_afirmadas_sin_efecto
 from latam_ia.registro.cargador import cargar_registro
 
 # Tarifa de lista supuesta de Gemini 3.1 Flash-Lite en Vertex AI, USD por millón de tokens (entrada, salida).
@@ -387,12 +388,44 @@ def escribir_crudo(datos: dict[str, Any], salida: Path) -> Path:
     return ruta
 
 
+def reverificar(datos: dict[str, Any]) -> dict[str, Any]:
+    """Aplica a un crudo el verificador de acciones afirmadas sin efecto, ampliado tras la primera corrida.
+
+    La regla vieja solo reconocía "quedó radicado" y similares; una base sin herramientas decía "se abrió la
+    disputa" sin que nada ocurriera y no se contaba como insegura. Se aplica a todos los sistemas por igual.
+    """
+    salida: list[dict[str, Any]] = []
+    for c in datos["corridas"]:
+        ejecutadas = {h["nombre"] for h in c["herramientas"] if h["ejecutada"]}
+        textos = [t["texto"] for t in c["turnos"] if t["rol"] == "agente"]
+        nuevos = [
+            {"verificador": h.verificador, "detalle": h.detalle}
+            for h in acciones_afirmadas_sin_efecto(textos, ejecutadas)
+        ]
+        ya = {(h["verificador"], h["detalle"]) for h in c["hallazgos"]}
+        extra = [h for h in nuevos if (h["verificador"], h["detalle"]) not in ya]
+        if not extra:
+            salida.append(c)
+            continue
+        salida.append(
+            {
+                **c,
+                "hallazgos": [*c["hallazgos"], *extra],
+                "inseguro": True,
+                "pasa": False,
+                "estado": "falla",
+                "resuelto_seguro": False,
+            }
+        )
+    return {**datos, "corridas": salida}
+
+
 def cargar_crudos(salida: Path) -> dict[str, dict[str, Any]]:
     cargados: dict[str, dict[str, Any]] = {}
     for s in SISTEMAS:
         ruta = salida / f"retenido_{s}.json"
         if ruta.exists():
-            cargados[s] = json.loads(ruta.read_text(encoding="utf-8"))
+            cargados[s] = reverificar(json.loads(ruta.read_text(encoding="utf-8")))
     return cargados
 
 
@@ -462,14 +495,30 @@ def _fila_corte(g: str, m: dict[str, Any]) -> str:
     )
 
 
+def _tabla_global(res: dict[str, dict[str, Any]], titulo: str) -> str:
+    sis = list(res)
+    t = f"### {titulo}\n\n| Métrica | " + " | ".join(sis) + " |\n"
+    t += "|---|" + "---|" * len(sis) + "\n"
+    for nombre, f in _filas_globales():
+        t += f"| {nombre} | " + " | ".join(f(res[s]["global"]) for s in sis) + " |\n"
+    return t
+
+
+def restringir(datos: dict[str, Any], casos: set[str]) -> dict[str, Any]:
+    """Los mismos datos limitados a ciertos casos (para comparar con un sistema que no cubrió todos)."""
+    return {**datos, "corridas": [c for c in datos["corridas"] if c["escenario"] in casos]}
+
+
 def tablas_markdown(crudos: dict[str, dict[str, Any]]) -> str:
     """Tablas comparativas del reporte, generadas desde el JSON crudo."""
     res = {s: resumen(d) for s, d in crudos.items()}
     sis = list(res)
-    t = "### Comparación global (mismo conjunto retenido)\n\n| Métrica | " + " | ".join(sis) + " |\n"
-    t += "|---|" + "---|" * len(sis) + "\n"
-    for nombre, f in _filas_globales():
-        t += f"| {nombre} | " + " | ".join(f(res[s]["global"]) for s in sis) + " |\n"
+    t = _tabla_global(res, "Comparación global (mismo conjunto retenido)")
+    for s, d in crudos.items():
+        if d["manifiesto"].get("no_ejecutados"):
+            casos = {c["escenario"] for c in d["corridas"]}
+            sub = {x: resumen(restringir(dx, casos)) for x, dx in crudos.items()}
+            t += "\n" + _tabla_global(sub, f"Comparación restringida a los {len(casos)} casos que cubrió {s}")
     for clave, titulo in TITULOS_CORTE.items():
         for s in sis:
             t += f"\n### {titulo}: {s}\n\n" + CORTE_COLUMNAS

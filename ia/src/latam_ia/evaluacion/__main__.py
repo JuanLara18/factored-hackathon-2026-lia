@@ -40,6 +40,8 @@ def _retenido(args: argparse.Namespace) -> int:
     if args.tablas:
         crudos = cargar_crudos(salida)
         print(tablas_markdown(crudos) if crudos else "no hay JSON crudos de retenido en " + str(salida))
+        for datos in crudos.values():
+            escribir_casos_equidad(datos, cargar_retenidos(), salida)
         return 0 if crudos else 2
     ids = {i for i in args.ids.split(",") if i}
     escenarios = [e for e in cargar_retenidos() if e.id.startswith(args.filtro) and (not ids or e.id in ids)]
