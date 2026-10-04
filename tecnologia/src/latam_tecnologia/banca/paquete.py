@@ -8,6 +8,7 @@ No lleva nombre, documento, número de tarjeta, segmento, `fraud_score` ni razon
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import Protocol
 
 from latam_comun.dominio import (
     AccionNoRealizada,
@@ -39,6 +40,15 @@ from latam_tecnologia.motor.retoma import Almacen
 VENTANA_HISTORIAL = timedelta(days=90)
 ESTADOS_ACTIVOS = ("active", "activa", "activo")
 NO_DISPONIBLE = "no disponible"
+PRIORIDAD_MAXIMA_POR_RIESGO = 2  # la pista de riesgo de plazo nunca sube más allá de P2 (P1 es de seguridad)
+REGLA_EN_RIESGO = "En riesgo de plazo (pista del modelo, no decisión)"
+
+
+class PistaPlazo(Protocol):
+    """Lo mínimo de `latam_ia.comprension.riesgo_plazo.PistaRiesgo` (Tecnología no importa `latam_ia`)."""
+
+    @property
+    def en_riesgo(self) -> bool: ...
 
 
 def _traza_id(conversacion_id: str) -> str:
@@ -61,6 +71,7 @@ def construir_paquete(
     motivo: str,
     urgente: bool,
     ahora: datetime,
+    riesgo_plazo: PistaPlazo | None = None,
 ) -> PaqueteTraspaso:
     cliente = sesion.cliente_id
     conv = banco.conversacion(conversacion_id)
@@ -87,6 +98,10 @@ def construir_paquete(
         prio = 1
     elif tx is not None and politica.escalar_tras_radicar(tx.monto.moneda, tx.amount_usd) is not None:
         prio = min(prio, 2)
+    # Pista de riesgo de plazo (IA-10): solo sube un nivel la prioridad y marca el paquete; no decide nada.
+    en_riesgo = riesgo_plazo is not None and riesgo_plazo.en_riesgo
+    if en_riesgo and prio > PRIORIDAD_MAXIMA_POR_RIESGO:
+        prio -= 1
     prioridad = f"P{prio}"
 
     # Hechos verificados, con fuente y hora de la lectura
@@ -208,6 +223,10 @@ def construir_paquete(
             regla=f"Atención de P{prio} en vivo", inicio=ahora, vence=ahora + timedelta(seconds=SLA_S[prio])
         )
     ]
+    if en_riesgo:
+        plazos.append(
+            Plazo(regla=REGLA_EN_RIESGO, inicio=ahora, vence=ahora + timedelta(seconds=SLA_S[prio]))
+        )
     if caso is not None and caso.plazo:
         plazos.append(
             Plazo(
