@@ -305,3 +305,5 @@ code { font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; back
   .cta-caja { margin-inline: 1.25rem; width: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .tarjeta:hover, .boton:active, button:active { transform: none; } }
+.nav { flex-wrap: nowrap; white-space: nowrap; }
+.hero { padding-bottom: clamp(2rem, 1.5rem + 3vw, 4rem); }
