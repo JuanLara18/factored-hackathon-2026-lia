@@ -44,6 +44,13 @@ def _productos(texto: str) -> tuple[Producto, ...]:
     return _PRODS.validate_python([{k: v for k, v in f.items() if k in campos} for f in filas])
 
 
+def _transacciones(texto: str) -> tuple[Transaccion, ...]:
+    """Transacciones de la lectura, sin las anotaciones de la herramienta (p. ej. `tarjeta_final`)."""
+    campos = set(Transaccion.model_fields)
+    filas: list[dict[str, object]] = json.loads(texto or "[]")
+    return _TXS.validate_python([{k: v for k, v in f.items() if k in campos} for f in filas])
+
+
 _CASOS = TypeAdapter(tuple[CasoAbierto, ...])
 
 
@@ -261,9 +268,9 @@ def _resolver(
         next(x for x in reversed(llamadas) if x.nombre == "estado_productos").retorno or "[]"
     )
     consultada = next(x for x in llamadas if x.nombre == "consultar_transaccion")
-    tx = Transaccion.model_validate_json(consultada.retorno or "")
+    tx = _transacciones(f"[{consultada.retorno}]")[0]
     listada = next((x for x in llamadas if x.nombre == "listar_transacciones"), None)
-    historial = _TXS.validate_json(listada.retorno or "[]") if listada else ()
+    historial = _transacciones(listada.retorno or "[]") if listada else ()
     propuesta = decidir(tx, productos, urgente, _POLITICA)
     alega_fraude = "fraud" in norm(" ".join(usuarios))
     if propuesta.accion == "abrir_disputa" and alega_fraude and _historial_con_comercio(tx, historial):
@@ -307,7 +314,7 @@ def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
         return _decir(t, "denegado")
     match ult.nombre:
         case "listar_transacciones":
-            return _tras_listar(_TXS.validate_json(ret), usuarios, t)
+            return _tras_listar(_transacciones(ret), usuarios, t)
         case "consultar_transaccion":
             if ret == "null":
                 return _decir(t, "aclarar")

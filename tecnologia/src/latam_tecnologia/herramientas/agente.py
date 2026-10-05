@@ -21,7 +21,7 @@ from latam_tecnologia.herramientas.catalogo import (
     TarjetaFueraDelMovimiento,
 )
 from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
-from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
+from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion, final_tarjeta
 
 OTRA_TARJETA = (
     "No se bloqueó nada: esta conversación es de un movimiento y solo se puede bloquear la tarjeta de ese "
@@ -60,6 +60,8 @@ def _con_ruta(ctx: RunContext[ContextoAgente], valor: tuple[Transaccion, ...]) -
     d = ctx.deps
     filas: list[dict[str, Any]] = json.loads(TypeAdapter(tuple[Transaccion, ...]).dump_json(valor))
     for fila, ruta in zip(filas, d.herramientas.rutas_obligadas(d.sesion, valor), strict=True):
+        if fila.get("product_id"):  # el final que se le dice al cliente, ya calculado
+            fila["tarjeta_final"] = final_tarjeta(str(fila["product_id"]))
         if ruta is not None:
             fila["ruta_obligada"] = f"no abrir disputa: llamar a escalar con motivo {ruta}"
     return json.dumps(filas, ensure_ascii=False)
@@ -103,16 +105,25 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
 
     @agente.tool
     def consultar_transaccion(ctx: RunContext[ContextoAgente], transaction_id: str) -> str:  # pyright: ignore[reportUnusedFunction]
-        """Una transacción del cliente de la sesión; vacío si no existe o no es suya."""
+        """Una transacción del cliente de la sesión; vacío si no existe o no es suya.
+
+        `tarjeta_final` son los dígitos con que se nombra la tarjeta al cliente ("terminada en").
+        """
         hecho = ctx.deps.herramientas.transaccion(ctx.deps.sesion, transaction_id)
         return "null" if hecho.valor is None else _con_ruta(ctx, (hecho.valor,))[1:-1]
 
     @agente.tool
     def estado_productos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
-        """Productos del cliente y si están bloqueados."""
+        """Productos del cliente y si están bloqueados.
+
+        `final` son los dígitos con que se nombra cada producto al cliente ("terminada en"): use ese campo tal
+        cual y no deduzca otros a partir de `product_id`.
+        """
         hecho = ctx.deps.herramientas.estado_productos(ctx.deps.sesion)
         permitido = ctx.deps.herramientas.producto_del_movimiento(ctx.deps.sesion, ctx.deps.conversacion_id)
         filas: list[dict[str, Any]] = json.loads(TypeAdapter(tuple[Producto, ...]).dump_json(hecho.valor))
+        for fila in filas:
+            fila["final"] = final_tarjeta(str(fila["product_id"]))
         if permitido is not None:  # solo esa tarjeta se puede bloquear desde esta conversación
             for fila in filas:
                 fila["bloqueable_aqui"] = fila["product_id"] == permitido
@@ -160,7 +171,10 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
             )
         except TarjetaFueraDelMovimiento:
             return OTRA_TARJETA
-        return accion.resultado_releido
+        # Al modelo se le devuelve el final de la tarjeta y no el identificador: es lo que dirá al cliente.
+        return (
+            f"{accion.resultado_releido.split(':', 1)[0]}: tarjeta terminada en {final_tarjeta(product_id)}"
+        )
 
     @agente.tool(requires_approval=True)
     def escalar(ctx: RunContext[ContextoAgente], motivo: str, urgente: bool = False) -> str:  # pyright: ignore[reportUnusedFunction]

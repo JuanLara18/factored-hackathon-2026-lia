@@ -413,3 +413,34 @@ def test_la_herramienta_del_agente_responde_con_texto_y_marca_las_tarjetas() -> 
     retornos = [str(p.content) for x in r.all_messages() for p in x.parts if isinstance(p, ToolReturnPart)]
     assert '"bloqueable_aqui": false' in retornos[0] and '"bloqueable_aqui": true' in retornos[0]
     assert "Bloquear tarjeta" in retornos[1] and m.banco.bloqueos == []
+
+
+def test_el_modelo_recibe_el_final_de_la_tarjeta_ya_calculado() -> None:
+    """En producción el modelo inventó "terminada en 8245" para `PRD-0NIQ9GNSPUNF`: solo veía el id."""
+    import json
+
+    from latam_tecnologia.banca.vista import final
+    from latam_tecnologia.canales.frases import enmascarar_identificadores
+    from latam_tecnologia.herramientas.puertos import final_tarjeta
+
+    # una sola regla en todas las capas
+    for pid in ("PRD-0NIQ9GNSPUNF", "PRD-YOT0QLCN8E26", "PRD-632BHIER1IHK", "p1"):
+        assert final_tarjeta(pid) == final(pid)
+    assert final_tarjeta("PRD-0NIQ9GNSPUNF") == "0009"
+    assert "terminada en 0009" in enmascarar_identificadores("la tarjeta PRD-0NIQ9GNSPUNF")
+
+    m = Mundo()
+    agente = crear_agente_disputas(TestModel(call_tools=["listar_transacciones", "estado_productos"]))
+    r = agente.run_sync("no reconozco un cargo", deps=ContextoAgente(m.h, _sesion("c1"), "k1", Canal.CHAT))
+    devueltos = {
+        p.tool_name: json.loads(str(p.content))
+        for msg in r.all_messages()
+        for p in msg.parts
+        if isinstance(p, ToolReturnPart)
+    }
+    assert devueltos["estado_productos"] and all(
+        f["final"] == final_tarjeta(f["product_id"]) for f in devueltos["estado_productos"]
+    )
+    assert devueltos["listar_transacciones"] and all(
+        f["tarjeta_final"] == final_tarjeta(f["product_id"]) for f in devueltos["listar_transacciones"]
+    )

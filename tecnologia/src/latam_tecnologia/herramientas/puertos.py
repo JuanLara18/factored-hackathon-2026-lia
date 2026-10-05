@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Protocol
@@ -12,6 +13,16 @@ from pydantic import BaseModel, ConfigDict
 
 class _Inmutable(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+def final_tarjeta(product_id: str) -> str:
+    """Los cuatro dígitos con que se nombra una tarjeta al cliente ("terminada en 0009").
+
+    Los identificadores del dataset son alfanuméricos (`PRD-0NIQ9GNSPUNF`) y no tienen un final natural: se
+    toman sus dígitos, rellenos con ceros. Es la misma regla del aviso de aprobación, la banca y el filtro de
+    salida; el modelo recibe este valor ya calculado para que no lo deduzca ni lo invente.
+    """
+    return re.sub(r"\D", "", product_id).rjust(4, "0")[-4:]
 
 
 class Transaccion(_Inmutable):
