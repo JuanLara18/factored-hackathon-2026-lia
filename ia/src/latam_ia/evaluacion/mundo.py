@@ -136,6 +136,7 @@ def materializar(escenario: Escenario) -> MundoVivo:
         ],
     )
     banco = ServiciosBancoRegistrador()
+    banco.transaccion_fijada = escenario.movimiento_fijado
     for i, (cliente, tx) in enumerate(mundo.casos_previos, start=1):
         banco.casos[(cliente, tx)] = f"caso-previo-{i}"
     almacen = AlmacenCaido() if escenario.fallo == "firestore_caido" else AlmacenMemoria()

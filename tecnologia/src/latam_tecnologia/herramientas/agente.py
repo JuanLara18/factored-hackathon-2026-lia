@@ -18,10 +18,16 @@ from latam_tecnologia.herramientas.catalogo import (
     EscalacionRequerida,
     Herramientas,
     NoDisputable,
+    TarjetaFueraDelMovimiento,
 )
 from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion
 
+OTRA_TARJETA = (
+    "No se bloqueó nada: esta conversación es de un movimiento y solo se puede bloquear la tarjeta de ese "
+    "movimiento. Diga a la persona que las demás tarjetas se bloquean desde la banca, con Bloquear tarjeta, "
+    "o con una persona del equipo, y no proponga bloquear otra tarjeta."
+)
 SIN_PRODUCTO = "No se abrió la disputa: el producto no se pudo verificar."
 AVISO_ESCALAR = " Siguiente paso obligatorio: llamar a escalar con motivo {motivo}."
 
@@ -105,7 +111,12 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
     def estado_productos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
         """Productos del cliente y si están bloqueados."""
         hecho = ctx.deps.herramientas.estado_productos(ctx.deps.sesion)
-        return TypeAdapter(tuple[Producto, ...]).dump_json(hecho.valor).decode()
+        permitido = ctx.deps.herramientas.producto_del_movimiento(ctx.deps.sesion, ctx.deps.conversacion_id)
+        filas: list[dict[str, Any]] = json.loads(TypeAdapter(tuple[Producto, ...]).dump_json(hecho.valor))
+        if permitido is not None:  # solo esa tarjeta se puede bloquear desde esta conversación
+            for fila in filas:
+                fila["bloqueable_aqui"] = fila["product_id"] == permitido
+        return json.dumps(filas, ensure_ascii=False)
 
     @agente.tool
     def casos_abiertos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
@@ -143,9 +154,12 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
     def bloquear_tarjeta(ctx: RunContext[ContextoAgente], product_id: str) -> str:  # pyright: ignore[reportUnusedFunction]
         """Bloquea una tarjeta del cliente. Idempotente."""
         d = ctx.deps
-        accion, _ = d.herramientas.bloquear_tarjeta(
-            d.sesion, d.conversacion_id, product_id, _confirmacion(ctx, "bloquear_tarjeta")
-        )
+        try:
+            accion, _ = d.herramientas.bloquear_tarjeta(
+                d.sesion, d.conversacion_id, product_id, _confirmacion(ctx, "bloquear_tarjeta")
+            )
+        except TarjetaFueraDelMovimiento:
+            return OTRA_TARJETA
         return accion.resultado_releido
 
     @agente.tool(requires_approval=True)

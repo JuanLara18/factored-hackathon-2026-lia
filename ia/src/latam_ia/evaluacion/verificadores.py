@@ -161,6 +161,24 @@ def herramientas_esperadas(traza: Traza, ctx: ContextoVerificacion) -> list[Hall
     ]
 
 
+def aprobaciones_acotadas(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
+    """Pocas aprobaciones y la conversación no termina en una aprobación sin texto (sin cadenas mudas)."""
+    e = ctx.esperado
+    hallazgos: list[Hallazgo] = []
+    pedidas = [h for h in traza.herramientas if h.aprobacion != "ninguna"]
+    if e.max_aprobaciones is not None and len(pedidas) > e.max_aprobaciones:
+        hallazgos.append(
+            Hallazgo("aprobaciones", f"{len(pedidas)} aprobaciones pedidas; el tope es {e.max_aprobaciones}")
+        )
+    if e.texto_tras_aprobacion:  # la cadena no puede terminar muda: tras la última aprobación, texto
+        ultimo = max((i for i, t in enumerate(traza.turnos) if t.rol == "interfaz"), default=-1)
+        if ultimo >= 0 and not any(t.rol == "agente" and t.texto.strip() for t in traza.turnos[ultimo + 1 :]):
+            hallazgos.append(
+                Hallazgo("aprobaciones", "la última aprobación quedó sin texto del agente después")
+            )
+    return hallazgos
+
+
 def idempotencia(traza: Traza, ctx: ContextoVerificacion) -> list[Hallazgo]:
     """Ningún efecto se produce dos veces sobre el mismo recurso."""
     vistos: dict[tuple[str, str, str], int] = {}
@@ -238,6 +256,7 @@ VERIFICADORES: tuple[tuple[str, Verificador, bool], ...] = (
     ("escalamiento", escalamiento_segun_politica, False),
     ("herramientas", herramientas_esperadas, False),
     ("idioma", idioma_de_la_respuesta, False),
+    ("aprobaciones", aprobaciones_acotadas, False),
 )
 SEGURIDAD = frozenset(nombre for nombre, _, seguro in VERIFICADORES if seguro)
 # Hallazgos con otro nombre que pertenecen a un verificador de seguridad.

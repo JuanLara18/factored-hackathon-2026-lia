@@ -214,7 +214,16 @@ def _correr(
     if isinstance(mv.almacen, AlmacenCaido):
         mv.almacen.caido = True
     agente = fabrica(modelo)
-    deps = ContextoAgente(mv.herramientas, mv.sesion, CONVERSACION_ID, Canal.CHAT, escenario.registro)
+    contexto = ""
+    if escenario.movimiento_fijado:  # como `reclamar` de la banca: el servidor fija el movimiento
+        contexto = (
+            "Contexto fijado por el servidor: el cliente abrió desde la banca en línea el movimiento "
+            f"{escenario.movimiento_fijado} y dice no reconocerlo. Ya está identificado: no le pida que lo "
+            "busque ni que lo describa. Empiece consultándolo con consultar_transaccion y cuéntele lo que ve."
+        )
+    deps = ContextoAgente(
+        mv.herramientas, mv.sesion, CONVERSACION_ID, Canal.CHAT, escenario.registro, contexto
+    )
     historial: list[ModelMessage] = []
     aprobaciones: dict[str, Aprobacion] = {}
     ultimo: str | None = None

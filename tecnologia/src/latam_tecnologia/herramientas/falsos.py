@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
 from latam_comun.dominio import Dinero
@@ -46,6 +47,11 @@ class ServiciosBancoFalsos:
         self.traspasos: list[tuple[str, str, bool]] = []
         self.creditos_provisionales: list[str] = []
         self.llamadas = 0
+        self.transaccion_fijada: str | None = None  # movimiento que `reclamar` fijó en la conversación
+
+    def conversacion(self, conversacion_id: str) -> SimpleNamespace:
+        """Lo que el banco compartido guarda de la conversación; aquí solo el movimiento fijado."""
+        return SimpleNamespace(transaccion_id=self.transaccion_fijada)
 
     def abrir_caso(
         self,
