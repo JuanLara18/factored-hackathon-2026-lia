@@ -438,9 +438,8 @@ def test_el_modelo_recibe_el_final_de_la_tarjeta_ya_calculado() -> None:
         for p in msg.parts
         if isinstance(p, ToolReturnPart)
     }
-    assert devueltos["estado_productos"] and all(
-        f["final"] == final_tarjeta(f["product_id"]) for f in devueltos["estado_productos"]
-    )
+    # el listado de productos no lo trae: con él, el modelo preguntaba en texto antes de bloquear
+    assert devueltos["estado_productos"] and all("final" not in f for f in devueltos["estado_productos"])
     assert devueltos["listar_transacciones"] and all(
         f["tarjeta_final"] == final_tarjeta(f["product_id"]) for f in devueltos["listar_transacciones"]
     )

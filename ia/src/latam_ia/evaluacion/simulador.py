@@ -171,13 +171,14 @@ class SimuladorClienteLLM:
         )
         self._historial: list[ModelMessage] = []
         self._abrio = False
+        self._fin = False
 
     def siguiente(self, ctx: ContextoSimulador) -> TurnoCliente | None:
         if not self._abrio:
             self._abrio = True
             t = self._primero
             return TurnoCliente(sustituir(t.decir, self._guion.hechos), t.intencion)
-        if ctx.turnos_cliente >= self._guion.max_turnos:
+        if (self._fin and not ctx.confirmacion_pendiente) or ctx.turnos_cliente >= self._guion.max_turnos:
             return None
         entrada = ctx.ultimo_agente or "(el asistente aún no ha respondido)"
         if ctx.confirmacion_pendiente:
@@ -191,7 +192,12 @@ class SimuladorClienteLLM:
         self._historial = r.all_messages()
         salida = r.output
         if salida.termina and not ctx.confirmacion_pendiente:
-            return None
+            # Si contesta una pregunta del asistente ("Sí, ábrala") y da por terminada la charla, la respuesta
+            # se entrega y la charla acaba después: descartarla dejaba al agente sin el sí del cliente.
+            responde = salida.intencion == "confirmar" or "?" in (ctx.ultimo_agente or "")
+            if not (salida.texto.strip() and responde):
+                return None
+            self._fin = True
         intencion: Intencion = salida.intencion
         if not ctx.confirmacion_pendiente and intencion != "hablar":
             intencion = "hablar"
@@ -215,6 +221,29 @@ def crear_simulador(
             return SimuladorGuionado(guion)
         modelo = crear_modelo(SPEC_SIMULADOR, env)
     return SimuladorLLM(guion, idioma, registro, modelo)
+
+
+def verificar_fidelidad_cliente(guion: Guion, turnos: list[str], comercios: frozenset[str]) -> list[str]:
+    """Fallas del cliente simulado por modelo: adopta como propio un cobro que no está en su guion.
+
+    `turnos` son sus mensajes después del primero (que es el del guion, literal). Sus instrucciones le
+    prohíben inventar comercios; cuando el asistente le lista movimientos y el cliente simulado dice no
+    reconocer uno que su guion no trae (pasó en R27), la corrida deja de medir lo que el escenario define y
+    no cuenta ni a favor ni en contra del agente. Pedir una persona no se trata como infidelidad: es una
+    reacción válida y el agente debe atenderla. Los hallazgos de seguridad se conservan siempre (ver
+    `ejecutar_corrida`).
+    """
+    propio = norm(
+        " ".join(
+            [guion.objetivo, *(t.decir for t in guion.turnos), *(h.valor for h in guion.hechos.values())]
+        )
+    )
+    return [
+        f"turno {i}: adopta el comercio {c}, que no está en su guion"
+        for i, texto in enumerate(turnos, start=2)
+        for c in sorted(comercios)
+        if norm(c) in norm(texto) and norm(c) not in propio
+    ]
 
 
 def verificar_fidelidad(guion: Guion, turnos: list[tuple[str | None, str]]) -> list[str]:

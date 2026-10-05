@@ -105,27 +105,20 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
 
     @agente.tool
     def consultar_transaccion(ctx: RunContext[ContextoAgente], transaction_id: str) -> str:  # pyright: ignore[reportUnusedFunction]
-        """Una transacción del cliente de la sesión; vacío si no existe o no es suya.
-
-        `tarjeta_final` son los dígitos con que se nombra la tarjeta al cliente ("terminada en").
-        """
+        """Una transacción del cliente de la sesión; vacío si no existe o no es suya."""
         hecho = ctx.deps.herramientas.transaccion(ctx.deps.sesion, transaction_id)
         return "null" if hecho.valor is None else _con_ruta(ctx, (hecho.valor,))[1:-1]
 
     @agente.tool
     def estado_productos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
-        """Productos del cliente y si están bloqueados.
-
-        `final` son los dígitos con que se nombra cada producto al cliente ("terminada en"): use ese campo tal
-        cual y no deduzca otros a partir de `product_id`. Cuando una fila trae `bloqueable_aqui: true`, esa es
-        la tarjeta del movimiento de esta conversación y la única que se puede bloquear aquí: si el cliente
-        pide bloquear su tarjeta, proponga esa directamente, sin preguntarle cuál.
-        """
+        """Productos del cliente y si están bloqueados."""
+        # Aquí no va el final de la tarjeta ni una descripción más larga. Medido en GEAP (k=8 a 10 por
+        # variante): con el final en cada fila el modelo pregunta en texto antes de bloquear (8/8 contra 0/8),
+        # y con la descripción alargada deja de llamar a abrir_disputa (R01 de 9/10 a 4/10). El final que el
+        # cliente oye lo dan los movimientos (`tarjeta_final`) y el resultado de bloquear_tarjeta.
         hecho = ctx.deps.herramientas.estado_productos(ctx.deps.sesion)
         permitido = ctx.deps.herramientas.producto_del_movimiento(ctx.deps.sesion, ctx.deps.conversacion_id)
         filas: list[dict[str, Any]] = json.loads(TypeAdapter(tuple[Producto, ...]).dump_json(hecho.valor))
-        for fila in filas:
-            fila["final"] = final_tarjeta(str(fila["product_id"]))
         if permitido is not None:  # solo esa tarjeta se puede bloquear desde esta conversación
             for fila in filas:
                 fila["bloqueable_aqui"] = fila["product_id"] == permitido
