@@ -1,6 +1,6 @@
 # Dictamen preliminar de Auditoría (borrador)
 
-**Estado:** borrador de la Oficina de Entrega con lista de verificación al estilo de una revisión independiente. **No es un dictamen sellado:** la independencia real exige que Auditoría lo corra en frío (plantillas en [auditoria/plantillas](../plantillas/)). **Fecha:** 4 de octubre de 2026. **Contra:** [enunciado](../../docs/enunciado/Enunciado_Factored_Hackathon_2026.pdf) y [reporte final](../../presidencia/reporte/00_reporte_final.md).
+**Estado:** borrador de la Oficina de Entrega con lista de verificación al estilo de una revisión independiente. **No es un dictamen sellado:** la independencia real exige que Auditoría lo corra en frío (plantillas en [auditoria/plantillas](../plantillas/)). **Fecha:** 4 de octubre de 2026, con una actualización del 5 de octubre (sección 8) que no reemplaza la revisión en frío. **Contra:** [enunciado](../../docs/enunciado/Enunciado_Factored_Hackathon_2026.pdf) y [reporte final](../../presidencia/reporte/00_reporte_final.md).
 
 Escala: **cumple** (evidencia suficiente y verificable), **parcial** (existe con una brecha declarada), **no cumple** (falta). Cada fila cita su fuente.
 
@@ -90,3 +90,21 @@ Escala: **cumple** (evidencia suficiente y verificable), **parcial** (existe con
 ## 7. Qué falta para sellar
 
 Correr a Auditoría en frío con el paquete de independencia; confirmar las cifras desde los JSON por corrida (`ia/evaluacion/reportes/retenido_casos_propuesto.json`); verificar las fuentes; revisar el adendo de correcciones de 04; y repetir los gates (`uv run pytest -q`, ruff, `uv run python -m latam_gobierno.guardas`).
+
+## 8. Actualización del 5 de octubre (Oficina de Entrega, no es revisión independiente)
+
+Las secciones 1 a 7 describen el sistema del 4 de octubre y se dejan como se escribieron. Esto cambió después; Auditoría debe comprobarlo en frío antes de sellar.
+
+| Hallazgo o fila | Estado al 5 de octubre | Evidencia | Qué sigue abierto |
+|---|---|---|---|
+| Hallazgo 1: ESC-03 no aplicado por la herramienta | corregido | `abrir_disputa` rechaza el producto desconocido; R21 de 0/3 a 3/3 ([04](../../presidencia/reporte/04_evaluacion.md), anexo "Correcciones posteriores") | comprobación post hoc sobre un caso conocido; falta un retenido nuevo |
+| Hallazgo 1: orden inyectada de urgencia | corregido en la prioridad | la urgencia sale de una lista cerrada de motivos (ESC-05); `E10_inyeccion_prioridad_pt` 8 de 8, 0 inseguras | un cliente que relate un engaño inventado puede obtener el motivo urgente |
+| Criterio 3, fila "parcial" | pasa a cumple con la reserva anterior | [02_solucion](../../presidencia/reporte/02_solucion.md) sección 3 | TRA-04 a TRA-07 con `en_motor: false`; umbrales provisionales |
+| Caída segura "muda" | corregido | plantilla `falla_segura.chat`; 15 de 15 corridas con texto | sin prueba con una caída real de Agent Runtime |
+| Sistema funcional: e2e anterior al rediseño | repetido | 78 de 78 contra producción el 5 oct ([ESTADO](../../presidencia/ESTADO.md)) | |
+| Hallazgo 7: Secret Manager y secreto con valor por defecto | corregido en código | Cloud Run monta `latam-ref-secreto` (verificado en la configuración del servicio); un servicio desplegado sin la clave no arranca (`refs.py`, `test_retencion_y_refs.py`) | desplegar el agente con la clave: antes firmaba con la de demostración la referencia del movimiento en el paquete de traspaso |
+| Hallazgo 6: retención y monitoreo no implementados; Terraform sin planear | retención de registros operativos implementada (TTL de 30 días); alertas de disponibilidad, errores y latencia como código; `terraform plan` corrido: 16 por adoptar, 30 por crear, 0 por destruir | [06_produccion](../../presidencia/reporte/06_produccion.md) secciones 4, 6 y 8 | aplicar en el proyecto; calidad y equidad en producción siguen como propuesta; una instancia |
+| Hallazgo 8: tarifa supuesta | verificada | US$ 0,25 y US$ 1,50 por millón en la página de precios de la API de Gemini (5 oct) | costo sin infraestructura; latencia sin carga |
+| Hallazgo 10: coherencia de 00 con 04 | corregido | 00, 02 y 06 citan el anexo y separan la corrida congelada de la comprobación post hoc | |
+
+Sin cambio: hallazgo 2 (simulador de la misma familia), hallazgo 3 (el agente no supera a la línea base de reglas), hallazgo 4 (cobertura sin México ni Brasil, etiquetas de un autor, tono sin medir) y hallazgo 5 (60 de 66 fuentes sin verificar).

@@ -45,7 +45,7 @@ Decisiones que sostienen la forma: motor y herramientas propios en lugar de un m
 | Aprobación | las herramientas con efecto devuelven una aprobación diferida; el canal la resuelve con un evento de un solo uso con vigencia de 5 minutos; un texto escrito no la resuelve | sí ([chat_web.py](../../tecnologia/src/latam_tecnologia/canales/chat_web.py), `VIGENCIA_CONFIRMACION`) |
 | Idempotencia | llave por acción y transición; reintentar no duplica efectos | sí ([retoma.py](../../tecnologia/src/latam_tecnologia/motor/retoma.py)) |
 | Qué se informa | solo `AccionVerificada` con resultado releído; el verificador del arnés marca acciones afirmadas sin efecto | parcial: el texto lo redacta el modelo y el verificador cubre frases conocidas ([04](04_evaluacion.md) sección 8, hallazgo 7) |
-| Cuándo escalar | ESC-01 (urgente), ESC-02 (rechazado, fallido o revertido), ESC-03 (producto desconocido), ESC-04 (monto sobre umbral, provisional en USD 1.000) | **parcial**: el motor lo aplica; la herramienta `abrir_disputa` no consulta ESC-03 (hallazgo 1 de 04) |
+| Cuándo escalar | ESC-01 (urgente), ESC-02 (rechazado, fallido o revertido), ESC-03 (producto desconocido), ESC-04 (monto sobre umbral, provisional en USD 1.000) | sí: el motor lo aplica y, desde el trabajador 0.5.0, `abrir_disputa` rechaza el producto desconocido (ESC-03) y la prioridad urgente sale solo del motivo (ESC-05), no de un argumento del modelo ([04_evaluacion](04_evaluacion.md), anexo "Correcciones posteriores") |
 | Crédito | solo un tope provisional (USD 200, supuesto sintético) como bandera del caso; el dinero lo mueve el back office; el agente no calcula elegibilidad | sí ([credito_provisional.yaml](../../gobierno/politica/v1/credito_provisional.yaml)) |
 
 ## 4. Flujos de disputa

@@ -12,7 +12,7 @@ Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está
 | Datos | Bronce, plata, oro y platino en BigQuery; manifiesto encadenado; reglas Q-BRZ; dbt con 56 pruebas en verde; siete fichas de oro operacional y 12 dominios canónicos; control del 30 sep: `validar` con 5 avisos y 0 bloqueantes, cadena del manifiesto íntegra (13 registros), contratos sin deriva contra las columnas vivas | [datos/README.md](../datos/README.md), [LIMITACIONES](../datos/LIMITACIONES.md) |
 | Gobierno | Guardas contra datos y credenciales en pre-commit y CI; gitleaks configurado; `policy/v1` con huella (escalamiento, crédito provisional, riesgo, ACR por acción, traspaso) que el motor lee | `gobierno/src/latam_gobierno/guardas.py` |
 | Auditoría | `fuentes.yaml` con 66 fuentes; plantillas del paquete de independencia y del informe sellado | `auditoria/` |
-| Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); chat web de disputas (`just chat`, http://localhost:8765) con aprobación de un solo uso, aviso de IA y botón de persona; Terraform refleja lo desplegado y **valida** (1.16), pero **nunca se ha aplicado ni planeado** contra el proyecto | `tecnologia/adr/`, `tecnologia/infra/` |
+| Tecnología | ADR 0001 a 0010; perfiles de Compose; spike S4 (retoma idempotente de chat a voz) y spike S3 (chat AG-UI) funcionan; motor del caso de disputa y herramientas del agente (lectura de oro por cliente, efectos idempotentes con aprobación); chat web de disputas (`just chat`, http://localhost:8765) con aprobación de un solo uso, aviso de IA y botón de persona; Terraform refleja lo desplegado, **valida** y **planea sin destruir nada** (5 oct), pero **no se ha aplicado** | `tecnologia/adr/`, `tecnologia/infra/` |
 | IA | Registro de agentes y prompts (IA-7.1, IA-9.1); arnés IA-5.1 con 23 escenarios: offline 23 de 23, 0 inseguros en 69 corridas; léxico prohibido único en `clientes/estilo/estilo.yaml` | [ia/README.md](../ia/README.md) |
 | Sitio | Publicado en https://latam-bank-hackaton-2026.web.app (Firebase Hosting, plan gratuito): inicio, reclamos, transparencia, privacidad y chat; el chat en vivo lo atiende `latam-chat` en Cloud Run (https://latam-chat-ccmytkamga-uc.a.run.app); `just chat` lo corre local | `tecnologia/web/sitio/`, `firebase.json` |
 | Clientes | Matriz estado x canal x registro, guía de estilo, 50 plantillas en usted y vos, linter en CI | [clientes/README.md](../clientes/README.md) |
@@ -62,8 +62,17 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 
 ## Pendientes del usuario
 
-1. Correr `terraform plan` en `tecnologia/infra/terraform/envs/dev` (ver `tecnologia/infra/ARRANQUE.md`): `fmt` y `validate`
-   ya pasan; el `plan` adopta lo desplegado con `importar.tf` y no se ha corrido. El presupuesto se importa a mano.
+1. **Desplegar lo del 5 oct (coherencia y operación), en este orden**, porque el agente y el chat leen los mismos
+   documentos y el código viejo rechaza el campo `expira_en`:
+   1. restablecer el estado de demostración (`POST /api/demo/restablecer` por la URL de Cloud Run);
+   2. `terraform apply -target=module.monitoreo -target=module.firestore.google_firestore_field.vencimiento` en
+      `tecnologia/infra/terraform/envs/dev` (solo crea: TTL y alertas; ver `tecnologia/infra/ARRANQUE.md`);
+   3. redesplegar el agente (comando de la sección GEAP) y, enseguida, el chat con
+      `--update-env-vars LATAM_TRABAJADOR_VERSION=0.7.0` (el servicio tiene 0.6.0);
+   4. comprobar: e2e contra producción, que un caso nuevo en Firestore lleve `expira_en` y que la referencia del
+      movimiento en el paquete de traspaso sea la misma `tx_…` que muestra la banca.
+   Si el agente no arranca, falta el acceso de `latam-chat@` al secreto o la versión del SDK no admite secretos en
+   `env_vars`: se vuelve atrás desplegando desde `main`.
 2. Instalar `just` (las recetas del `justfile` se usan en la documentación).
 3. Revisar el perfil `default` de AWS (quedaron ahí las llaves del organizador) y revocar el token de Hugging Face.
 4. Meta (WhatsApp) y Twilio en modo de prueba, si se quieren canales reales; preguntas a los organizadores.
@@ -108,6 +117,26 @@ arranque en frío; para el día de la demo conviene `--min-instances 1` en Cloud
 Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 21 y 6 malformadas con 2.5 por el
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
+
+## Hecho el 5 oct: coherencia del reporte y operación (en `develop`, **sin desplegar**)
+
+- **Reporte coherente con el sistema actual:** 00, 02 y 06 daban por abiertos ESC-03, la inyección de urgencia, el
+  límite del listado y la falla muda, que el anexo de 04 ya mostraba corregidos; ahora citan el anexo y separan la
+  corrida congelada de la comprobación post hoc. El dictamen borrador tiene una sección 8 con lo que cambió.
+- **Clave de referencias cerrada por defecto:** un servicio desplegado (`K_SERVICE` o `LATAM_ENTORNO=produccion`) sin
+  `LATAM_REF_SECRETO` no arranca. Hallazgo: Agent Runtime no recibía la clave y firmaba con la de demostración del
+  repositorio la referencia del movimiento que va en el paquete de traspaso; `desplegar.py` ahora se la entrega desde
+  Secret Manager.
+- **Retención (D-27):** todo documento de Firestore se escribe con `expira_en` a 30 días y Terraform declara la política
+  de TTL por grupo de colección. El campo se quita al leer; los modelos no cambian.
+- **Terraform:** primer `plan` contra el proyecto (16 por adoptar, 30 por crear, 5 por cambiar, 0 por destruir). Corrigió
+  deriva que un `apply` habría convertido en daño: vencimiento de 60 días de vuelta en los datasets, código del experto
+  fuera del servicio, versión del trabajador fija en 0.2.0 (también en el `justfile`). Nuevo: secreto, ping de Cloud
+  Scheduler, TTL y módulo `monitoreo` (disponibilidad, 5xx sobre 2%, p95 sobre 5,76 s, aviso por correo).
+- **BigQuery (sí se cambió en el proyecto):** `latam_bank` y `latam_seguridad` conservaban el vencimiento por defecto de
+  particiones de 60 días del sandbox; se quitó. No había tablas particionadas ni tablas con vencimiento.
+- **Tarifa de Flash-Lite verificada** contra la página de precios de la API de Gemini: coincide con la supuesta.
+- **Compuertas:** formato, lint, pyright y 548 pruebas en verde; la prueba de integración contra Firestore pasa.
 
 ## Hecho el 5 oct
 
