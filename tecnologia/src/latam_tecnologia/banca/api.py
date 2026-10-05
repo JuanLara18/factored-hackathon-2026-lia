@@ -563,7 +563,7 @@ def crear_router(
         numeracion.fallos = 0
         for vencido in [t for t, (_, exp) in operadores.items() if ahora >= exp]:
             del operadores[vencido]
-        # Con el cupo lleno sale la sesión más antigua: negar el ingreso dejaba la consola cerrada durante horas
+        # Con el cupo lleno sale la sesión más antigua: negar el ingreso dejaba la consola cerrada por horas
         # (pasó el 5 oct, cuando la instancia dejó de apagarse y las pruebas agotaron las cincuenta sesiones).
         while len(operadores) >= MAX_OPERADORES:
             del operadores[min(operadores, key=lambda t: operadores[t][1])]
