@@ -413,3 +413,22 @@ body[data-pagina] .contenedor { max-width: 76rem; }
   .bn-cabecera .idioma select { max-width: 6.75rem; padding-left: .7rem; font-size: .84rem; text-overflow: ellipsis; }
   .bn-cabecera .bn-enlace { padding-inline: .45rem; }
 }
+/* Barra del portal sin solapes: el idioma vive en la franja superior y nada se encoge ni se parte */
+.bn-demo .contenedor { flex-wrap: nowrap; }
+.bn-demo .contenedor > p { min-width: 0; }
+.bn-demo .selector-idioma { margin-left: auto; flex: none; }
+.bn-demo .idioma select { min-height: 30px; padding-block: .1rem; font-size: .8125rem; color: var(--texto); background-color: transparent; border: 0; }
+.bn-cabecera .contenedor { flex-wrap: nowrap; }
+.bn-cabecera .marca, .bn-cabecera .bn-portal, #zona-sesion { flex: none; }
+.bn-cabecera .marca span { white-space: nowrap; }
+.bn-cabecera .nav { flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bn-cabecera .nav::-webkit-scrollbar { display: none; }
+#zona-sesion { margin-left: auto; }
+@media (max-width: 52rem) {
+  .bn-cabecera .contenedor { flex-wrap: wrap; }
+  .bn-cabecera .nav { order: 5; flex-basis: 100%; margin: 0; }
+  .bn-cabecera .marca { order: 0; margin-right: 0; }
+  #zona-sesion { order: 1; }
+}
+@media (max-width: 40rem) { .bn-demo .contenedor > p:not(:first-child) { display: none; } }
+.bn-cabecera .bn-avatar { background: #e4f0f4; color: #0a5a7a; }

@@ -171,3 +171,36 @@ def test_bloqueo_tarjeta_confirmado(abrir):
                 return
             page.keyboard.press("Escape")
     pytest.skip("todas las tarjetas de demostracion ya estan bloqueadas")
+
+
+@pytest.mark.parametrize("ancho", [900, 1024, 1280, 1350, 1600])
+def test_la_barra_del_portal_no_se_monta_ni_se_parte(abrir, ancho):
+    """A 1350 px el nombre se partía en dos líneas y Reclamos quedaba debajo del selector de idioma."""
+    page, _ = abrir(ancho)
+    ingresar(page, 3)
+    cajas = page.evaluate(
+        """() => [...document.querySelectorAll('.bn-cabecera .marca, .bn-cabecera .nav a, #zona-sesion')]
+            .map(e => { const r = e.getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; })"""
+    )
+    for i, a in enumerate(cajas):
+        for b in cajas[i + 1 :]:
+            assert a[1] <= b[0] + 1 or b[1] <= a[0] + 1, (ancho, a, b)  # no se cruzan en horizontal
+    alto_marca = page.evaluate("document.querySelector('.bn-cabecera .marca').getBoundingClientRect().height")
+    assert alto_marca < 48, alto_marca  # una sola línea
+    assert desborde(page) == []
+
+
+def test_acciones_de_cada_producto(abrir):
+    page, vigia = abrir(1280)
+    ingresar(page, 0)
+    tarjeta = page.locator("#productos .bn-plastico").first
+    tarjeta.get_by_role("button", name="Movimientos").click()
+    page.wait_for_selector("#movimientos .bn-fila")
+    assert page.input_value("#f-producto") != ""
+    tarjeta.get_by_role("button", name="Reportar un cargo").click()
+    assert page.locator("#pista-reporte:not(.oculto)").count() == 1
+    tarjeta.get_by_role("button", name="Bloquear", exact=True).click()
+    page.wait_for_selector("#confirmar[open]")
+    page.click("#confirmar-no")  # se cancela: nada cambia
+    assert page.locator("#productos .bn-bloqueado").count() == 0
+    assert vigia.limpio() == []
