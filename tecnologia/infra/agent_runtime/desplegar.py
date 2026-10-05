@@ -92,9 +92,12 @@ def empaquetar(salida: Path) -> Path:
     return destino
 
 
-def entorno(proyecto: str, version: str) -> dict[str, str]:
+def entorno(proyecto: str, version: str) -> dict[str, Any]:
     return {
         "LATAM_GCP_PROJECT": proyecto,
+        # Sin la clave el agente no arranca: el paquete de traspaso usa las mismas referencias que la banca.
+        "LATAM_ENTORNO": "produccion",
+        "LATAM_REF_SECRETO": {"secret": "latam-ref-secreto", "version": "latest"},
         "LATAM_GEAP_LOCATION": "global",
         "LATAM_TRABAJADOR_VERSION": version,
         # Gemini 3 por el endpoint compatible con OpenAI pierde la thought_signature de las herramientas;

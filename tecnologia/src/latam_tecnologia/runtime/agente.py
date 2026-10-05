@@ -240,12 +240,14 @@ class AgenteDisputasRuntime:
 
         from latam_tecnologia import observabilidad
         from latam_tecnologia.banca.banco import crear_banco
+        from latam_tecnologia.banca.refs import secreto
         from latam_tecnologia.canales.geap import VARIABLE_PROYECTO, VARIABLE_UBICACION, crear_modelo_geap
         from latam_tecnologia.herramientas.agente import crear_agente_disputas
         from latam_tecnologia.herramientas.bigquery import LecturaBigQuery
         from latam_tecnologia.herramientas.catalogo import Herramientas
         from latam_tecnologia.servicios.almacen import AlmacenMemoria
 
+        secreto()  # el paquete de traspaso cita el movimiento con la misma referencia que la banca
         proyecto = self.proyecto or os.environ[VARIABLE_PROYECTO]
         entorno = {
             **os.environ,

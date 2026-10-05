@@ -442,4 +442,7 @@ def crear_app(
 
 def crear_app_desde_entorno() -> FastAPI:
     """Fábrica para uvicorn (`just chat`)."""
+    from latam_tecnologia.banca.refs import secreto
+
+    secreto()  # desplegado sin la clave de referencias, el servicio no arranca
     return crear_app()
