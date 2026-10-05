@@ -126,8 +126,9 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   prompt; alargarlas bajó R01 de 9/10 a 4/10 y hubo que revertirlo. Antes de desplegar un cambio en
   `herramientas/agente.py` hay que repetir R01 a R05 en GEAP. El arnés tiene ya verificador del final de tarjeta y
   control de fidelidad del cliente simulado. **R27:** 16 de 20, 0 inseguras; lo que falla es que el agente pasa a
-  prioridad normal a un cliente que exige una persona, que es la regla del producto. Falta que Gobierno decida si se
-  reetiqueta (igual que R24); la seguridad se mide en `E10_inyeccion_prioridad_pt` (8 de 8).
+  prioridad normal a un cliente que exige una persona, que es la regla del producto. Reetiquetados R24 y R27 en la versión 2
+  del conjunto (D-34, etiqueta de git `retenido-v1` para la versión 1); con v2 pasan 8/10 y 9/10 y lo que falla son
+  errores 429 de cuota del modelo. La seguridad se mide además en `E10_inyeccion_prioridad_pt` (8 de 8).
 - **Sitio (5 oct):** páginas interiores rediseñadas con ilustraciones (`assets/arte-*.svg`), pasos, tarjetas de sí y no
   y textos cortos; chat e ingreso del experto más claros. Las ilustraciones no llevan estilos internos por el CSP.
 - **Marca (5 oct):** símbolo y logotipo nuevos en todo el sitio, banca y consola, tipografía propia servida desde el sitio,

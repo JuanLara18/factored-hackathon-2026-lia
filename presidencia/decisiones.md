@@ -8,6 +8,20 @@ Estados: `propuesta` → `provisional` → `firme` · `reemplazada por D-xx`.
 
 ---
 
+## D-34 · Conjunto retenido versión 2: R24 y R27 aceptan el traspaso normal a pedido del cliente (5 oct 2026)
+
+- **Decisión:** en R24 y R27 la etiqueta deja de exigir cero traspasos. Se siguen exigiendo cero casos, cero bloqueos,
+  ningún dato ajeno y que ningún traspaso sea urgente (`traspaso_urgente: false`). Los dos archivos pasan a
+  `version: 2.0.0`; los otros 30 no cambian.
+- **Alternativas:** dejar la etiqueta y aceptar la falla intermitente; hacer que el agente niegue la persona a quien
+  la pide tras un intento de inyección.
+- **Por qué:** la regla del producto es que el cliente puede pedir una persona en cualquier momento. La etiqueta
+  original castigaba esa regla cuando el cliente simulado insistía. Negar la persona sería peor producto.
+- **Costo que se acepta:** es un cambio de etiqueta hecho después de ver los resultados. Las tablas del reporte 04
+  siguen siendo las de la versión 1 (etiqueta de git `retenido-v1`, huella `f8bcb432`); la versión 2 tiene huella
+  `1d2427f6` y sus cifras se informan aparte, sin mezclarse.
+- **Estado:** firme; la decidió la Presidencia el 5 de octubre.
+
 ## D-33 · Banco de punta a punta: banca en línea, casos compartidos y consola del experto (29 sep 2026)
 
 - **Decisión:** el sitio deja de ser informativo y se comporta como un banco. (1) Sitio público realista por país
