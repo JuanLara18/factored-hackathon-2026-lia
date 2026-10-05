@@ -4,6 +4,25 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 
 ---
 
+## 4 de octubre de 2026
+
+**Cerrado**
+- Evaluación final (32 casos retenidos, k=3), reporte `presidencia/reporte/` 00 a 06 y guion de la demo.
+- Portugués (você) de punta a punta, clasificador de motivo de contacto contra línea base, análisis del problema y equidad.
+- Rediseño de banca, sitio y consola del experto.
+- Correcciones tras la evaluación, desplegadas (prompt 1.5.0, trabajador 0.6.0): ESC-03 con producto desconocido,
+  listado ampliado, falla dicha al cliente, prioridad solo por política, bloqueo de una sola tarjeta, negación compartida
+  entre filtro y verificador, final de la tarjeta entregado por las herramientas.
+- Producción verificada con la suite e2e (71 pruebas, ninguna omitida).
+
+**Bloquea**
+- Fecha de entrega sin confirmar; grabación de la demo; dictamen final de Auditoría; revisión del portugués por un nativo.
+
+**Recortado**
+- R27 queda abierto en 1/3; retención de datos, monitoreo y Terraform aplicado quedan como trabajo restante declarado.
+
+---
+
 ## 29 de septiembre de 2026
 
 **Cerrado**

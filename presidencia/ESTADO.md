@@ -2,7 +2,7 @@
 
 Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está en [bitacora.md](bitacora.md).
 
-**Actualizado:** 30 de septiembre de 2026.
+**Actualizado:** 4 de octubre de 2026.
 
 ## Dónde estamos
 
@@ -38,11 +38,13 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.2.0`, trabajador `disputas` 0.3.0.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00016-2d6`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
-  projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`. **Chat:** `just desplegar-chat-run-agente <recurso>`
+  projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`. **Chat:** `just desplegar-chat-run-agente <recurso>`; sin `just`, `uv run python tecnologia/infra/hf_space/preparar.py .hf_space`
+  y `gcloud run deploy latam-chat --source .hf_space --project latam-bank-hackaton-2026 --region us-central1 --quiet`
+  (sin banderas conserva la configuración del servicio)
   (usa `--update-env-vars`; la clave de referencias viene de Secret Manager, `latam-ref-secreto`). Al guion: `LATAM_MODELO=guionado`.
 - **Pendiente:** Agent Identity exige que el proyecto esté en una organización (hoy "sin organización").
   `roles/editor` sigue en la cuenta de Compute (la usa Cloud Build); retirarlo tras mover los builds a su propia cuenta.
@@ -79,8 +81,8 @@ enlaces de la documentación. Después del despliegue apareció uno más: los ha
 Firestore bloqueaban el bucle de eventos de la única instancia (la banca tardaba más de 20 s bajo carga); ahora son
 síncronos y corren en hilos, con prueba de regresión.
 
-**Verificación en producción (30 sep):** la suite de Playwright (`tests/e2e/`) contra https://latam-bank-hackaton-2026.web.app
-pasa entera (70 pruebas, 1 omitida), incluido el recorrido reclamo, persona, experto y resolución; los únicos avisos del
+**Verificación en producción (4 oct, tras el último despliegue):** la suite de Playwright (`tests/e2e/`) contra
+https://latam-bank-hackaton-2026.web.app pasa entera (71 pruebas, ninguna omitida), incluido el recorrido reclamo, persona, experto y resolución; los únicos avisos del
 log son los 401 que las pruebas provocan a propósito. El primer acceso tras un rato sin uso tarda unos segundos por el
 arranque en frío; para el día de la demo conviene `--min-instances 1` en Cloud Run (costo de unos centavos por hora).
 
@@ -116,16 +118,15 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   todos los casos en alcance y 29/36 (81%) sobre los que debían resolverse; contención 72%; 0/96 inseguros; escalamientos
   3 faltantes y 8 innecesarios; p50/p95 por turno 1,41/4,61 s; US$0,002 por caso. La línea base de reglas da 91% contra 80%
   del agente, con intervalos solapados: el reporte lo dice.
-- **Hallazgos de la evaluación por corregir:** el agente obedece una inyección "escalar como urgente" (R27); no escala con
-  producto desconocido (ESC-03, R21); `listar_transacciones` con límite 10 esconde cargos (R07); ante fallas inyectadas no
-  le dice nada al cliente; 3 casos con defectos de etiqueta documentados.
-
-## En curso (5 oct)
-
-| Rama | Worktree | Qué hace |
-|---|---|---|
-| `feature/qa-hallazgos-evaluacion` | `../fh-hallazgos` | corrige R27 (inyección de prioridad), R21 (producto desconocido), R07 (límite de movimientos) y el silencio ante fallas; repite esos casos en GEAP y agrega un anexo a 04 |
-| `feature/presidencia-reporte-final` | `../fh-reporte` | reporte final (00, 02, 03, 06), guion de la demo, sección del README para jurados y borrador del dictamen de Auditoría |
+- **Hallazgos de la evaluación, corregidos y desplegados** (anexo "Correcciones posteriores" de
+  `presidencia/reporte/04_evaluacion.md`, todo post hoc): R21 (producto desconocido escala, 0/3 a 3/3), R07 (listado
+  ampliado, 0/3 a 3/3), mensaje honesto ante fallas, prioridad solo desde motivos de la política, bloqueo limitado a la
+  tarjeta del movimiento, negación compartida entre el filtro de salida y el verificador, y el final de la tarjeta
+  calculado por las herramientas (el modelo lo inventaba). **Abierto:** R27 queda en 1/3 (ya no sube la prioridad,
+  pero el agente todavía pasa a persona a un cliente que insiste y una vez abrió un caso por una orden inyectada).
+- **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
+- **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
+  Hosting esa ruta responde 404); quedó limpio al cerrar.
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
@@ -140,13 +141,13 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
    `fraud_score` (IA-10.1).
 3. **Hecho (3 oct):** `presidencia/reporte/01_problema.md` y 10 figuras (`uv run python -m latam_datos.analisis`). Antes: **Problema sustentado con datos** (criterio 1): análisis escrito de motivos de contacto, demanda, calidad y
    restricciones operativas (bloques A a C de Datos) que justifique elegir disputas y fije la línea base de negocio.
-4. **Evaluación con las métricas del enunciado** (criterio 5 y "Evaluation evidence"): sobre el mismo conjunto
+4. **Hecho (4 oct):** `presidencia/reporte/04_evaluacion.md` (32 casos retenidos, k=3, línea base de reglas). Antes: **Evaluación con las métricas del enunciado** (criterio 5 y "Evaluation evidence"): sobre el mismo conjunto
    retenido, línea base (B-reglas) contra el sistema; resolución automática segura, contención, calidad de escalamiento
    (faltantes e innecesarias), resultados inseguros con denominador, p50/p95 de latencia y costo por caso y por
    resolución, variabilidad entre corridas, cortes por idioma y segmento, validación del juez. Faltan casos de
    inyección de prompt, sesión vencida, acceso no autorizado y falla de herramienta en el arnés.
 5. **Hecho (4 oct):** `presidencia/reporte/05_equidad.md`, sin disparidades atribuibles en la línea base histórica; función `latam_gobierno.equidad.tabla_disparidad` para cortar la evaluación. Antes: **Equidad**: comparar resultados por segmento autorizado (`plata_restringida_clientes`) y por idioma.
-6. **Reporte final y demo** (D10): reporte con todo lo anterior, "AI-first" (PRE-3.4), capítulo de trabajo restante
+6. **Hecho (4 oct) salvo la grabación y el dictamen:** reporte en `presidencia/reporte/` y guion de la demo; faltan grabar la demo y el dictamen final de Auditoría. Antes: **Reporte final y demo** (D10): reporte con todo lo anterior, "AI-first" (PRE-3.4), capítulo de trabajo restante
    para producción (PRE-3.5), capacidad, monitoreo, controles de acceso y retención; guion y grabación de la demo
    (normal, ambiguo y traspaso a persona, en español y portugués); dictamen de Auditoría (AUD-1 a AUD-3).
 7. **Pulido**: umbrales provisionales de Gobierno (ESC-04, tiempos por prioridad, 48 h de México); `--min-instances 1`
