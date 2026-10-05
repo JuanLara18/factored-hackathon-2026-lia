@@ -11,10 +11,10 @@ plantillas:
     marcadores: []
     textos:
       usted: >-
-        Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial.
+        Hola, soy Lía, asistente virtual de LATAM Bank y un sistema de inteligencia artificial.
         Si prefiere hablar con una persona, puede pedirlo en cualquier momento. ¿En qué le puedo ayudar?
       vos: >-
-        Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial.
+        Hola, soy Lía, asistente virtual de LATAM Bank y un sistema de inteligencia artificial.
         Si preferís hablar con una persona, podés pedirlo en cualquier momento. ¿En qué te puedo ayudar?
   - id: inicio.whatsapp
     canales: [whatsapp]

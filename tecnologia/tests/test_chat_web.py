@@ -338,7 +338,7 @@ def test_voce_es_un_registro_valido_y_el_catalogo_sale_de_pt_yaml() -> None:
     assert textos.registro_valido("voce") == "voce" and textos.registro_valido("tu") == "usted"
     cat = textos.catalogo_pagina("voce")
     assert cat["idioma"] == "pt" and cat["registro"] == "voce"
-    assert "Sou o assistente virtual do LATAM Bank" in cat["textos"]["aviso"]
+    assert "sou a Lia, assistente virtual do LATAM Bank" in cat["textos"]["aviso"]
     assert cat["textos"]["aviso"].count("inteligência artificial") == 1
     assert "alguns minutos" in cat["textos"]["traspaso"]
     assert cat["etiquetas"]["persona"] == "Falar com uma pessoa"

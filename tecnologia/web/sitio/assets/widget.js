@@ -25,7 +25,7 @@
       confirmo: "Confirmo", no: "No, gracias", renovar: "Renovar la confirmación", vence: "Vence en", vence_pronto: "La confirmación vence en un minuto.",
       vencida: "La confirmación venció.", reconozco: "Reconozco este cargo", no_reconozco: "No reconozco este cargo", tarjeta: "Tarjeta", monto: "Monto",
       sesion_vencida: "Su sesión venció. Vuelva a ingresar para continuar." },
-    textos: { aviso: "Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial. Si prefiere hablar con una persona, puede pedirlo en cualquier momento.",
+    textos: { aviso: "Hola, soy Lía, asistente virtual de LATAM Bank y un sistema de inteligencia artificial. Si prefiere hablar con una persona, puede pedirlo en cualquier momento.",
       procesando: "El asistente está escribiendo", falla: "No pude completar la solicitud. Puede intentarlo de nuevo o hablar con una persona.",
       sin_cambios: "No se hizo ningún cambio." },
   };
@@ -52,22 +52,22 @@
   const tx = (k) => est.textos.textos[k] || T(RESPALDO.textos[k] || "");
 
   function construir() {
-    el.lanzadorTxt = h("span", { texto: T("Asistente") });
+    el.lanzadorTxt = h("span", { texto: T("Hable con Lía") });
     el.lanzador = h("button", { type: "button", id: "asistente-lanzador", clase: "bw-lanzador", "aria-expanded": "false", "aria-controls": "asistente-panel" }, IC("chat"), el.lanzadorTxt);
     el.ia = h("p", { id: "asistente-ia", clase: "bw-ia", role: "note", texto: T(RESPALDO.etiquetas.ia) });
     el.personaTxt = h("span", { texto: T(RESPALDO.etiquetas.persona) });
     el.persona = h("button", { type: "button", clase: "bw-persona" }, IC("persona"), el.personaTxt);
     el.cerrar = h("button", { type: "button", clase: "bw-cerrar", "aria-label": T("Cerrar el asistente") }, IC("cerrar"));
-    el.titulo = h("h2", { id: "asistente-titulo", tabindex: "-1", texto: T("Asistente de LATAM Bank") });
+    el.titulo = h("h2", { id: "asistente-titulo", tabindex: "-1", texto: T("Lía") });
     el.log = h("div", { id: "asistente-log", clase: "bw-log", role: "log", "aria-live": "polite", "aria-relevant": "additions", tabindex: "0", "aria-label": T("Conversación") });
     el.sugeridas = h("div", { clase: "bw-sugeridas", role: "group", "aria-label": T("Respuestas sugeridas") });
     el.estado = h("p", { clase: "nota bw-estado", role: "status" });
     el.entrada = h("input", { id: "asistente-mensaje", type: "text", maxlength: "500", required: true, autocomplete: "off" });
     el.etiquetaEntrada = h("label", { for: "asistente-mensaje", clase: "visualmente-oculto", texto: T(RESPALDO.etiquetas.escribir) });
-    el.enviar = h("button", { type: "submit", clase: "primario", texto: T(RESPALDO.etiquetas.enviar) });
+    el.enviar = h("button", { type: "submit", clase: "primario bw-enviar", "aria-label": T(RESPALDO.etiquetas.enviar) }, IC("enviar"));
     el.form = h("form", { clase: "bw-form" }, el.etiquetaEntrada, el.entrada, el.enviar);
     el.panel = h("section", { id: "asistente-panel", clase: "bw-panel oculto", role: "dialog", "aria-modal": "false", "aria-labelledby": "asistente-titulo" },
-      h("div", { clase: "bw-cab" }, h("span", { clase: "bn-avatar", "aria-hidden": "true", texto: "IA" }), h("div", { clase: "bw-cab-txt" }, el.titulo, el.ia), el.cerrar),
+      h("div", { clase: "bw-cab" }, h("span", { clase: "bw-avatar", "aria-hidden": "true" }), h("div", { clase: "bw-cab-txt" }, el.titulo, el.ia), el.cerrar),
       h("div", { clase: "bw-sub" }, el.persona),
       el.log, el.sugeridas, el.estado, el.form);
     el.anuncio = h("p", { id: "asistente-anuncio", clase: "visualmente-oculto", role: "status", "aria-live": "assertive" });
@@ -119,7 +119,7 @@
     el.personaTxt.textContent = et("persona");
     el.etiquetaEntrada.textContent = et("escribir");
     el.entrada.placeholder = et("escribir");
-    el.enviar.textContent = et("enviar");
+    el.enviar.setAttribute("aria-label", et("enviar"));
     el.apSi.textContent = et("confirmo");
     el.apNo.textContent = et("no");
     el.apRenovar.textContent = et("renovar");
@@ -272,7 +272,7 @@
     if (est.ocupado) return;
     if (est.traspaso) { await responderAPersona(texto); return; }
     if (RE_PERSONA.test(texto)) { await pedirPersona(texto); return; }
-    if (!est.conversacion) { burbuja("usuario", texto); burbuja("asistente", T("Para hablar con el asistente, abra primero un movimiento y elija No reconozco este cargo.")); return; }
+    if (!est.conversacion) { burbuja("usuario", texto); burbuja("asistente", T("Para ayudarle necesito saber de qué cargo se trata. Abra un movimiento y elija No reconozco este cargo.")); return; }
     burbuja("usuario", texto);
     est.historial.push({ id: crypto.randomUUID(), role: "user", content: texto });
     await correr(null);
@@ -282,7 +282,7 @@
     est.ocupado = true;
     sugerir([]);
     escribiendo(true);
-    el.estado.textContent = tx("procesando");
+    el.estado.textContent = T("Lía está escribiendo");
     const s = B.sesion();
     const cuerpo = {
       threadId: est.conversacion, runId: crypto.randomUUID(), state: {}, messages: est.historial,

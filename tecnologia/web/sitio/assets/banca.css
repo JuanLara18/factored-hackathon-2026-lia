@@ -325,3 +325,36 @@ dialog::backdrop { background: var(--velo); }
 .bw-ap-barra { height: .4rem; border-radius: 999px; background: var(--neutro-fondo); margin: 0 0 1.25rem; overflow: hidden; }
 .bw-ap-relleno { display: block; height: 100%; background: var(--acento); border-radius: 999px; }
 #aprobacion .acciones button { flex: 1; }
+
+/* ===== Asistente con rostro (Lía, siempre identificada como IA) y zona de escritura ===== */
+.bw-avatar { position: relative; flex: none; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: url("lia.svg") center / cover; box-shadow: 0 0 0 2px rgb(255 255 255 / .55); }
+.bw-avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: .7rem; height: .7rem; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 2px var(--tarjeta-a); }
+.bw-cab h2 { font-size: 1.15rem; letter-spacing: -.01em; }
+.bw-sub { padding: .5rem 1rem; }
+.bw-persona { min-height: 40px; border-color: transparent; background: var(--acento-tenue); font-weight: 600; }
+.bw-persona:hover { border-color: var(--acento); }
+.bw-log { padding: 1rem 1rem 1rem 3.4rem; gap: .5rem; }
+.bw-msg { position: relative; box-shadow: 0 1px 2px rgb(15 30 45 / .05); line-height: 1.5; }
+.bw-msg.asistente::before, .bw-msg.persona::before, .bw-escribiendo::before { content: ""; position: absolute; left: -2.5rem; bottom: 0; width: 2rem; height: 2rem; border-radius: 50%; background: url("lia.svg") center / cover; }
+.bw-msg.persona::before { background-image: url("persona.svg"); }
+/* En una racha del mismo autor el rostro va solo en el último mensaje */
+.bw-msg.asistente:has(+ .bw-msg.asistente)::before, .bw-msg.asistente:has(+ .bw-escribiendo)::before, .bw-msg.persona:has(+ .bw-msg.persona)::before { display: none; }
+.bw-msg.asistente:has(+ .bw-msg.asistente) { border-radius: 16px; }
+.bw-msg.usuario { margin-right: 0; box-shadow: none; }
+.bw-msg.persona { border-left-width: 1px; border-color: var(--borde); background: var(--aviso-fondo); }
+.bw-escribiendo { position: relative; }
+.bw-ficha { margin-left: -2.4rem; }
+.bw-sugeridas { padding-top: .75rem; }
+.bw-sugerida { background: var(--acento-tenue); border-color: transparent; font-weight: 600; }
+.bw-sugerida:hover { border-color: var(--acento); }
+.bw-estado:not(:empty) { display: flex; align-items: center; gap: .45rem; padding-top: .5rem; color: var(--suave); }
+.bw-estado:not(:empty)::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--acento); flex: none; }
+@media (prefers-reduced-motion: no-preference) { .bw-estado:not(:empty)::before { animation: bw-late 1.2s infinite ease-in-out; } @keyframes bw-late { 50% { opacity: .25; } } }
+.bw-form { align-items: center; gap: .35rem; margin: .6rem 1rem 1rem; padding: .3rem .3rem .3rem 1.1rem; border: 1.5px solid var(--borde-fuerte); border-radius: 999px; background: var(--fondo); box-shadow: var(--sombra); }
+.bw-form:focus-within { border-color: var(--acento); outline: 3px solid var(--foco); outline-offset: 2px; }
+.bw-form input { min-height: 44px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.bw-form input:focus-visible { outline: none; }
+.bw-form .bw-enviar { flex: none; width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; }
+.bw-lanzador { padding-left: .45rem; gap: .6rem; font-weight: 700; }
+.bw-lanzador .bn-ico { display: none; }
+.bw-lanzador::before { content: ""; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: url("lia.svg") center / cover; box-shadow: 0 0 0 2px rgb(255 255 255 / .6); }

@@ -12,10 +12,10 @@ plantillas:
     marcadores: []
     textos:
       voce: >-
-        Olá. Sou o assistente virtual do LATAM Bank, um sistema de inteligência artificial.
+        Olá, sou a Lia, assistente virtual do LATAM Bank e um sistema de inteligência artificial.
         Se preferir falar com uma pessoa, você pode pedir a qualquer momento. Em que posso ajudar?
     retraduccion: >-
-      Hola. Soy el asistente virtual de LATAM Bank, un sistema de inteligencia artificial. Si prefiere hablar
+      Hola, soy Lía, asistente virtual de LATAM Bank y un sistema de inteligencia artificial. Si prefiere hablar
       con una persona, puede pedirlo en cualquier momento. ¿En qué puedo ayudar?
   - id: inicio.whatsapp
     canales: [whatsapp]

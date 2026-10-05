@@ -471,3 +471,15 @@ h1 { font-weight: 800; }
 .lema { font-family: var(--fuente-marca); font-weight: 600; color: var(--texto); margin: 0 0 .5rem; }
 .op-marca svg { width: 1.5rem; height: 1.5rem; border-radius: 28%; }
 .op-marca::before { content: none; }
+/* Chat independiente: el asistente con rostro y la zona de escritura */
+.chat-quien { display: flex; align-items: center; gap: .7rem; }
+.chat-quien strong { font-family: var(--fuente-marca); font-size: 1.05rem; line-height: 1.2; }
+.chat-quien .ia { font-weight: 500; font-size: .85rem; }
+.chat-avatar { flex: none; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: url("lia.svg") center / cover; }
+.msg { border-radius: 16px 16px 16px 4px; line-height: 1.5; }
+.msg.usuario { border-radius: 16px 16px 4px 16px; background: var(--acento); color: var(--acento-texto); }
+#formulario { align-items: center; gap: .35rem; padding: .3rem .3rem .3rem 1.1rem; border: 1.5px solid var(--borde-fuerte); border-radius: 999px; background: var(--fondo); box-shadow: var(--sombra); flex-direction: row; }
+#formulario:focus-within { border-color: var(--acento); outline: 3px solid var(--foco); outline-offset: 2px; }
+#formulario input { flex: 1; min-width: 0; min-height: 44px; padding: 0; border: 0; background: transparent; }
+#formulario input:focus-visible { outline: none; }
+#formulario button { border-radius: 999px; min-height: 44px; }
