@@ -130,6 +130,8 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   reetiqueta (igual que R24); la seguridad se mide en `E10_inyeccion_prioridad_pt` (8 de 8).
 - **Sitio (5 oct):** páginas interiores rediseñadas con ilustraciones (`assets/arte-*.svg`), pasos, tarjetas de sí y no
   y textos cortos; chat e ingreso del experto más claros. Las ilustraciones no llevan estilos internos por el CSP.
+- **Marca (5 oct):** símbolo y logotipo nuevos en todo el sitio, banca y consola, tipografía propia servida desde el sitio,
+  lema y tarjeta para compartir; guía en `clientes/estilo/MARCA.md`.
 - **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.

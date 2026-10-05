@@ -241,6 +241,7 @@
     "próximamente": "em breve",
     "País": "País",
     "Chat web": "Chat web",
+    "Banca clara, con una persona cerca.": "Banco claro, com uma pessoa por perto.",
     "Asistente de IA": "Assistente de IA",
     "Chat": "Chat",
     "Elija un cliente ficticio y cuente qué": "Escolha um cliente fictício e conte qual",

@@ -459,3 +459,15 @@ code { font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; back
 .bloque-chat .chat-caja { max-width: 46rem; }
 .portada-nota { margin: 1.1rem 0 0; color: var(--suave); font-size: .95rem; }
 #origen { font-size: .8rem; }
+
+/* ===== Marca: tipografía propia, logotipo en dos pesos y lema ===== */
+@font-face { font-family: "Jakarta"; src: url("fuentes/jakarta-latin.woff2") format("woff2"); font-weight: 200 800; font-style: normal; font-display: swap; }
+:root { --fuente-marca: "Jakarta", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --menta: #5eead4; }
+h1, h2, h3, .marca, .sobretitulo, .boton, button, .op-marca { font-family: var(--fuente-marca); }
+h1 { font-weight: 800; }
+.marca { font-weight: 800; letter-spacing: -.02em; }
+.marca svg { border-radius: 28%; box-shadow: 0 2px 6px rgb(10 90 122 / .28); }
+.marca-b { font-weight: 500; color: var(--acento); }
+.lema { font-family: var(--fuente-marca); font-weight: 600; color: var(--texto); margin: 0 0 .5rem; }
+.op-marca svg { width: 1.5rem; height: 1.5rem; border-radius: 28%; }
+.op-marca::before { content: none; }
