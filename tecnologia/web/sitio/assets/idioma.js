@@ -1,4 +1,4 @@
-// Idioma y trato de la banca en línea, el asistente y el chat: Español usted, Español vos o Português (você).
+// Idioma y trato de todo el sitio: Español usted, Español vos o Português (você), según el país elegido.
 // La elección viaja al servidor como registro ("usted", "vos" o "voce") y se recuerda en localStorage; si no está
 // disponible, la página funciona igual con usted. Los textos que vienen del servidor (etiquetas, avisos, aprobaciones)
 // ya llegan en el registro pedido; aquí solo se traduce lo que la interfaz escribe por su cuenta.
@@ -8,29 +8,20 @@
 
 (function () {
   var CLAVE = "latam.trato";
-  var MODOS = ["usted", "vos", "voce"];
-  var ETIQUETAS = { usted: "Español, usted", vos: "Español, vos", voce: "Português, você" };
   var LENGUAJES = { usted: "es", vos: "es", voce: "pt-BR" };
   var LOCALES = { usted: "es", vos: "es", voce: "pt-BR" };
   var NOTA_PT = "Atendimento em português para clientes da região (contas do México, da Colômbia e da Argentina). Valores, datas e normas seguem o país da conta.";
 
-  // La elección explícita (clave latam.trato) manda siempre. Sin ella, el país elegido sugiere el trato:
-  // Argentina, vos; el resto, usted. La sugerencia no se guarda, para no volverse una elección.
-  function explicito() {
-    try {
-      var v = window.localStorage.getItem(CLAVE);
-      return MODOS.indexOf(v) >= 0 ? v : null;
-    } catch (e) { return null; }
-  }
+  // El idioma y el trato salen del país elegido (pais.js), que es la única elección del visitante:
+  // México y Colombia, español de usted; Argentina, español de vos; Brasil, portugués.
+  var TRATO_POR_PAIS = { MX: "usted", CO: "usted", AR: "vos", BR: "voce" };
   function paisElegido() {
     try { return window.localStorage.getItem("latam.pais"); } catch (e) { return null; }
   }
   function leer() {
-    return explicito() || (paisElegido() === "AR" ? "vos" : "usted");
+    return TRATO_POR_PAIS[paisElegido()] || "usted";
   }
-  function guardar(v) {
-    try { window.localStorage.setItem(CLAVE, v); } catch (e) { /* sin almacenamiento */ }
-  }
+  try { window.localStorage.removeItem(CLAVE); } catch (e) { /* la elección aparte de trato ya no existe */ }
   var modo = leer();
 
   // Español usted -> español vos (solo lo que cambia de forma).
@@ -376,37 +367,9 @@
     if (pagina) pagina.insertBefore(p, pagina.firstChild);
   }
 
-  function selector() {
-    var sitio = document.getElementById("selector-idioma");
-    if (!sitio || sitio.firstChild) return;
-    var etiqueta = document.createElement("label");
-    etiqueta.className = "idioma";
-    etiqueta.setAttribute("for", "idioma");
-    var oculto = document.createElement("span");
-    oculto.className = "visualmente-oculto";
-    oculto.textContent = "Idioma y trato / Idioma e tratamento";
-    var sel = document.createElement("select");
-    sel.id = "idioma";
-    sel.setAttribute("aria-label", "Idioma y trato / Idioma e tratamento");
-    MODOS.forEach(function (m) {
-      var o = document.createElement("option");
-      o.value = m;
-      o.textContent = ETIQUETAS[m];
-      sel.appendChild(o);
-    });
-    sel.value = modo;
-    sel.addEventListener("change", function () {
-      guardar(sel.value);
-      window.location.reload();
-    });
-    etiqueta.append(oculto, sel);
-    sitio.appendChild(etiqueta);
-  }
-
   function arrancar() {
     document.documentElement.setAttribute("lang", LENGUAJES[modo]);
     document.documentElement.setAttribute("data-trato", modo);
-    selector();
     aplicar(document.body);
     nota();
     if (modo !== "usted") document.title = t(document.title);
@@ -422,10 +385,8 @@
     aplicar: aplicar,
     // Suma textos de otra tabla (el sitio público) a las de portugués y vos.
     agregar: function (pt, vos) { Object.assign(PT, pt || {}); Object.assign(VOS, vos || {}); },
-    // Lo llama pais.js al cambiar el país: si el trato sugerido cambia y no hay elección explícita, recarga.
-    alCambiarPais: function () { if (!explicito() && leer() !== modo) window.location.reload(); },
-    explicito: function () { return explicito() !== null; },
-    poner: function (m) { if (MODOS.indexOf(m) >= 0) { modo = m; guardar(m); } },
+    // Lo llama pais.js al cambiar el país: si con el país cambia el idioma o el trato, la página se recarga.
+    alCambiarPais: function () { if (leer() !== modo) window.location.reload(); },
     // Palabras con las que el cliente pide una persona, en los dos idiomas.
     pidePersona: /\b(persona|pessoa|humano|asesor|atendente)\b/i
   };

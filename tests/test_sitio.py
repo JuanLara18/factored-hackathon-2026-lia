@@ -141,7 +141,7 @@ def test_selector_de_pais_recuerda_con_localstorage_protegido() -> None:
     js = (SITIO / "assets" / "pais.js").read_text(encoding="utf-8")
     assert "localStorage" in js
     assert js.count("try {") >= 2
-    for pais in ("MX", "CO", "AR"):
+    for pais in ("MX", "CO", "AR", "BR"):
         assert pais in js
 
 
@@ -339,17 +339,16 @@ def test_el_portugues_no_promete_devoluciones_ni_plazos() -> None:
 @pytest.mark.parametrize("nombre", PUBLICAS)
 def test_pagina_publica_carga_idioma_antes_que_pais(nombre: str) -> None:
     html = (SITIO / f"{nombre}.html").read_text(encoding="utf-8")
-    assert 'id="selector-idioma"' in html
     orden = [html.find(f'src="assets/{s}.js"') for s in ("idioma", "idioma-sitio", "pais")]
     assert all(i > 0 for i in orden) and orden == sorted(orden)
-    assert html.find('id="selector-idioma"') < html.find(
-        'id="pais"'
-    )  # idioma y país, en ese orden, en la cabecera
+    # una sola elección, el país: fija también el idioma (Brasil es portugués) y no hay selector de idioma
+    assert 'id="selector-idioma"' not in html
+    assert all(f'<option value="{p}">' in html for p in ("MX", "CO", "AR", "BR"))
 
 
 @pytest.mark.parametrize("pagina", BANCA, ids=lambda p: f"banca/{p.name}")
 def test_banca_tiene_pais_e_idioma_en_la_franja(pagina: Path) -> None:
     html = pagina.read_text(encoding="utf-8")
     franja = html[html.find('class="bn-demo"') : html.find("</header>")]
-    assert 'id="selector-idioma"' in franja and 'id="pais"' in franja
+    assert 'id="pais"' in franja and 'id="selector-idioma"' not in html
     assert html.find("idioma.js") < html.find("pais.js") < html.find("banca.js")

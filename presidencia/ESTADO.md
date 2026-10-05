@@ -161,6 +161,11 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.
 
+- **País como única elección (5 oct):** ya no hay selector de idioma. El país fija idioma y trato en todo el sitio y en
+  la banca: México y Colombia español de usted, Argentina español de vos, Brasil portugués (`TRATO_POR_PAIS` en
+  `assets/idioma.js`). Brasil no tiene clientes de demostración: muestra los seis de México, Colombia y Argentina con
+  la nota de atención en portugués para clientes de la región.
+
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
 `main` = `develop` = producción desde el 3 oct. Brechas, en orden de impacto en la calificación:

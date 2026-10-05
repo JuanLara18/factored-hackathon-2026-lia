@@ -420,10 +420,8 @@
   async function pintarIngreso() {
     const version = ++versionIngreso; // si el país cambia mientras carga, solo vale la última pintada
     const cont = $("ingreso-cuerpo");
-    // El selector de idioma vive dentro de la tarjeta de ingreso mientras no hay sesión.
+    // El selector de país (que fija también el idioma) vive en la tarjeta de ingreso mientras no hay sesión.
     const sitioIdioma = $("ingreso-idioma");
-    const selIdioma = $("selector-idioma");
-    if (sitioIdioma && selIdioma && !sitioIdioma.contains(selIdioma)) sitioIdioma.append(selIdioma);
     const selPais = $("pais") && $("pais").closest("label");
     if (sitioIdioma && selPais && !sitioIdioma.contains(selPais)) sitioIdioma.append(selPais);
     cont.textContent = "";

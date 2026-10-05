@@ -435,3 +435,8 @@ body[data-pagina] .contenedor { max-width: 76rem; }
 }
 @media (max-width: 40rem) { .bn-demo .contenedor > p:not(:first-child) { display: none; } }
 .bn-cabecera .bn-avatar { background: #e4f0f4; color: #0a5a7a; }
+/* Franja de demostración con la nota de portugués */
+.bn-demo .contenedor { flex-wrap: wrap; }
+.bn-demo .contenedor > p:first-child { flex: none; }
+.bn-demo strong { white-space: nowrap; }
+.bn-demo .nota-idioma { flex-basis: 100%; order: 9; margin: 0; }

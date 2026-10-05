@@ -1,4 +1,5 @@
-/* Selector de país del sitio público: cambia el vocabulario y la moneda de los ejemplos.
+/* Selector de país: una sola elección para todo el sitio. Cambia el vocabulario, la moneda de los ejemplos y,
+   por idioma.js, el idioma y el trato (México y Colombia usted, Argentina vos, Brasil portugués).
    La elección se recuerda en localStorage; si no está disponible, la página funciona igual. */
 (function () {
   "use strict";
@@ -6,7 +7,9 @@
   var PAISES = {
     MX: { cargo: "cargo", cargos: "cargos", documento: "estado de cuenta", moneda: "pesos mexicanos (MXN)" },
     CO: { cargo: "cobro", cargos: "cobros", documento: "extracto", moneda: "pesos colombianos (COP)" },
-    AR: { cargo: "consumo", cargos: "consumos", documento: "resumen", moneda: "pesos argentinos (ARS)" }
+    AR: { cargo: "consumo", cargos: "consumos", documento: "resumen", moneda: "pesos argentinos (ARS)" },
+    // Brasil: atención en portugués. Las cuentas de la demostración son de México, Colombia y Argentina.
+    BR: { cargo: "cobrança", cargos: "cobranças", documento: "extrato", moneda: "moeda local de cada conta" }
   };
   function leer() {
     try { var v = window.localStorage.getItem(CLAVE); return PAISES[v] ? v : "MX"; } catch (e) { return "MX"; }

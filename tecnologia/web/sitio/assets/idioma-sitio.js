@@ -77,6 +77,7 @@
     "México": "México",
     "Colombia": "Colômbia",
     "Argentina": "Argentina",
+    "Brasil": "Brasil",
     "Productos, LATAM Bank": "Produtos, LATAM Bank",
     "Cuentas y tarjetas de demostración de LATAM Bank.": "Contas e cartões de demonstração do LATAM Bank.",
     "Cuentas y tarjetas para su día a día": "Contas e cartões para o seu dia a dia",

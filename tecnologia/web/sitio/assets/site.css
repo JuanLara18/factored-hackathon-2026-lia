@@ -497,6 +497,7 @@ h1 { font-weight: 800; }
 .pais select { padding-left: 2.15rem; background-image: url("bandera-mx.svg"), url("flecha-abajo.svg"); background-position: left .55rem center, right .35rem center; background-size: 1.2rem, .95rem; }
 html[data-pais="CO"] .pais select { background-image: url("bandera-co.svg"), url("flecha-abajo.svg"); }
 html[data-pais="AR"] .pais select { background-image: url("bandera-ar.svg"), url("flecha-abajo.svg"); }
+html[data-pais="BR"] .pais select { background-image: url("bandera-br.svg"), url("flecha-abajo.svg"); }
 .pais select:hover, .idioma select:hover { background-color: var(--superficie); }
 .pais select option, .idioma select option { color: var(--texto); background: var(--fondo); }
 .cabecera-acciones > .boton.primario { min-height: 38px; margin-left: .6rem; padding: .35rem 1.15rem; border-radius: 999px; font-size: .92rem; font-weight: 600; box-shadow: none; }
