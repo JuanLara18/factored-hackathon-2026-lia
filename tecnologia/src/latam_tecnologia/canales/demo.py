@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import secrets
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -91,10 +92,23 @@ def _clientes_bigquery(proyecto: str) -> tuple[LecturaOro, list[str]] | None:
         ids = [str(f["customer_id"]) for f in filas]
         if not ids:
             return None
-        return LecturaBigQuery(proyecto, cliente=cliente), ids
+        lectura = LecturaBigQuery(proyecto, cliente=cliente, cache_s=CACHE_LECTURA_S)
+
+        def _precalentar() -> None:
+            try:  # en segundo plano: el servicio ya atiende mientras se llenan las lecturas
+                lectura.precalentar(ids, (200,))
+            except Exception as error:
+                log.warning("no se pudo precalentar la lectura (%s)", type(error).__name__)
+
+        threading.Thread(target=_precalentar, name="precalentar-lectura", daemon=True).start()
+        return lectura, ids
     except Exception as error:  # sin credenciales, sin red o sin tabla: se usa la siembra
         log.warning("BigQuery no disponible (%s); se usan clientes sembrados", type(error).__name__)
         return None
+
+
+# Segundos que vive en memoria una lectura del oro operacional (foto que solo cambia con la carga).
+CACHE_LECTURA_S = float(os.environ.get("LATAM_CACHE_LECTURA_S", "300"))
 
 
 @dataclass

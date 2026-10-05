@@ -255,7 +255,7 @@ class AgenteDisputasRuntime:
         if self._modelo is None:  # con modelo inyectado (pruebas) no se exportan trazas
             observabilidad.configurar(entorno)
         modelo = self._modelo or crear_modelo_geap(entorno)[0]
-        lectura = self._lectura or LecturaBigQuery(proyecto, self.dataset)
+        lectura = self._lectura or LecturaBigQuery(proyecto, self.dataset, cache_s=300)
         self._reloj = self._reloj or (lambda: datetime.now(UTC))
         # Banco compartido (Firestore, o memoria con LATAM_BANCO=memoria): el chat y la consola lo ven.
         self._banco = self._banco or crear_banco({**os.environ, VARIABLE_PROYECTO: proyecto}, self._reloj)

@@ -107,6 +107,13 @@ class ClienteAgentRuntime:
             self._cliente = crear_cliente_sdk(self._proyecto, self._ubicacion)
         return self._cliente
 
+    def precalentar(self) -> None:
+        """Importa el SDK y arma el cliente antes del primer ingreso (son varios segundos la primera vez)."""
+        try:
+            self._c()
+        except Exception as error:
+            log.warning("no se pudo precalentar el cliente del agente (%s)", type(error).__name__)
+
     def crear_sesion(self, *, user_id: str, session_id: str, estado: dict[str, str]) -> None:
         try:
             c = self._c()

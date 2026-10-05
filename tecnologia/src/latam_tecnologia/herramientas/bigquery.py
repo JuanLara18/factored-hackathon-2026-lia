@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+import threading
+import time
+from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from typing import Any
 
@@ -19,6 +21,8 @@ _COLUMNAS_TX = (
     " transaction_status, merchant_name, merchant_category, transaction_country, es_extranjera, channel"
 )
 _LIMITE_MAXIMO = 200
+_CACHE_MAXIMO = 4000
+_Llave = tuple[str, tuple[tuple[str, str | int], ...]]
 
 
 def _decimal(valor: Any) -> Decimal:
@@ -35,14 +39,46 @@ class LecturaBigQuery:
         *,
         cliente: bigquery.Client | None = None,
         ubicacion: str = "US",
+        cache_s: float = 0,
     ) -> None:
         if not _IDENTIFICADOR.match(proyecto) or not _IDENTIFICADOR.match(dataset):
             raise ValueError("proyecto o dataset inválido")
         self._prefijo = f"`{proyecto}.{dataset}`"
         self._ubicacion = ubicacion
         self._cliente = cliente or bigquery.Client(project=proyecto, location=ubicacion)
+        # Caché de lecturas: el oro operacional es una foto que solo cambia cuando corre la carga, así que
+        # repetir la misma consulta en cada pantalla y en cada herramienta solo agrega cerca de un segundo.
+        # Bloqueos, casos y traspasos viven en Firestore y nunca pasan por aquí. `cache_s=0` la apaga.
+        self._cache_s = cache_s
+        self._cache: dict[_Llave, tuple[float, list[Mapping[str, Any]]]] = {}
+        self._candado = threading.Lock()
 
     def _consultar(self, sql: str, **parametros: str | int) -> list[Mapping[str, Any]]:
+        if self._cache_s <= 0:
+            return self._consultar_bq(sql, **parametros)
+        llave = (sql, tuple(sorted(parametros.items())))
+        ahora = time.monotonic()
+        with self._candado:
+            guardado = self._cache.get(llave)
+        if guardado is not None and ahora - guardado[0] < self._cache_s:
+            return list(guardado[1])
+        filas = self._consultar_bq(sql, **parametros)
+        with self._candado:
+            if len(self._cache) >= _CACHE_MAXIMO:
+                self._cache.clear()
+            self._cache[llave] = (ahora, filas)
+        return list(filas)
+
+    def precalentar(self, clientes: Sequence[str], limites: Sequence[int]) -> None:
+        """Lee una vez lo que la banca pide de cada cliente, para que el primer visitante no espere."""
+        for cliente in clientes:
+            self.pais_cuenta(cliente)
+            self.productos(cliente)
+            self.saldos(cliente)
+            for limite in limites:
+                self.transacciones_recientes(cliente, limite)
+
+    def _consultar_bq(self, sql: str, **parametros: str | int) -> list[Mapping[str, Any]]:
         parametros_bq = [
             bigquery.ScalarQueryParameter(nombre, "INT64" if isinstance(v, int) else "STRING", v)
             for nombre, v in parametros.items()

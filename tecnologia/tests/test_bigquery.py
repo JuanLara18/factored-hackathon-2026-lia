@@ -29,6 +29,23 @@ def test_consultas_parametrizadas_y_filtradas_por_cliente() -> None:
         assert malicioso not in sql and parametros["cliente"] == malicioso
 
 
+def test_la_cache_evita_repetir_la_misma_consulta_y_no_mezcla_clientes() -> None:
+    falso = _ClienteFalso()
+    lectura = LecturaBigQuery("proyecto-x", cliente=falso, cache_s=60)  # pyright: ignore[reportArgumentType]
+    lectura.productos("c1")
+    lectura.productos("c1")
+    lectura.transacciones_recientes("c1", 10)
+    lectura.transacciones_recientes("c1", 10)
+    assert len(falso.consultas) == 2
+    lectura.productos("c2")  # otro cliente es otra consulta: la llave incluye los parámetros
+    lectura.transacciones_recientes("c1", 20)
+    assert len(falso.consultas) == 4
+    sin_cache = LecturaBigQuery("proyecto-x", cliente=falso)  # pyright: ignore[reportArgumentType]
+    sin_cache.productos("c1")
+    sin_cache.productos("c1")
+    assert len(falso.consultas) == 6
+
+
 def test_identificadores_invalidos() -> None:
     with pytest.raises(ValueError):
         LecturaBigQuery("x`; drop", cliente=_ClienteFalso())  # pyright: ignore[reportArgumentType]

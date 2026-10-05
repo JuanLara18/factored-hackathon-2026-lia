@@ -12,6 +12,7 @@ import logging
 import os
 import uuid
 from collections.abc import Callable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -303,18 +304,26 @@ def crear_router(
         def _dinero(valor: Any, moneda: str | None) -> str | None:
             return None if valor is None else monto(valor, moneda, pais)
 
+        propios = _productos(s)
+
+        # El estado de bloqueo es una lectura de Firestore por producto: van en paralelo, no una tras otra.
+        def _estado(p: Producto) -> str:
+            return _estado_producto(cliente, p)
+
+        with ThreadPoolExecutor(max_workers=8) as hilos:
+            estados = dict(zip(propios, hilos.map(_estado, propios.values()), strict=True))
         productos = [
             {
                 "producto_ref": pref,
                 "tipo": p.tipo,
                 "etiqueta": etiqueta_producto(p.tipo),
                 "final": final(p.product_id),
-                "estado": _estado_producto(cliente, p),
+                "estado": estados[pref],
                 "moneda": p.moneda,
                 "saldo": _dinero(saldos.get(p.product_id, (None, None))[0], p.moneda),
                 "limite": _dinero(saldos.get(p.product_id, (None, None))[1], p.moneda),
             }
-            for pref, p in _productos(s).items()
+            for pref, p in propios.items()
         ]
         indice = demo.clientes.index(cliente)
         return JSONResponse(

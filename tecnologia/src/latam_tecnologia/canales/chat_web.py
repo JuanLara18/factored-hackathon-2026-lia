@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import threading
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -222,6 +223,7 @@ def crear_app(
     recurso = (entorno if entorno is not None else os.environ).get(VARIABLE_RECURSO, "")
     if runtime is None and recurso:
         runtime = ClienteAgentRuntime(recurso)
+        threading.Thread(target=runtime.precalentar, name="precalentar-agente", daemon=True).start()
     if runtime is not None:  # el agente corre en Agent Runtime; aquí no se arma modelo ni agente
         nombre_modelo, agente = "agent_runtime", None
     else:
