@@ -449,3 +449,11 @@ def test_el_agente_de_referencia_sigue_el_idioma_del_ultimo_mensaje() -> None:
     agente = c.traza.texto_de("agente")
     assert "contestação" in agente[0] or "cobranças" in agente[0]  # primera respuesta, en portugués
     assert "reclamo" in agente[-1]  # tras el cambio del cliente, en español
+
+
+def test_verificador_aprobaciones_acotadas_y_sin_cadena_muda() -> None:
+    esperado = Esperado(max_aprobaciones=2, texto_tras_aprobacion=True)
+    muda = Traza(turnos=[Turno("cliente", "hola"), Turno("interfaz", "bloquear"), Turno("interfaz", "otra")])
+    assert "aprobaciones" in _nombres(muda, _ctx(esperado))
+    con_texto = Traza(turnos=[Turno("interfaz", "bloquear"), Turno("agente", "Listo, quedó bloqueada.")])
+    assert "aprobaciones" not in _nombres(con_texto, _ctx(esperado))

@@ -35,6 +35,15 @@ from latam_ia.evaluacion.idioma import detectar_idioma
 _TXS = TypeAdapter(tuple[Transaccion, ...])
 _POLITICA = cargar_politica()
 _PRODS = TypeAdapter(tuple[Producto, ...])
+
+
+def _productos(texto: str) -> tuple[Producto, ...]:
+    """Productos de la lectura, sin las anotaciones de la herramienta (p. ej. `bloqueable_aqui`)."""
+    campos = set(Producto.model_fields)
+    filas: list[dict[str, object]] = json.loads(texto or "[]")
+    return _PRODS.validate_python([{k: v for k, v in f.items() if k in campos} for f in filas])
+
+
 _CASOS = TypeAdapter(tuple[CasoAbierto, ...])
 
 
@@ -45,7 +54,7 @@ def norm(texto: str) -> str:
 
 HUMANO = ("persona", "humano", "asesor", "pessoa", "atendente")
 URGENTE = ("me llamaron", "transferencia", "en curso", "em andamento", "urgente")
-ROBO = ("perdi", "robaron", "roubaram", "roubado", "extravi", "bloquee", "bloqueei")
+ROBO = ("perdi", "robaron", "roubaram", "roubado", "extravi", "clonaron", "clonaram", "bloquee", "bloqueei")
 CREDITO = ("credito", "prestamo", "emprestimo")
 RECHAZO = ("rechaz", "recus")
 FUERA = ("clima", "receta", "futbol", "chiste", "previsao")
@@ -238,7 +247,7 @@ def _prefijo(llamadas: list[Llamada], t: dict[str, str], robo: bool) -> str:
         return t["bloqueo_ok"]
     leidas = next((x for x in llamadas if x.nombre == "estado_productos"), None)
     if robo and leidas is not None and not any(x.nombre == "bloquear_tarjeta" for x in llamadas):
-        tarjetas = [p for p in _PRODS.validate_python(json.loads(leidas.retorno or "[]")) if p.tipo == "card"]
+        tarjetas = [p for p in _productos(leidas.retorno or "[]") if p.tipo == "card"]
         if tarjetas and all(p.estado == "blocked" for p in tarjetas):
             return t["ya_bloqueada"]
     return ""
@@ -248,8 +257,8 @@ def _resolver(
     llamadas: list[Llamada], usuarios: list[str], urgente: bool, t: dict[str, str]
 ) -> ModelResponse:
     """Con la transacción y los productos leídos: escalar, o abrir la disputa si no hay ya un caso abierto."""
-    productos = _PRODS.validate_python(
-        json.loads(next(x for x in reversed(llamadas) if x.nombre == "estado_productos").retorno or "[]")
+    productos = _productos(
+        next(x for x in reversed(llamadas) if x.nombre == "estado_productos").retorno or "[]"
     )
     consultada = next(x for x in llamadas if x.nombre == "consultar_transaccion")
     tx = Transaccion.model_validate_json(consultada.retorno or "")
@@ -304,7 +313,7 @@ def _paso(mensajes: list[ModelMessage], idioma: str) -> ModelResponse:
                 return _decir(t, "aclarar")
             return _llamar("estado_productos")
         case "estado_productos":
-            productos = _PRODS.validate_python(json.loads(ret))
+            productos = _productos(ret)
             if not consulto:  # tarjeta perdida o robada: contener primero
                 activas = [p for p in productos if p.tipo == "card" and p.estado != "blocked"]
                 if activas:

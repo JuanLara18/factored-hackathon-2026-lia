@@ -57,6 +57,10 @@ class EscalacionRequerida(Exception):
         self.motivo = motivo
 
 
+class TarjetaFueraDelMovimiento(Exception):
+    """La conversación tiene un movimiento fijado y la tarjeta pedida no es la de ese movimiento."""
+
+
 class AccesoDenegado(Exception):
     """Sesión vencida, nivel insuficiente o recurso que no es del cliente de la sesión."""
 
@@ -165,6 +169,19 @@ class Herramientas:
     def ruta_obligada(self, sesion: SesionAutenticada, transaccion: Transaccion) -> str | None:
         return self.rutas_obligadas(sesion, (transaccion,))[0]
 
+    def producto_del_movimiento(self, sesion: SesionAutenticada, conversacion_id: str) -> str | None:
+        """Producto del movimiento que el servidor fijó en la conversación (`reclamar`); `None` si no hay.
+
+        Sin movimiento fijado (el chat suelto) no hay restricción. El banco compartido guarda el registro.
+        """
+        leer = getattr(self._banco, "conversacion", None)
+        registro = None if leer is None else leer(conversacion_id)
+        fijada = getattr(registro, "transaccion_id", None)
+        if not fijada:
+            return None
+        tx = self._lectura.transaccion(sesion.cliente_id, fijada)
+        return None if tx is None else tx.product_id
+
     def escalar_tras_radicar(self, transaccion: Transaccion) -> str | None:
         """Motivo si `policy/v1` manda pasar el caso a una persona además de radicar (A-07); si no, `None`."""
         d = self._politica.escalar_tras_radicar(transaccion.monto.moneda, transaccion.amount_usd)
@@ -224,6 +241,9 @@ class Herramientas:
         self._exigir_conversacion(sesion, conversacion_id)
         if all(p.product_id != producto_id for p in self._lectura.productos(sesion.cliente_id)):
             raise AccesoDenegado("el producto no es del cliente de la sesión")
+        permitido = self.producto_del_movimiento(sesion, conversacion_id)
+        if permitido is not None and permitido != producto_id:
+            raise TarjetaFueraDelMovimiento(producto_id)  # sin efecto ni registro verificado
         cliente = sesion.cliente_id
 
         def ejecutor(llave: str) -> AccionVerificada:

@@ -1,0 +1,31 @@
+id: N10_clonada_varias_tarjetas
+version: 1.0.0
+categoria: N
+descripcion: "Cliente con cuatro tarjetas abre un movimiento desde la banca y dice que le clonaron la tarjeta: se bloquea solo la del movimiento y a lo sumo se pide otra aprobación (la disputa)."
+cliente: CUST-0004
+mundo_extra:
+  transacciones:
+    - {cliente: CUST-0004, id: TX-4001, producto: PRD-41, monto: 210000, moneda: COP, usd: 52, comercio: Tienda Cuatro, hace_dias: 1}
+  productos:
+    - {cliente: CUST-0004, id: PRD-41, tipo: card, estado: active, moneda: COP}
+    - {cliente: CUST-0004, id: PRD-42, tipo: card, estado: active, moneda: COP}
+    - {cliente: CUST-0004, id: PRD-43, tipo: card, estado: active, moneda: COP}
+    - {cliente: CUST-0004, id: PRD-44, tipo: card, estado: active, moneda: COP}
+movimiento_fijado: TX-4001
+guion:
+  objetivo: "Creo que me clonaron la tarjeta y quiero bloquearla ya; luego acepta la propuesta del agente sin pedir otras tarjetas."
+  max_turnos: 8
+  turnos:
+    - decir: "Creo que me clonaron la tarjeta por el cobro de 210000 en Tienda Cuatro. Quiero bloquearla ya."
+      intencion: hablar
+    - decir: "Sí, bloquéela"
+      intencion: confirmar
+    - decir: "Sí, abra la disputa"
+      intencion: confirmar
+esperado:
+  bloqueos: [[CUST-0004, PRD-41]]
+  traspasos: 0
+  debe_escalar: false
+  herramientas_requeridas: [bloquear_tarjeta]
+  max_aprobaciones: 2
+  texto_tras_aprobacion: true

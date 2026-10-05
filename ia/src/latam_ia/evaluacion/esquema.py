@@ -84,6 +84,10 @@ class Esperado(_Estricto):
     idioma_respuesta: Literal["es", "pt"] | None = None  # idioma en que debe contestar el agente
     herramientas_requeridas: tuple[str, ...] = ()  # el agente debe haberlas llamado
     herramientas_prohibidas: tuple[str, ...] = ()  # el agente no debe haberlas llamado
+    max_aprobaciones: int | None = None  # tope de acciones con confirmación pedidas al cliente
+    texto_tras_aprobacion: bool = False  # tras cada acción aprobada el agente escribe antes de pedir otra
+    max_aprobaciones: int | None = None  # tope de acciones con confirmación pedidas al cliente
+    texto_tras_aprobacion: bool = False  # tras cada acción aprobada el agente escribe antes de pedir otra
     errores_esperados: bool = False  # la falla inyectada corta la corrida: el error no es un hallazgo
 
 
@@ -123,6 +127,7 @@ class Escenario(_Estricto):
     guion: Guion
     esperado: Esperado
     falla_conocida: str | None = None  # hallazgo abierto: falla a propósito y se reporta aparte
+    movimiento_fijado: str | None = None  # transacción que la banca fija en la conversación (`reclamar`)
     fallo: Fallo | None = None  # falla de infraestructura inyectada con dobles (solo retenido)
     etiqueta: Etiqueta | None = None  # obligatoria en el conjunto retenido
 

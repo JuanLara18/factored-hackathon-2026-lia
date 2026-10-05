@@ -2,11 +2,17 @@
 
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 from latam_comun.dominio import Canal, Confirmacion, Dinero, NivelAcr, SesionAutenticada
 from latam_tecnologia.herramientas.agente import ContextoAgente, crear_agente_disputas
-from latam_tecnologia.herramientas.catalogo import AccesoDenegado, EscalacionRequerida, Herramientas
+from latam_tecnologia.herramientas.catalogo import (
+    AccesoDenegado,
+    EscalacionRequerida,
+    Herramientas,
+    TarjetaFueraDelMovimiento,
+)
 from latam_tecnologia.herramientas.falsos import LecturaOroFalsa, ServiciosBancoFalsos
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.caso import Estado, Evento, MotorCaso, transicionar
@@ -339,3 +345,71 @@ def test_r07_listar_transacciones_alcanza_cobros_viejos_y_busca() -> None:
     por_fecha = m.h.transacciones_recientes(s, desde=ayer, hasta=ayer, monto=Decimal("120000")).valor
     assert {t.transaction_id for t in por_fecha} >= {"t1"}
     assert all(t.transaction_id != "t9" for t in m.h.transacciones_recientes(s, comercio="Tienda").valor)
+
+
+# Bloqueo de una sola tarjeta cuando el servidor fijó un movimiento (hallazgo de producción).
+
+
+class _BancoConMovimiento(ServiciosBancoFalsos):
+    def __init__(self, transaccion_id: str | None) -> None:
+        super().__init__()
+        self._tx = transaccion_id
+
+    def conversacion(self, conversacion_id: str) -> object:
+        return SimpleNamespace(transaccion_id=self._tx)
+
+
+def _mundo_varias_tarjetas(transaccion_id: str | None) -> Mundo:
+    m = Mundo()
+    m.lectura._prod.append(  # pyright: ignore[reportPrivateUsage]
+        ("c1", Producto(product_id="p2", tipo="card", estado="active", moneda="COP"))
+    )
+    m.banco = _BancoConMovimiento(transaccion_id)
+    m.h = Herramientas(m.lectura, m.banco, m.almacen, reloj=lambda: AHORA)
+    m.motor = MotorCaso(m.almacen, m.h, reloj=lambda: AHORA)
+    m.motor.abrir("k1", _sesion(), Canal.CHAT)
+    return m
+
+
+def test_con_movimiento_fijado_solo_se_bloquea_la_tarjeta_del_movimiento() -> None:
+    m = _mundo_varias_tarjetas("t1")  # t1 es de la tarjeta p1
+    s = _sesion()
+    with pytest.raises(TarjetaFueraDelMovimiento):
+        m.h.bloquear_tarjeta(s, "k1", "p2", _conf("bloquear_tarjeta"))
+    assert m.banco.bloqueos == []
+    accion, _ = m.h.bloquear_tarjeta(s, "k1", "p1", _conf("bloquear_tarjeta"))
+    assert accion.exito and m.banco.bloqueos == [("c1", "p1")]
+    m.h.bloquear_tarjeta(s, "k1", "p1", _conf("bloquear_tarjeta"))  # idempotente
+    assert len(m.banco.bloqueos) == 1
+
+
+def test_sin_movimiento_fijado_el_chat_suelto_conserva_su_comportamiento() -> None:
+    m = _mundo_varias_tarjetas(None)
+    accion, _ = m.h.bloquear_tarjeta(_sesion(), "k1", "p2", _conf("bloquear_tarjeta"))
+    assert accion.exito and m.banco.bloqueos == [("c1", "p2")]
+    assert Mundo().h.producto_del_movimiento(_sesion(), "k1") is None
+
+
+def test_la_herramienta_del_agente_responde_con_texto_y_marca_las_tarjetas() -> None:
+    m = _mundo_varias_tarjetas("t1")
+    deps = ContextoAgente(m.h, _sesion(), "k1", Canal.CHAT)
+
+    def modelo(mensajes: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if len(mensajes) == 1:
+            return ModelResponse(parts=[ToolCallPart("estado_productos", {})])
+        if len(mensajes) == 3:
+            return ModelResponse(parts=[ToolCallPart("bloquear_tarjeta", {"product_id": "p2"})])
+        return ModelResponse(parts=[TextPart("listo")])
+
+    agente = crear_agente_disputas(FunctionModel(modelo))
+    r = agente.run_sync("me clonaron la tarjeta", deps=deps)
+    assert isinstance(r.output, DeferredToolRequests)
+    r = agente.run_sync(
+        None,
+        message_history=r.all_messages(),
+        deferred_tool_results=DeferredToolResults(approvals={r.output.approvals[0].tool_call_id: True}),
+        deps=deps,
+    )
+    retornos = [str(p.content) for x in r.all_messages() for p in x.parts if isinstance(p, ToolReturnPart)]
+    assert '"bloqueable_aqui": false' in retornos[0] and '"bloqueable_aqui": true' in retornos[0]
+    assert "Bloquear tarjeta" in retornos[1] and m.banco.bloqueos == []
