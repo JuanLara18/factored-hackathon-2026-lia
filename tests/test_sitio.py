@@ -154,7 +154,8 @@ def test_ayuda_tiene_buscador_y_preguntas_clave() -> None:
 
 def test_chat_apunta_a_banca_en_linea() -> None:
     html = (SITIO / "chat.html").read_text(encoding="utf-8")
-    assert "El asistente vive en Banca en línea" in html
+    # la portada del chat invita a abrir el movimiento desde la banca
+    assert '<a href="banca/index.html">Ábralo en Banca en línea</a>' in html
 
 
 BANCA = sorted((SITIO / "banca").glob("*.html"))
