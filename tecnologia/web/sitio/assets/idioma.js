@@ -244,6 +244,7 @@
     "Hable con Lía": "Fale com a Lia",
     "Lía": "Lia",
     "Lía está escribiendo": "A Lia está digitando",
+    "Lía está revisando su información": "A Lia está verificando suas informações",
     "Hola, soy Lía, asistente virtual de LATAM Bank y un sistema de inteligencia artificial. Si prefiere hablar con una persona, puede pedirlo en cualquier momento.": "Olá, sou a Lia, assistente virtual do LATAM Bank e um sistema de inteligência artificial. Se preferir falar com uma pessoa, você pode pedir a qualquer momento.",
     "Banca clara, con una persona cerca.": "Banco claro, com uma pessoa por perto.",
     "Asistente de IA": "Assistente de IA",

@@ -283,6 +283,8 @@
     sugerir([]);
     escribiendo(true);
     el.estado.textContent = T("Lía está escribiendo");
+    // Si la respuesta tarda (el agente consulta movimientos y productos), se dice qué está pasando.
+    const aviso = window.setTimeout(() => { if (est.ocupado) el.estado.textContent = T("Lía está revisando su información"); }, 3000);
     const s = B.sesion();
     const cuerpo = {
       threadId: est.conversacion, runId: crypto.randomUUID(), state: {}, messages: est.historial,
@@ -313,6 +315,7 @@
     } catch (e) {
       burbuja("asistente error", tx("falla"));
     } finally {
+      window.clearTimeout(aviso);
       escribiendo(false);
       est.ocupado = false;
       el.estado.textContent = est.traspaso ? T("Esperando a una persona") : "";

@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00017-df4`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00019-9g7`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -132,7 +132,13 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
 - **Sitio (5 oct):** páginas interiores rediseñadas con ilustraciones (`assets/arte-*.svg`), pasos, tarjetas de sí y no
   y textos cortos; chat e ingreso del experto más claros. Las ilustraciones no llevan estilos internos por el CSP.
 - **Marca (5 oct):** símbolo y logotipo nuevos en todo el sitio, banca y consola, tipografía propia servida desde el sitio,
-  lema y tarjeta para compartir; guía en `clientes/estilo/MARCA.md`.
+  lema y tarjeta para compartir; guía en `clientes/estilo/MARCA.md`. El asistente del chat se llama Lía (siempre
+  identificada como IA), con rostro propio y otro distinto para la persona del equipo.
+- **Velocidad (5 oct), medida en producción con la instancia despierta:** las lecturas del oro operacional se guardan en
+  memoria 5 minutos (`LATAM_CACHE_LECTURA_S`) y se precalientan al arrancar. Resumen de la banca de 3,2 s a 0,25 s,
+  movimientos de 0,8 s a 0,16 s, ingreso de 1,4 s a 0,45 s. Sigue lento: el arranque en frío de Cloud Run y del agente
+  (10 a 15 s tras un rato sin uso) y el primer turno del chat (5 a 8 s). Para el día de la demo: `--min-instances 1`
+  en Cloud Run y en el agente, o un ping cada 5 minutos con Cloud Scheduler.
 - **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.
