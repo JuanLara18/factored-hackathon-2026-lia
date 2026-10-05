@@ -12,7 +12,7 @@ import secrets
 import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol, runtime_checkable
 
 from latam_comun.dominio import Dinero, Idioma, PaqueteTraspaso
@@ -26,6 +26,7 @@ VARIABLE_PROYECTO = "LATAM_GCP_PROJECT"
 ORDEN_PRIORIDAD = {"P1": 1, "P2": 2, "P3": 3, "P4": 4}
 PLAZO_MXN = "48 horas"  # abono provisional de México (MX-06)
 LIMITE_TRANSCRIPCION = 60
+RETENCION_OPERATIVA = timedelta(days=30)  # D-27: registros operativos
 
 
 def _ahora() -> datetime:

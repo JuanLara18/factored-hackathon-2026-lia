@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -30,6 +31,10 @@ def test_firestore_casos_bloqueos_traspasos_y_mensajes() -> None:
         assert banco.credito_provisional_de(caso)  # la segunda apertura no lo pisó
         assert [c.caso for c in banco.casos_abiertos(cliente)] == [caso]
         assert banco.casos_de(cliente)[0].monto == Decimal("100.50")
+        vence = db.collection("casos").document(caso).get().to_dict()["expira_en"]
+        assert isinstance(vence, datetime) and timedelta(days=29) < vence - datetime.now(UTC) < timedelta(
+            days=31
+        )
 
         assert not banco.bloqueado(cliente, producto)
         assert banco.bloquear_tarjeta("a", cliente, producto) == banco.bloquear_tarjeta(
