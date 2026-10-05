@@ -416,22 +416,31 @@
 
   // Ingreso ----------------------------------------------------------------------------------------------------
 
+  let versionIngreso = 0;
   async function pintarIngreso() {
+    const version = ++versionIngreso; // si el país cambia mientras carga, solo vale la última pintada
     const cont = $("ingreso-cuerpo");
     // El selector de idioma vive dentro de la tarjeta de ingreso mientras no hay sesión.
     const sitioIdioma = $("ingreso-idioma");
     const selIdioma = $("selector-idioma");
     if (sitioIdioma && selIdioma && !sitioIdioma.contains(selIdioma)) sitioIdioma.append(selIdioma);
+    const selPais = $("pais") && $("pais").closest("label");
+    if (sitioIdioma && selPais && !sitioIdioma.contains(selPais)) sitioIdioma.append(selPais);
     cont.textContent = "";
     cont.append(...esqueleto("bn-esq-linea", 3));
     let lista;
     try { lista = await llamar("/api/banca/clientes-demo"); } catch (e) {
+      if (version !== versionIngreso) return;
       cont.textContent = "";
       cont.append(estadoError(mensajeDeError(e), pintarIngreso));
       return;
     }
+    if (version !== versionIngreso) return;
     cont.textContent = "";
-    const tarjetas = lista.map((c, i) => {
+    // Los clientes del país elegido en el sitio (pais.js) van primero y el primero queda preseleccionado.
+    const elegido = window.Pais ? window.Pais.actual() : "";
+    const orden = lista.slice().sort((a, b) => Number(b.pais === elegido) - Number(a.pais === elegido));
+    const tarjetas = orden.map((c, i) => {
       const nombre = nombreDe(c);
       const n = typeof c.productos === "number" ? c.productos : (typeof c.num_productos === "number" ? c.num_productos : null);
       const detalle = pais(c.pais) + (n ? " · " + T(n === 1 ? "{n} producto" : "{n} productos", { n }) : "");
@@ -977,6 +986,9 @@
       if (!s) { $("sin-sesion").classList.remove("oculto"); $("reclamos-zona").classList.add("oculto"); } else iniciarReclamos();
     }
   }
+
+  // Cambiar el país en la franja vuelve a ordenar y preseleccionar mientras se ve el ingreso.
+  document.addEventListener("latam:pais", () => { if ($("ingreso") && !$("ingreso").classList.contains("oculto")) pintarIngreso(); });
 
   window.Banca = { llamar, h, sesion, MOCK, BASE, guardar, ErrorApi, pausa, anunciar, fixture, estadoLocal, T, registro, icono, avatar, nombreDe, iniciales };
   arrancar();

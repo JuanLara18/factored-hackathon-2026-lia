@@ -29,6 +29,7 @@
       <a href="ayuda.html">Ayuda</a>
     </nav>
     <div class="cabecera-acciones">
+      <div id="selector-idioma" class="selector-idioma"></div>
       <label class="pais" for="pais"><span class="visualmente-oculto">País</span>
         <select id="pais" aria-label="País"><option value="MX">México</option><option value="CO">Colombia</option><option value="AR">Argentina</option></select>
       </label>
@@ -55,7 +56,7 @@
         <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-chat"/></svg><h3>Qué se recoge</h3><p>Los mensajes que escribe y una sesión temporal, que termina al cerrarse.</p></li>
         <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><h3>Para qué se usa</h3><p>Solo para atender su reclamo. No hay publicidad ni venta de datos.</p></li>
         <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-mascara"/></svg><h3>Cómo se protege</h3><p>Identificadores con seudónimo, tarjeta enmascarada y audio de voz que no se guarda.</p></li>
-        <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-galleta"/></svg><h3>Este sitio</h3><p>Sin cookies, sin analítica y sin scripts de terceros. Su país se guarda solo en su navegador.</p></li>
+        <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-galleta"/></svg><h3>Este sitio</h3><p>Sin cookies, sin analítica y sin scripts de terceros. Su país y su idioma se guardan solo en su navegador.</p></li>
         <li><svg class="icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-persona"/></svg><h3>Sus opciones</h3><p>Puede pedir que una persona revise cualquier resultado automatizado y le explique la regla.</p></li>
       </ul>
     </div>
@@ -80,6 +81,8 @@
     <p class="pie-legal">Demostración sin valor legal. Los textos legales y de privacidad están pendientes de revisión por el área de Gobierno.</p>
   </div>
 </footer>
+<script src="assets/idioma.js"></script>
+<script src="assets/idioma-sitio.js"></script>
 <script src="assets/pais.js" defer></script>
 </body>
 </html>

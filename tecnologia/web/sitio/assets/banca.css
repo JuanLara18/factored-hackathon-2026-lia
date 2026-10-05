@@ -57,8 +57,9 @@ body[data-pagina] .pie { background: var(--fondo); }
 .bn-ingreso-puntos li { padding-left: 1.75rem; position: relative; color: #e6f0f6; }
 .bn-ingreso-puntos li::before { content: ""; position: absolute; left: 0; top: .45rem; width: .9rem; height: .55rem; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) scale(.9); }
 .bn-ingreso-forma { padding: 2rem 2.25rem 2.25rem; }
-.bn-ingreso-idioma { display: flex; justify-content: flex-end; margin: -.5rem 0 .5rem; min-height: 40px; }
+.bn-ingreso-idioma { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: .25rem; margin: -.5rem 0 .5rem; min-height: 40px; }
 .bn-ingreso-idioma .selector-idioma { margin: 0; }
+.bn-ingreso-idioma .pais select { border-radius: 999px; background-color: var(--superficie); border-color: var(--borde); min-height: 40px; }
 .bn-pagina .bn-ingreso h2 { font-size: 1.5rem; margin: 0 0 .5rem; }
 .bn-personas { border: 0; margin: 1rem 0 1.25rem; padding: 0; min-width: 0; }
 .bn-personas legend { font-weight: 600; font-size: .875rem; color: var(--suave); padding: 0; margin-bottom: .5rem; }
@@ -417,6 +418,8 @@ body[data-pagina] .contenedor { max-width: 76rem; }
 .bn-demo .contenedor { flex-wrap: nowrap; }
 .bn-demo .contenedor > p { min-width: 0; }
 .bn-demo .selector-idioma { margin-left: auto; flex: none; }
+.bn-demo .selector-idioma + .pais { flex: none; }
+.bn-demo .pais select { min-height: 30px; padding-block: .1rem; font-size: .8125rem; color: var(--texto); background-color: transparent; }
 .bn-demo .idioma select { min-height: 30px; padding-block: .1rem; font-size: .8125rem; color: var(--texto); background-color: transparent; border: 0; }
 .bn-cabecera .contenedor { flex-wrap: nowrap; }
 .bn-cabecera .marca, .bn-cabecera .bn-portal, #zona-sesion { flex: none; }

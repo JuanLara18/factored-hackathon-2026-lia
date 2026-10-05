@@ -225,3 +225,131 @@ def test_banca_fixtures_siguen_el_contrato() -> None:
 def test_banca_scripts_sin_innerhtml() -> None:
     for nombre in ("banca.js", "widget.js"):
         assert "innerHTML" not in (SITIO / "assets" / nombre).read_text(encoding="utf-8")
+
+
+# --- Idioma: las ocho páginas públicas, en portugués y, donde hay usted, con vos ---------------------------
+
+PUBLICAS = ["index", "productos", "reclamos", "seguridad", "ayuda", "contacto", "transparencia", "privacidad"]
+_CADENA = '"(?:[^"' + chr(92) + chr(92) + "]|" + chr(92) + chr(92) + '.)*"'  # una cadena JSON con escapes
+_LITERAL = re.compile(rf"^\s*({_CADENA})\s*:\s*({_CADENA}),?\s*$")
+_SIN_TRADUCCION = {"LATAM", "Bank", "LATAM Bank"}  # la marca no se traduce
+_VOID = {"meta", "link", "br", "img", "input", "hr", "use", "path", "circle", "rect", "ellipse", "source"}
+_ATRIBUTOS = ("aria-label", "placeholder", "title", "alt")
+# Formas de usted que el voseo cambia: pronombres y los imperativos que usan las páginas.
+_USTED = re.compile(
+    r"\b(usted|su|sus|suya|suyas|suyo|le|les|abra|elija|escriba|pruebe|vea|use|lea|entre|bloquee|"
+    r"revise|reclame|señale|actúe|identifique|recorra|conozca|pida|salga|cuéntele|ábralo|"
+    r"reconoce|reconozca|necesite|quiera|prefiera|confirme|abrió|entregó|cree)\b",
+    re.IGNORECASE,
+)
+
+
+def _tabla(archivo: str, nombre: str) -> dict[str, str]:
+    """Lee `var NOMBRE = { "es": "otro" };` de un .js, una entrada por línea (la última repetida manda)."""
+    fuente = (SITIO / "assets" / archivo).read_text(encoding="utf-8")
+    inicio = fuente.find(f"var {nombre} = {{")
+    if inicio < 0:
+        return {}
+    tabla: dict[str, str] = {}
+    for linea in fuente[inicio:].splitlines()[1:]:
+        if linea.startswith("  };"):
+            break
+        m = _LITERAL.match(linea)
+        if m:
+            tabla[json.loads(m.group(1))] = json.loads(m.group(2))
+    return tabla
+
+
+class _Textos(HTMLParser):
+    """Nodos de texto y atributos como los ve idioma.js; ignora script, estilo y lo que pais.js reescribe."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.items: set[str] = set()
+        self._pila: list[tuple[str, bool]] = []
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str | None, str | None]]) -> None:
+        self._atributos(tag, dict(attrs))
+
+    def _atributos(self, tag: str, a: dict) -> None:
+        for k in _ATRIBUTOS:
+            if a.get(k):
+                self.items.add(" ".join(a[k].split()))
+        if tag == "meta" and a.get("name") == "description":
+            self.items.add(" ".join(a["content"].split()))
+        if a.get("data-buscar"):
+            self.items.add("buscar:" + a["data-buscar"])
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = {k: v or "" for k, v in attrs}
+        self._atributos(tag, a)
+        if tag not in _VOID:
+            self._pila.append((tag, "data-p" in a))
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._pila and self._pila[-1][0] == tag:
+            self._pila.pop()
+
+    def handle_data(self, data: str) -> None:
+        if any(t in ("script", "style") or dp for t, dp in self._pila):
+            return
+        texto = " ".join(data.split())
+        if texto:
+            self.items.add(texto)
+
+
+def _textos(nombre: str) -> list[str]:
+    p = _Textos()
+    p.feed((SITIO / f"{nombre}.html").read_text(encoding="utf-8"))
+    return sorted(
+        t
+        for t in p.items
+        if re.search(r"[^\W\d_]", t) and t not in _SIN_TRADUCCION  # sin letras (cifras, signos) no se traduce
+    )
+
+
+PT = _tabla("idioma.js", "PT") | _tabla("idioma-sitio.js", "PT")
+VOS = _tabla("idioma.js", "VOS") | _tabla("idioma-sitio.js", "VOS")
+
+
+def test_las_tablas_de_idioma_se_leen() -> None:
+    assert len(PT) > 300 and len(VOS) > 100
+
+
+@pytest.mark.parametrize("nombre", PUBLICAS)
+def test_pagina_publica_traducida_al_portugues(nombre: str) -> None:
+    """Si se agrega o se cambia un texto visible y falta su entrada en portugués, esta prueba lo nombra."""
+    faltan = [t for t in _textos(nombre) if not PT.get(t)]
+    assert faltan == [], f"{nombre}.html: sin portugués en idioma-sitio.js: {faltan}"
+
+
+@pytest.mark.parametrize("nombre", PUBLICAS)
+def test_pagina_publica_con_vos_donde_hay_usted(nombre: str) -> None:
+    """Aproximación: todo texto con pronombre o imperativo de usted conocido necesita su forma con vos."""
+    faltan = [t for t in _textos(nombre) if _USTED.search(t) and not VOS.get(t)]
+    assert faltan == [], f"{nombre}.html: sin vos en idioma-sitio.js: {faltan}"
+
+
+def test_el_portugues_no_promete_devoluciones_ni_plazos() -> None:
+    texto = " ".join(PT.values()).lower()
+    for frase in ("devolveremos", "reembolsaremos", "garantimos", "em até"):
+        assert frase not in texto
+
+
+@pytest.mark.parametrize("nombre", PUBLICAS)
+def test_pagina_publica_carga_idioma_antes_que_pais(nombre: str) -> None:
+    html = (SITIO / f"{nombre}.html").read_text(encoding="utf-8")
+    assert 'id="selector-idioma"' in html
+    orden = [html.find(f'src="assets/{s}.js"') for s in ("idioma", "idioma-sitio", "pais")]
+    assert all(i > 0 for i in orden) and orden == sorted(orden)
+    assert html.find('id="selector-idioma"') < html.find(
+        'id="pais"'
+    )  # idioma y país, en ese orden, en la cabecera
+
+
+@pytest.mark.parametrize("pagina", BANCA, ids=lambda p: f"banca/{p.name}")
+def test_banca_tiene_pais_e_idioma_en_la_franja(pagina: Path) -> None:
+    html = pagina.read_text(encoding="utf-8")
+    franja = html[html.find('class="bn-demo"') : html.find("</header>")]
+    assert 'id="selector-idioma"' in franja and 'id="pais"' in franja
+    assert html.find("idioma.js") < html.find("pais.js") < html.find("banca.js")

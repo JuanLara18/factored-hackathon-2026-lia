@@ -14,11 +14,19 @@
   var LOCALES = { usted: "es", vos: "es", voce: "pt-BR" };
   var NOTA_PT = "Atendimento em português para clientes da região (contas do México, da Colômbia e da Argentina). Valores, datas e normas seguem o país da conta.";
 
-  function leer() {
+  // La elección explícita (clave latam.trato) manda siempre. Sin ella, el país elegido sugiere el trato:
+  // Argentina, vos; el resto, usted. La sugerencia no se guarda, para no volverse una elección.
+  function explicito() {
     try {
       var v = window.localStorage.getItem(CLAVE);
-      return MODOS.indexOf(v) >= 0 ? v : "usted";
-    } catch (e) { return "usted"; }
+      return MODOS.indexOf(v) >= 0 ? v : null;
+    } catch (e) { return null; }
+  }
+  function paisElegido() {
+    try { return window.localStorage.getItem("latam.pais"); } catch (e) { return null; }
+  }
+  function leer() {
+    return explicito() || (paisElegido() === "AR" ? "vos" : "usted");
   }
   function guardar(v) {
     try { window.localStorage.setItem(CLAVE, v); } catch (e) { /* sin almacenamiento */ }
@@ -355,6 +363,15 @@
     p.textContent = NOTA_PT;
     var demo = document.querySelector(".bn-demo .contenedor");
     if (demo) { demo.appendChild(p); return; }
+    // Páginas públicas: la nota va en su propia franja al inicio, antes de la primera sección.
+    var main = document.querySelector("main");
+    if (main && document.querySelector('script[src$="idioma-sitio.js"]')) {
+      var franja = document.createElement("div");
+      franja.className = "contenedor";
+      franja.appendChild(p);
+      main.insertBefore(franja, main.firstChild);
+      return;
+    }
     var pagina = document.querySelector("main .contenedor");
     if (pagina) pagina.insertBefore(p, pagina.firstChild);
   }
@@ -393,6 +410,8 @@
     aplicar(document.body);
     nota();
     if (modo !== "usted") document.title = t(document.title);
+    var desc = document.querySelector('meta[name="description"]');
+    if (desc && modo !== "usted") desc.setAttribute("content", t(desc.getAttribute("content") || ""));
   }
 
   window.Idioma = {
@@ -401,6 +420,11 @@
     locale: function () { return LOCALES[modo]; },
     t: t,
     aplicar: aplicar,
+    // Suma textos de otra tabla (el sitio público) a las de portugués y vos.
+    agregar: function (pt, vos) { Object.assign(PT, pt || {}); Object.assign(VOS, vos || {}); },
+    // Lo llama pais.js al cambiar el país: si el trato sugerido cambia y no hay elección explícita, recarga.
+    alCambiarPais: function () { if (!explicito() && leer() !== modo) window.location.reload(); },
+    explicito: function () { return explicito() !== null; },
     poner: function (m) { if (MODOS.indexOf(m) >= 0) { modo = m; guardar(m); } },
     // Palabras con las que el cliente pide una persona, en los dos idiomas.
     pidePersona: /\b(persona|pessoa|humano|asesor|atendente)\b/i
