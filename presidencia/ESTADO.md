@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00021-zvg`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00022-5jq`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -62,17 +62,9 @@ XDG_CONFIG_HOME=<carpeta temporal> GOOGLE_APPLICATION_CREDENTIALS=%APPDATA%/gclo
 
 ## Pendientes del usuario
 
-1. **Desplegar lo del 5 oct (coherencia y operación), en este orden**, porque el agente y el chat leen los mismos
-   documentos y el código viejo rechaza el campo `expira_en`:
-   1. restablecer el estado de demostración (`POST /api/demo/restablecer` por la URL de Cloud Run);
-   2. `terraform apply -target=module.monitoreo -target=module.firestore.google_firestore_field.vencimiento` en
-      `tecnologia/infra/terraform/envs/dev` (solo crea: TTL y alertas; ver `tecnologia/infra/ARRANQUE.md`);
-   3. redesplegar el agente (comando de la sección GEAP) y, enseguida, el chat con
-      `--update-env-vars LATAM_TRABAJADOR_VERSION=0.7.0` (el servicio tiene 0.6.0);
-   4. comprobar: e2e contra producción, que un caso nuevo en Firestore lleve `expira_en` y que la referencia del
-      movimiento en el paquete de traspaso sea la misma `tx_…` que muestra la banca.
-   Si el agente no arranca, falta el acceso de `latam-chat@` al secreto o la versión del SDK no admite secretos en
-   `env_vars`: se vuelve atrás desplegando desde `main`.
+1. Aplicar el resto del plan de Terraform (adopta el servicio, los datasets, el secreto y el ping; cambia solo
+   etiquetas): `terraform plan` y `terraform apply` en `tecnologia/infra/terraform/envs/dev` con
+   `TF_VAR_operador_codigo` (ver `tecnologia/infra/ARRANQUE.md`). El estado local ya existe en esa carpeta.
 2. Instalar `just` (las recetas del `justfile` se usan en la documentación).
 3. Revisar el perfil `default` de AWS (quedaron ahí las llaves del organizador) y revocar el token de Hugging Face.
 4. Meta (WhatsApp) y Twilio en modo de prueba, si se quieren canales reales; preguntas a los organizadores.
@@ -118,7 +110,7 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
-## Hecho el 5 oct: coherencia del reporte y operación (en `develop`, **sin desplegar**)
+## Hecho el 5 oct: coherencia del reporte y operación (desplegado)
 
 - **Reporte coherente con el sistema actual:** 00, 02 y 06 daban por abiertos ESC-03, la inyección de urgencia, el
   límite del listado y la falla muda, que el anexo de 04 ya mostraba corregidos; ahora citan el anexo y separan la
@@ -137,6 +129,15 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   particiones de 60 días del sandbox; se quitó. No había tablas particionadas ni tablas con vencimiento.
 - **Tarifa de Flash-Lite verificada** contra la página de precios de la API de Gemini: coincide con la supuesta.
 - **Compuertas:** formato, lint, pyright y 548 pruebas en verde; la prueba de integración contra Firestore pasa.
+- **Desplegado y verificado (5 oct, 23:30 UTC):** estado restablecido; `terraform apply` parcial (2 adoptados, 30
+  creados, 0 cambiados: cinco políticas de TTL en estado ACTIVE, comprobación de disponibilidad y tres alertas con
+  aviso al correo del dueño); agente actualizado en el mismo recurso con `LATAM_REF_SECRETO` como secreto
+  (`secretEnv` en la especificación); chat en la revisión `latam-chat-00022-5jq` con el trabajador 0.7.0. e2e 81 de
+  81 contra el backend de producción, con el sitio servido desde el árbol local. Las conversaciones nuevas llevan
+  `expira_en`. Para volver atrás: `gcloud run services update-traffic latam-chat --to-revisions
+  latam-chat-00021-zvg=100` y redesplegar el agente desde la etiqueta anterior.
+- **Restos sin vencimiento:** un caso, un traspaso y dos conversaciones del 30 sep del cliente `CLI-000W7FWO8212`
+  (no es de demostración, el restablecimiento no los toca) quedaron sin `expira_en`; borrarlos a mano si no sirven.
 
 ## Hecho el 5 oct
 

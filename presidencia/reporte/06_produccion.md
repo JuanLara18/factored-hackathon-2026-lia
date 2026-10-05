@@ -9,13 +9,13 @@
 | Trazas | implementada | Cloud Trace, un span por turno, modelo y herramienta; prueba `tecnologia/tests/test_observabilidad.py` |
 | Reintentos acotados | implementados | un reintento del modelo; tope de 90 s por turno |
 | Caída segura | implementada y evaluada | 15 de 15 corridas con falla inyectada sin efectos ni fugas ([04](04_evaluacion.md) 5.1) y, desde el trabajador 0.5.0, con un mensaje al cliente |
-| Instalación reproducible | implementada | `uv.lock`, CI, `just`; Terraform planea contra el proyecto sin destruir nada (5 oct), sin aplicar por completo |
+| Instalación reproducible | implementada | `uv.lock`, CI, `just`; Terraform planea contra el proyecto sin destruir nada y se aplicó la parte aditiva (5 oct) |
 | Capacidad | limitada por diseño | una instancia, sesiones en memoria |
-| Monitoreo y alertas | disponibilidad, errores y latencia como código (módulo `monitoreo` de Terraform); calidad y equidad, propuesta | sección 6 |
+| Monitoreo y alertas | disponibilidad, errores y latencia desplegadas (módulo `monitoreo` de Terraform); calidad y equidad, propuesta | sección 6 |
 | Controles de acceso | parciales | sección 7 |
 | Retención | implementada para los registros operativos: vencimiento a 30 días por documento y política de TTL de Firestore | sección 8 |
 
-**Estado de despliegue de lo hecho el 5 de octubre.** El vencimiento de los documentos, el arranque que exige la clave de referencias, la entrega de esa clave al agente y los módulos de Terraform (TTL, secreto, ping y alertas) están en el repositorio con sus pruebas. Su paso al proyecto de Google Cloud (desplegar el agente y el chat, y aplicar el plan parcial de Terraform) lo hace el dueño del proyecto; [ESTADO](../ESTADO.md) dice si ya se hizo.
+**Estado de despliegue de lo hecho el 5 de octubre.** El vencimiento de los documentos, el arranque que exige la clave de referencias y su entrega al agente están desplegados (revisión `latam-chat-00022-5jq`, agente actualizado en el mismo recurso), y del plan de Terraform se aplicó la parte que solo crea: las cinco políticas de TTL de Firestore, la comprobación de disponibilidad y las tres alertas. Verificado el mismo día: 81 de 81 pruebas de extremo a extremo contra el backend de producción, políticas de TTL activas y documentos nuevos con `expira_en`. El resto del plan (adoptar el servicio, los datasets, el secreto y el ping, con cambios solo de etiquetas) no se ha aplicado ([ESTADO](../ESTADO.md)).
 
 ## 2. Trazas y explicaciones auditables
 
@@ -44,7 +44,7 @@ Las explicaciones se basan en tres cosas verificables: la **fuente** de cada hec
 - Datos: manifiesto encadenado y `just verificar-cadena`; análisis regenerable con `uv run python -m latam_datos.analisis`; dbt aislado con `uvx`.
 - Agente: `tecnologia/infra/agent_runtime/desplegar.py` actualiza el mismo recurso; el chat se despliega con `just desplegar-chat-run-agente`.
 - Terraform declara presupuesto, APIs, Firestore con su política de TTL, `latam-chat` con su secreto y su ping, alertas, buckets y BigQuery. El 5 de octubre se corrió `terraform plan` por primera vez contra el proyecto: 16 recursos por adoptar, 30 por crear y 0 por destruir. Ese plan encontró deriva que se corrigió en el código antes de cualquier `apply` (el vencimiento de 60 días del sandbox habría vuelto a los datasets, el código del experto habría salido del servicio y la versión del trabajador estaba fija en un valor viejo). No se ha aplicado por completo y el estado es local ([ARRANQUE](../../tecnologia/infra/ARRANQUE.md)). El agente de Agent Runtime y la imagen de Cloud Run quedan fuera de Terraform por diseño.
-- Verificado en producción el 5 oct, con el prompt 1.6.0 y el trabajador 0.7.0: la suite de Playwright en `tests/e2e/` pasó entera (78 pruebas, ninguna omitida) ([ESTADO](../ESTADO.md)).
+- Verificado en producción el 5 oct, con el prompt 1.6.0 y el trabajador 0.7.0: la suite de Playwright en `tests/e2e/` pasó entera (81 pruebas, ninguna omitida, tras el último despliegue) ([ESTADO](../ESTADO.md)).
 
 ## 5. Capacidad y límites
 
@@ -63,7 +63,7 @@ Orden de magnitud de costo, con la tarifa de lista de 04 (sección 5.5): US$ 0,0
 
 ## 6. Monitoreo y alertas
 
-Lo que hay: Cloud Trace, las alertas de presupuesto y, como código en `tecnologia/infra/terraform/modules/monitoreo`, una comprobación de disponibilidad de `/api/textos` cada 5 minutos y tres alertas con aviso por correo (el canal no responde, 5xx sobre 2% en 5 minutos, p95 de la petición sobre 5,76 s durante 10 minutos). Las filas de calidad, equidad, costo por caso y datos son propuesta: no salen de métricas de plataforma sino del registro por caso. La regla de vigilancia de equidad y seguridad ya está definida en [05_equidad](05_equidad.md) sección 7; aquí se completa con lo operativo.
+Lo que hay: Cloud Trace, las alertas de presupuesto y, desplegadas desde `tecnologia/infra/terraform/modules/monitoreo`, una comprobación de disponibilidad de `/api/textos` cada 5 minutos y tres alertas con aviso por correo (el canal no responde, 5xx sobre 2% en 5 minutos, p95 de la petición sobre 5,76 s durante 10 minutos). Las filas de calidad, equidad, costo por caso y datos son propuesta: no salen de métricas de plataforma sino del registro por caso. La regla de vigilancia de equidad y seguridad ya está definida en [05_equidad](05_equidad.md) sección 7; aquí se completa con lo operativo.
 
 | Señal | Métrica | Alerta propuesta | Fuente de datos |
 |---|---|---|---|
