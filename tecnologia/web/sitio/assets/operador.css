@@ -201,3 +201,5 @@ blockquote { border-left-color: var(--acento); font-style: italic; padding-left:
   .op-tabla { display: block; overflow-x: auto; }
   .op-datos dd, .op-motivo, .op-msg-texto, .op-lista-simple li { overflow-wrap: anywhere; }
 }
+/* El ingreso no se estira a toda la altura (main es flexible en site.css) */
+.op-ingreso { flex: none; }

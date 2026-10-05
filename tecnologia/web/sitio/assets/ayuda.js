@@ -19,4 +19,12 @@
     aviso.textContent = q === "" ? "" : n + (n === 1 ? " pregunta encontrada" : " preguntas encontradas");
   }
   campo.addEventListener("input", filtrar);
+  // Temas frecuentes: cada botón escribe su palabra en el buscador.
+  var temas = document.querySelectorAll("[data-buscar]");
+  for (var t = 0; t < temas.length; t++) {
+    temas[t].addEventListener("click", function () {
+      campo.value = this.getAttribute("data-buscar");
+      filtrar();
+    });
+  }
 })();
