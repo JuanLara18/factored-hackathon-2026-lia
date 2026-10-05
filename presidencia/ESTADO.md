@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00020-wwt`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00021-zvg`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -165,6 +165,8 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   la banca: México y Colombia español de usted, Argentina español de vos, Brasil portugués (`TRATO_POR_PAIS` en
   `assets/idioma.js`). Brasil no tiene clientes de demostración: muestra los seis de México, Colombia y Argentina con
   la nota de atención en portugués para clientes de la región.
+- **Consola del experto (5 oct):** el cupo de 50 sesiones de experto (8 h, en memoria) se llenó con las corridas de e2e
+  cuando la instancia dejó de apagarse por el ping, y la consola negaba el ingreso. Ahora sale la sesión más antigua.
 
 ## Qué falta para la entrega (contra el enunciado, 3 oct)
 
