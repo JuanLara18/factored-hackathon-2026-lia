@@ -6,10 +6,10 @@
 
 | # | Verificar | Cómo |
 |---|---|---|
-| 1 | Una instancia caliente de Cloud Run | `gcloud run services update latam-chat --region us-central1 --min-instances 1` (unos centavos por hora); volver a 0 al terminar |
+| 1 | Servicio despierto | Cloud Run ya recibe un ping cada 5 minutos (Cloud Scheduler, `latam-chat-despierto`). El agente no: el paso 4 lo despierta. Si se quiere garantía total, `gcloud run services update latam-chat --region us-central1 --min-instances 1` y volver a 0 al terminar |
 | 2 | Código del experto a mano | `gcloud run services describe latam-chat --region us-central1 --format="value(spec.template.spec.containers[0].env)"` y copiar `LATAM_OPERADOR_CODIGO` ([ESTADO](../../ESTADO.md)) |
 | 3 | Estado limpio | `curl -sS -X POST "$LATAM_API/api/demo/restablecer" -H "Content-Type: application/json" -d "{\"codigo\": \"$LATAM_OPERADOR_CODIGO\"}"`, con `LATAM_API=https://latam-chat-47808508188.us-central1.run.app`; responde `{restablecido: true, ...}` ([ARRANQUE](../../../tecnologia/infra/ARRANQUE.md)) |
-| 4 | Primer turno de calentamiento | abrir la banca, ingresar y enviar un mensaje de prueba; luego restablecer de nuevo |
+| 4 | Primer turno de calentamiento | abrir la banca, ingresar, pulsar "Hable con Lía" y enviar "Hola" (el primer turno tras un rato puede tardar más de diez segundos); luego restablecer de nuevo |
 | 5 | Dos ventanas del navegador | una para el cliente y otra para `/operador/`, ambas ya cargadas |
 | 6 | Pestañas de evidencia | Cloud Trace del proyecto `latam-bank-hackaton-2026`, [04_evaluacion](../04_evaluacion.md) y [datos/README](../../../datos/README.md) abiertos |
 | 7 | Plan B listo | las páginas con `?demo=local` abren con fixtures sin backend |
@@ -31,17 +31,22 @@
 2. En "Movimientos recientes", tocar un cargo de compra aprobado y pulsar "No reconozco este cargo".
 3. Se abre el asistente con la transacción ya fijada. Escribir: "No reconozco este cargo, yo no compré ahí."
 4. Cuando aparezca la pantalla de confirmación con monto y tarjeta enmascarada, aprobar para abrir el reclamo.
-5. Ir a "Mis reclamos" y mostrar el caso, el plazo y el historial.
+5. Ir a "Reclamos" en la barra del portal y mostrar el caso, el plazo y el historial.
+6. Opcional: en una tarjeta de "Sus productos", mostrar las acciones del propio producto (Movimientos, Bloquear, Reportar un cargo).
 
 **Decir:** "La transacción la fija el servidor, no el modelo. El agente leyó la ficha y propone abrir el reclamo; nada se ejecuta hasta que apruebo en pantalla. El monto y la tarjeta salen de la base. El mensaje final dice qué se hizo, qué no y qué sigue. El aviso de IA y el botón de persona están siempre visibles."
 
 ### 2. Solicitud ambigua o no soportada (2:00 a 3:00)
 
+**Hacer (conversación abierta):** pulsar "Hable con Lía" sin abrir ningún movimiento y escribir: "Hola, ¿en qué me puede ayudar?" y luego "¿Me muestra mis últimos movimientos?"
+
+**Decir:** "El asistente se llama Lía y se presenta siempre como inteligencia artificial. No es un formulario: conversa sobre cobros, tarjetas y reclamos, y lo que muestra sale de la base."
+
 **Hacer (no soportada):** en el asistente, escribir: "¿Me pueden subir el cupo de la tarjeta?"
 
-**Decir:** "Fuera de alcance: el agente se abstiene, no inventa reglas de crédito ni elegibilidad y ofrece una persona. En la evaluación, los casos no soportados pasan 6 de 6 ([04](../04_evaluacion.md) sección 5.3)."
+**Decir:** "Fuera de alcance: el agente se abstiene, no inventa reglas de crédito ni elegibilidad, recuerda en qué sí ayuda y la persona sigue a un clic. En la evaluación, los casos no soportados pasan 6 de 6 ([04](../04_evaluacion.md) sección 5.3)."
 
-**Hacer (ambigua):** abrir `/chat` en otra pestaña, elegir la misma persona, pulsar "Iniciar conversación" y escribir: "Hay un cobro raro de hace unos días." Se hace aquí y no en la banca porque en la banca el servidor ya fijó el movimiento al pulsar "No reconozco este cargo", así que allí no hay nada que aclarar; el chat independiente abre la conversación sin transacción.
+**Hacer (ambigua):** en esa misma conversación con Lía, escribir: "Hay un cobro raro de hace unos días." Como no se abrió ningún movimiento, no hay transacción fijada y el asistente tiene que aclarar.
 
 **Decir:** "Sin monto ni comercio, el agente consulta los movimientos, pregunta lo mínimo y no radica a ciegas."
 
@@ -73,7 +78,7 @@
 ### 5. Evidencia (5:30 a 7:00)
 
 1. **Trazas.** En Cloud Trace abrir una traza reciente de `latam-chat`: spans `invoke_agent`, `chat <modelo>` y `execute_tool`, con `latam.trabajador.id` y versión, sin contenido. Decir: "Las explicaciones se apoyan en fuentes, reglas y registros de ejecución; no guardamos razonamiento del modelo."
-2. **Evaluación.** Abrir [04_evaluacion](../04_evaluacion.md) sección 5.1. Decir: "Fuera de línea, 32 casos retenidos y 96 corridas: resolución segura 29 de 75 sobre todo el alcance y 29 de 36 sobre los que debían resolverse; 0 de 96 inseguros, con cota de 4%; p50 de 1,41 s y p95 de 4,61 s por turno; US$ 0,002 por caso. La línea base de reglas es igual de buena, y lo decimos. Hallamos fallas: una inyección que sube la urgencia y una política que la herramienta no aplica."
+2. **Evaluación.** Abrir [04_evaluacion](../04_evaluacion.md) sección 5.1. Decir: "Fuera de línea, 32 casos retenidos y 96 corridas: resolución segura 29 de 75 sobre todo el alcance y 29 de 36 sobre los que debían resolverse; 0 de 96 inseguros, con cota de 4%; p50 de 1,41 s y p95 de 4,61 s por turno; US$ 0,002 por caso. La línea base de reglas es igual de buena, y lo decimos. Hallamos fallas, como una inyección que subía la urgencia y una política que la herramienta no aplicaba, y el anexo muestra cómo se corrigieron y qué quedó abierto."
 3. **Datos.** Abrir [datos/README](../../../datos/README.md). Decir: "Bronce a platino, contratos, reglas de calidad, manifiesto encadenado y un fixture de actualización. Dos modelos aprendidos: el motivo supera a las reglas con macro-F1 de 0,399 contra 0,343, y el riesgo de plazo es un resultado negativo que no usamos."
 4. **Cierre.** "Lo que falta para operar está en [06_produccion](../06_produccion.md): una instancia, sesiones en memoria, Terraform sin aplicar, retención sin implementar."
 

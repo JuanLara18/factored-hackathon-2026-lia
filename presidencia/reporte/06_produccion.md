@@ -42,7 +42,7 @@ Las explicaciones se basan en tres cosas verificables: la **fuente** de cada hec
 - Datos: manifiesto encadenado y `just verificar-cadena`; análisis regenerable con `uv run python -m latam_datos.analisis`; dbt aislado con `uvx`.
 - Agente: `tecnologia/infra/agent_runtime/desplegar.py` actualiza el mismo recurso; el chat se despliega con `just desplegar-chat-run-agente`.
 - Terraform declara presupuesto, APIs, Firestore, `latam-chat`, buckets y BigQuery. **Valida, pero nunca se ha planeado ni aplicado** contra el proyecto; el plan lo debe correr el dueño ([ARRANQUE](../../tecnologia/infra/ARRANQUE.md)). El agente de Agent Runtime y la imagen de Cloud Run quedan fuera de Terraform por diseño.
-- Verificado en producción el 4 oct, con el prompt 1.5.0 y el trabajador 0.6.0: la suite de Playwright en `tests/e2e/` pasó entera (71 pruebas, ninguna omitida) ([ESTADO](../ESTADO.md)).
+- Verificado en producción el 5 oct, con el prompt 1.6.0 y el trabajador 0.7.0: la suite de Playwright en `tests/e2e/` pasó entera (78 pruebas, ninguna omitida) ([ESTADO](../ESTADO.md)).
 
 ## 5. Capacidad y límites
 

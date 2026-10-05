@@ -147,6 +147,12 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   desarrollo 35 de 38 (E3 y E8 ya fallaban; F1 ahora termina en traspaso cuando el cliente pide una persona).
 - **Portal (5 oct):** la banca en línea tiene barra propia oscura con Resumen, Productos, Movimientos y Reclamos,
   ancho mayor que el sitio público y acciones en cada producto (movimientos, bloquear, reportar un cargo, preguntar a Lía).
+  El selector de idioma de la banca vive en la franja superior de demostración, no en la barra.
+- **Servicio despierto (5 oct):** Cloud Scheduler `latam-chat-despierto` (us-central1) llama a `/api/textos` cada 5
+  minutos para que Cloud Run no arranque en frío. No despierta al agente. Se quita con
+  `gcloud scheduler jobs delete latam-chat-despierto --location us-central1`.
+- **Verificación final (5 oct):** e2e 78 de 78 contra producción; reporte (00, 02, 04, 06) y guion de la demo al día con
+  el prompt 1.6.0.
 - **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.
