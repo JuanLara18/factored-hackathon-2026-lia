@@ -244,7 +244,10 @@ def test_sin_datos_personales_en_los_eventos(entorno: Entorno) -> None:
     )
     assert "demo-1" not in crudo  # ni el identificador del cliente
     assert n.h["X-Sesion"] not in crudo
-    assert not re.search(r"\b(?:\d[ -]?){13,19}\b", crudo)  # ningún número de tarjeta
+    # Los identificadores de evento son UUID y a veces sus últimos grupos salen solo con dígitos
+    # ("9165-667323872146"): se quitan antes de buscar números de tarjeta en todo lo demás.
+    sin_uuid = re.sub(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", "", crudo)
+    assert not re.search(r"\b(?:\d[ -]?){13,19}\b", sin_uuid)  # ningún número de tarjeta
     assert not re.search(r"[\w.]+@[\w.]+\.\w+", crudo)  # ningún correo
 
 

@@ -35,10 +35,10 @@ from ag_ui.encoder import EventEncoder
 from latam_comun.dominio import SesionAutenticada
 
 from latam_tecnologia.canales.frases import (
-    ACCIONES_VERIFICABLES,
     SegmentadorFrases,
     falla_de,
     filtrar_frase,
+    raices_de,
     respaldo_de,
 )
 from latam_tecnologia.canales.textos import texto_falla
@@ -185,8 +185,9 @@ async def flujo_agui(
     yield _evento(RunStartedEvent(thread_id=thread_id, run_id=run_id))
     mensaje_id = f"m-{secrets.token_hex(6)}"
     seg, bloqueado, abierto = SegmentadorFrases(), False, False
-    # Las acciones con efecto solo se ejecutan en el turno en que el cliente las aprueba.
-    permitidas = ACCIONES_VERIFICABLES if aprobaciones and any(aprobaciones.values()) else frozenset[str]()
+    # Solo el registro de acciones verificadas del motor habilita "radicado" o "bloqueado"; llega en el
+    # evento `verificadas`, antes del primer texto. Sin él, el filtro bloquea esas afirmaciones.
+    permitidas = frozenset[str]()
 
     def frases(lista: list[str]) -> list[str]:
         nonlocal bloqueado
@@ -232,6 +233,8 @@ async def flujo_agui(
                             abierto = True
                             yield _evento(TextMessageStartEvent(message_id=mensaje_id))
                         yield _evento(TextMessageContentEvent(message_id=mensaje_id, delta=delta))
+                elif tipo == "verificadas":
+                    permitidas = raices_de(ev.get("acciones") or [])
                 elif tipo == "herramienta":
                     llamada(str(ev.get("nombre")), "{}")
                 elif tipo == "ficha":

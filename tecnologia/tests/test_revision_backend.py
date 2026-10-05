@@ -442,3 +442,33 @@ def test_filtro_permite_acciones_verificadas_y_negaciones() -> None:
     assert not filtrar_frase("O cartão não foi bloqueado.").bloqueada
     assert filtrar_frase("Le reembolsamos el cargo.", ACCIONES_VERIFICABLES).bloqueada  # dinero: nunca
     assert filtrar_frase("Ya fue abonado a su cuenta.", ACCIONES_VERIFICABLES).bloqueada
+
+
+def test_aprobar_no_basta_solo_la_accion_verificada_habilita_la_afirmacion() -> None:
+    """Una acción aprobada puede ser rechazada por la herramienta: manda el registro del motor."""
+    from latam_tecnologia.canales.frases import raices_de, respaldo_de
+
+    assert raices_de(["abrir_disputa", "escalar"]) == frozenset({"radicad"})
+    assert raices_de(["bloquear_tarjeta"]) == frozenset({"bloquead"})
+    assert raices_de([]) == frozenset()
+
+    def texto_de(eventos_runtime: list[dict[str, Any]]) -> str:
+        class Guionado(RuntimeEnProceso):
+            async def _emitir(self) -> Any:
+                for e in eventos_runtime:
+                    yield e
+
+            def turno(self, **kw: Any) -> Any:
+                return self._emitir()
+
+        c = _cliente_web(Guionado())
+        r = c.post("/api/sesion", json={"cliente": 0}).json()
+        evs = _correr(c, {"X-Sesion": r["sesion"]}, r["conversacion"], "hola")
+        return "".join(e.get("delta", "") for e in evs if e["type"] == "TEXT_MESSAGE_CONTENT")
+
+    afirmacion = {"tipo": "texto", "delta": "Su reclamo quedó radicado. "}
+    assert "radicado" not in texto_de([afirmacion])
+    assert respaldo_de("usted") in texto_de([afirmacion])
+    assert "radicado" in texto_de([{"tipo": "verificadas", "acciones": ["abrir_disputa"]}, afirmacion])
+    # una acción verificada de otro tipo no habilita esta afirmación
+    assert "radicado" not in texto_de([{"tipo": "verificadas", "acciones": ["bloquear_tarjeta"]}, afirmacion])

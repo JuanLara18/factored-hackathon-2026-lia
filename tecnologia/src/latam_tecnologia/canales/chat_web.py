@@ -34,7 +34,7 @@ from latam_tecnologia.banca.vista import monto as monto_pais
 from latam_tecnologia.canales import textos
 from latam_tecnologia.canales.chat_agui import ChatAdapter, FiltradoEventStream
 from latam_tecnologia.canales.demo import Demo, Sesion, crear_demo
-from latam_tecnologia.canales.frases import ACCIONES_VERIFICABLES
+from latam_tecnologia.canales.frases import raices_de
 from latam_tecnologia.canales.modelo import crear_modelo
 from latam_tecnologia.canales.runtime_cliente import (
     VARIABLE_RECURSO,
@@ -116,6 +116,7 @@ class AdaptadorChat(ChatAdapter):
     enriquecer: Enriquecedor | None = None
     registro: str = "usted"
     permitidas: frozenset[str] = frozenset()
+    verificadas: Callable[[], frozenset[str]] | None = None
 
     def build_event_stream(self) -> EventosChat:
         return EventosChat(
@@ -126,6 +127,7 @@ class AdaptadorChat(ChatAdapter):
             registro=self.registro,
             enriquecer=self.enriquecer,
             permitidas=self.permitidas,
+            verificadas=self.verificadas,
         )
 
 
@@ -415,7 +417,9 @@ def crear_app(
             traza=traza,
             registro=reg,
             enriquecer=enriquecedor(s, reg),
-            permitidas=ACCIONES_VERIFICABLES if any(_aprobada(r) for r in entradas) else frozenset[str](),
+            verificadas=lambda: raices_de(
+                a.accion for a in demo.almacen.acciones_hechas(conversacion) if a.exito
+            ),
         )
 
     app.include_router(

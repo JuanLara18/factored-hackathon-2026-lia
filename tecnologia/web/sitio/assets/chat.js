@@ -167,7 +167,8 @@ async function leer(resp) {
       } else if (e.type === "RUN_FINISHED") {
         interrupciones = (e.outcome && e.outcome.interrupts) || [];
       } else if (e.type === "RUN_ERROR") {
-        burbuja("asistente error", est.textos.textos.falla);
+        // El servidor ya dijo la falla con la plantilla en este turno: no se repite en otra burbuja.
+        if (!Object.keys(nodos).length) burbuja("asistente error", est.textos.textos.falla);
       }
     }
   }

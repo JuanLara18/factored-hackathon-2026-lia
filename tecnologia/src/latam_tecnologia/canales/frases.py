@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 
 ABREVIATURAS = frozenset({"sr.", "sra.", "no.", "núm.", "aprox."})
@@ -81,6 +81,16 @@ _PROHIBIDAS = re.compile(
 # Afirmaciones que valen solo si en el turno se ejecutó la acción verificada (aprobada por el cliente). Las de
 # movimiento de dinero no se habilitan nunca: el banco no mueve dinero en este flujo.
 ACCIONES_VERIFICABLES = frozenset({"radicad", "bloquead"})
+# Qué afirmación habilita cada `AccionVerificada` exitosa del motor. Aprobar no basta: una acción aprobada
+# puede no ejecutarse (la herramienta la rechaza por política); lo que cuenta es el registro de ejecución.
+RAIZ_POR_ACCION = {"abrir_disputa": "radicad", "bloquear_tarjeta": "bloquead"}
+
+
+def raices_de(acciones: Iterable[str]) -> frozenset[str]:
+    """Raíces que el filtro deja pasar, dadas las acciones verificadas con éxito en la conversación."""
+    return frozenset(RAIZ_POR_ACCION[a] for a in acciones if a in RAIZ_POR_ACCION)
+
+
 _NEGACION = re.compile(r"\b(no|não|nao|nunca|sin|sem|ni|nem)\b(?:\W+\w+){0,3}\W*$", re.IGNORECASE)
 
 # Lo que el cliente ve cuando el filtro bloquea una frase o el turno falla, en el idioma de su registro.
@@ -138,7 +148,7 @@ def enmascarar_identificadores(frase: str) -> str:
 def filtrar_frase(frase: str, permitidas: frozenset[str] = frozenset()) -> ResultadoFiltro:
     """Enmascara tarjetas e ids internos y bloquea afirmaciones de acción sin `AccionVerificada`.
 
-    `permitidas` trae las raíces de `ACCIONES_VERIFICABLES` cuya acción se ejecutó en el turno; una negación
+    `permitidas` trae las raíces cuya acción consta como verificada (ver `raices_de`); una negación
     ("no fue bloqueada", "não foi bloqueado") no afirma nada y pasa.
     """
     enmascarada = enmascarar_identificadores(_TARJETA.sub(lambda m: f"**** {m.group(1)}", frase))

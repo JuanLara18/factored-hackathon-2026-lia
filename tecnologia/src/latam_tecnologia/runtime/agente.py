@@ -372,6 +372,7 @@ class AgenteDisputasRuntime:
         instrucciones = f"Registro: {registro}."
         salida: Any = None
         nuevos: list[Any] = []
+        anunciado = False
         for intento in (1, 2):
             try:
                 async with self._agente.run_stream(
@@ -382,6 +383,15 @@ class AgenteDisputasRuntime:
                     instructions=instrucciones,
                 ) as corrida:
                     async for delta in corrida.stream_text(delta=True):
+                        if not anunciado:
+                            # Las herramientas aprobadas ya corrieron cuando el modelo empieza a redactar: el
+                            # canal recibe qué acciones verificó el motor y solo esas puede afirmar el texto.
+                            anunciado = True
+                            hechas = [
+                                a.accion for a in self._almacen.acciones_hechas(conversacion_id) if a.exito
+                            ]
+                            if hechas:
+                                yield {"tipo": "verificadas", "acciones": hechas}
                         respuesta.append(delta)
                         yield {"tipo": "texto", "delta": delta}
                     salida = await corrida.get_output()

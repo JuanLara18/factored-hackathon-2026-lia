@@ -360,7 +360,8 @@
         interrupciones = (e.outcome && e.outcome.interrupts) || [];
       } else if (e.type === "RUN_ERROR") {
         error = true;
-        burbuja("asistente error", tx("falla"));
+        // El servidor ya dijo la falla con la plantilla en este turno: no se repite en otra burbuja.
+        if (!Object.keys(nodos).length) burbuja("asistente error", tx("falla"));
       }
     }
     for (const a of asistentes) {
