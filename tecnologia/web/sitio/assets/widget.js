@@ -186,12 +186,21 @@
     el.lanzador.focus();
   }
 
+  // La conversación general llega con el ingreso; una sesión guardada antes de este cambio no la trae.
+  function general() { const s = B.sesion(); return (s && s.conversacion) || null; }
+
   function mostrarSinContexto() {
     if (el.log.childElementCount) return;
     cargarTextos().then(() => {
       burbuja("asistente", tx("aviso"));
-      burbuja("asistente", T("Para revisar un cargo, ábralo desde sus movimientos y elija No reconozco este cargo. También puede pedir hablar con una persona."));
-      if (!est.conversacion) sugerir(["No reconozco un cargo", "¿Cómo bloqueo mi tarjeta?"]);
+      // Sin un movimiento abierto el asistente conversa igual, sobre la conversación general de la sesión.
+      if (!est.conversacion) est.conversacion = general();
+      if (est.conversacion) {
+        burbuja("asistente", T("Puedo revisar un cargo que no reconoce, bloquear una tarjeta, contarle cómo va un reclamo o comunicarle con una persona. ¿Qué necesita?"));
+        sugerir(["No reconozco un cargo", "Quiero bloquear mi tarjeta", "¿Cómo va mi reclamo?", "Ver mis últimos movimientos"]);
+      } else {
+        burbuja("asistente", T("Para revisar un cargo, ábralo desde sus movimientos y elija No reconozco este cargo. También puede pedir hablar con una persona."));
+      }
     });
   }
 
@@ -272,6 +281,7 @@
     if (est.ocupado) return;
     if (est.traspaso) { await responderAPersona(texto); return; }
     if (RE_PERSONA.test(texto)) { await pedirPersona(texto); return; }
+    if (!est.conversacion) est.conversacion = general();
     if (!est.conversacion) { burbuja("usuario", texto); burbuja("asistente", T("Para ayudarle necesito saber de qué cargo se trata. Abra un movimiento y elija No reconozco este cargo.")); return; }
     burbuja("usuario", texto);
     est.historial.push({ id: crypto.randomUUID(), role: "user", content: texto });

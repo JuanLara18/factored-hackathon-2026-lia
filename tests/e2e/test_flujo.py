@@ -170,6 +170,21 @@ def test_widget_abierto_axe_y_teclado(abrir, axe_js, oscuro):
     assert vigia.limpio() == []
 
 
+def test_asistente_conversa_sin_abrir_un_movimiento(abrir):
+    """Desde el botón flotante, sin movimiento abierto, el asistente responde (antes era un callejón sin salida)."""
+    page, _ = abrir(1280)
+    ingresar(page, 2)
+    page.click("#asistente-lanzador")
+    page.wait_for_selector(".bw-sugerida")
+    antes = page.locator("#asistente-log .bw-msg.asistente").count()
+    page.fill("#asistente-mensaje", "Hola, ¿en qué me puede ayudar?")
+    page.press("#asistente-mensaje", "Enter")
+    expect(page.locator(".bw-estado")).to_have_text("", timeout=120000)
+    assert page.locator("#asistente-log .bw-msg.asistente").count() > antes
+    assert page.locator(".bw-msg.error").count() == 0
+    assert "Abra un movimiento" not in page.inner_text("#asistente-log")
+
+
 def test_widget_movil_sin_desborde(abrir):
     for ancho in (390, 768):
         page, _ = abrir(ancho)

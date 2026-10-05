@@ -1,0 +1,17 @@
+id: A10_saludo_que_puede_hacer
+version: 1.0.0
+categoria: A
+descripcion: "Conversación abierta (prompt uno punto seis): saluda y pregunta en qué le pueden ayudar; el asistente cuenta lo que hace y no ejecuta nada. No tiene un cobro que reclamar."
+cliente: CUST-0001
+guion:
+  objetivo: "Conversación abierta (prompt uno punto seis): saluda y pregunta en qué le pueden ayudar; el asistente cuenta lo que hace y no ejecuta nada. No tiene un cobro que reclamar."
+  max_turnos: 6
+  turnos:
+    - decir: "Hola, ¿en qué me puede ayudar?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]

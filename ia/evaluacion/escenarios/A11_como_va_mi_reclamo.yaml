@@ -1,0 +1,20 @@
+id: A11_como_va_mi_reclamo
+version: 1.0.0
+categoria: A
+descripcion: "Conversación abierta: pregunta cómo va un reclamo ya abierto; el asistente consulta los casos y lo cuenta, sin abrir otro. Solo quiere saber el estado."
+cliente: CUST-0001
+mundo_extra:
+  casos_previos: [[CUST-0001, TX-1004]]
+guion:
+  objetivo: "Conversación abierta: pregunta cómo va un reclamo ya abierto; el asistente consulta los casos y lo cuenta, sin abrir otro. Solo quiere saber el estado."
+  max_turnos: 6
+  turnos:
+    - decir: "¿Cómo va el reclamo que puse por el cobro de Cafe Central?"
+      intencion: hablar
+esperado:
+  casos: [[CUST-0001, TX-1004]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  herramientas_requeridas: [casos_abiertos]
+  herramientas_prohibidas: [abrir_disputa]

@@ -33,7 +33,8 @@ PATRONES_SECRETOS = [r"AIza[0-9A-Za-z_-]{20,}", r"sk-[A-Za-z0-9]{20,}", r"-----B
 
 REF_COMPRENSION = "comprension/clasificar_motivo@1.0.0"
 REF_REDACCION = "redaccion/borrador_deslexicalizado@1.0.0"
-REF_DISPUTAS = "disputas/agente@1.5.0"
+REF_DISPUTAS = "disputas/agente@1.6.0"
+REF_DISPUTAS_1_5 = "disputas/agente@1.5.0"
 REF_DISPUTAS_1_4 = "disputas/agente@1.4.0"
 REF_DISPUTAS_1_3 = "disputas/agente@1.3.0"
 REF_DISPUTAS_1_2 = "disputas/agente@1.2.0"
@@ -41,6 +42,7 @@ REF_DISPUTAS_ANTERIOR = "disputas/agente@1.0.0"
 REF_DISPUTAS_1_1 = "disputas/agente@1.1.0"
 VALORES: dict[str, dict[str, str]] = {
     REF_DISPUTAS: {},
+    REF_DISPUTAS_1_5: {},
     REF_DISPUTAS_1_4: {},
     REF_DISPUTAS_1_3: {},
     REF_DISPUTAS_1_2: {},
@@ -177,3 +179,11 @@ def test_disputas_1_4_0_no_deja_al_cliente_fijar_la_prioridad(idioma: str, regis
 def test_disputas_1_5_0_bloquea_solo_la_tarjeta_del_movimiento(idioma: str, registro: str) -> None:
     texto = BIB.obtener(REF_DISPUTAS).plantillas[idioma][registro]
     assert "Bloquear tarjeta" in texto and "bloquear_tarjeta, " in texto
+
+
+@pytest.mark.parametrize(("idioma", "registro"), [("es", "usted"), ("es", "vos"), ("pt", "voce")])
+def test_disputas_1_6_0_conversa_y_ofrece_alternativas(idioma: str, registro: str) -> None:
+    texto = BIB.obtener(REF_DISPUTAS).plantillas[idioma][registro]
+    assert "casos_abiertos" in texto and ("Lía" in texto or "Lia" in texto)
+    # ya no se cierra la conversación con "solo ayudo con esos cobros"
+    assert "solo ayuda con esos cobros" not in texto and "só ajuda com essas cobranças" not in texto

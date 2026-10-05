@@ -251,6 +251,8 @@ def crear_router(
         return JSONResponse(
             {
                 "sesion": s.autenticada.id_sesion,
+                # Conversación general de la sesión: el asistente atiende sin llegar desde un movimiento.
+                "conversacion": s.conversacion_id,
                 "cliente": {
                     **_cliente_vista(indice, pais),
                     "moneda": moneda or {v: k for k, v in PAIS_POR_MONEDA.items()}.get(pais, "COP"),

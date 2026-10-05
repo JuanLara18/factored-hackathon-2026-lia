@@ -400,6 +400,7 @@
     const b = h("button", { type: "button", clase: "bn-enlace", texto: T("Salir") });
     b.addEventListener("click", () => { salir(); window.location.href = "/banca/index.html"; });
     zona.append(
+      h("span", { clase: "bn-segura" }, IC("candado"), h("span", { texto: T("Sesión segura") })),
       h("span", { clase: "bn-quien", title: s.cliente.alias }, avatar(nombre), h("span", { clase: "bn-quien-nombre", texto: nombre })),
       b);
   }
@@ -534,6 +535,30 @@
     }
   }
 
+  // Lo que se puede hacer con cada producto, en el propio producto: todo son funciones que ya existen.
+  function verMovimientosDe(p) {
+    const sel = $("f-producto");
+    sel.value = p.producto_ref;
+    tablero.producto = p.producto_ref;
+    cargarMovimientos(false);
+    $("t-mov").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  }
+  function accionProducto(ic, texto, fn, apagado) {
+    const b = h("button", { type: "button", clase: "bn-prod-accion" }, IC(ic), h("span", { texto: T(texto) }));
+    if (apagado) b.disabled = true; else b.addEventListener("click", fn);
+    return b;
+  }
+  function accionesDe(p, bloq) {
+    const lista = [accionProducto("buscar", "Movimientos", () => verMovimientosDe(p))];
+    if (esTarjeta(p)) {
+      lista.push(accionProducto("candado", bloq ? "Bloqueada" : "Bloquear", () => confirmarBloqueo([p], null), bloq));
+      lista.push(accionProducto("alerta", "Reportar un cargo", () => { verMovimientosDe(p); reportarCargo(); }));
+    } else {
+      lista.push(accionProducto("chat", "Preguntar a Lía", () => { if (window.BancaWidget) window.BancaWidget.abrir({}); }));
+    }
+    return h("div", { clase: "bn-prod-acciones", role: "group", "aria-label": T("Acciones de este producto") }, lista);
+  }
+
   function tarjetaProducto(p) {
     const bloq = p.estado === "bloqueada";
     if (esTarjeta(p)) {
@@ -557,7 +582,7 @@
           h("div", {}, h("p", { clase: "bn-plastico-marca", texto: "LATAM Bank" }), h("h3", { texto: p.etiqueta })),
           h("span", { clase: "bn-plastico-estado " + (bloq ? "bn-mal" : "bn-ok"), texto: T(bloq ? "Bloqueada" : "Activa") })),
         h("div", { clase: "bn-plastico-medio" }, icono("chip", "bn-plastico-chip"), h("p", { clase: "bn-final bn-num", "aria-label": T("Tarjeta terminada en {n}", { n: String(p.final).slice(-4) }), texto: enmascarar(p.final) })),
-        uso, barra);
+        uso, barra, accionesDe(p, bloq));
     }
     return h("li", { clase: "bn-producto bn-cuenta-tile" + (bloq ? " bn-bloqueado" : "") },
       h("div", { clase: "bn-tile-cab" },
@@ -566,7 +591,8 @@
         bloq ? insignia(p.estado) : null),
       p.saldo !== null && p.saldo !== undefined
         ? h("div", {}, h("p", { clase: "bn-tarjeta-rot", texto: T("Saldo disponible") }), cifra(p.saldo, p.moneda, "bn-tile-cifra"))
-        : h("p", { clase: "nota", texto: T("Sin saldo para mostrar.") }));
+        : h("p", { clase: "nota", texto: T("Sin saldo para mostrar.") }),
+      accionesDe(p, bloq));
   }
 
   function pintarProductos() {
@@ -603,7 +629,8 @@
     ["alerta", "Reportar un cargo", () => reportarCargo()],
     ["candado", "Bloquear tarjeta", () => bloquearDesdeInicio()],
     ["reclamos", "Mis reclamos", null],
-    ["chat", "Hablar con una persona", () => hablarConPersona()],
+    ["chat", "Preguntar a Lía", () => { if (window.BancaWidget) window.BancaWidget.abrir({}); }],
+    ["persona", "Hablar con una persona", () => hablarConPersona()],
   ];
   function pintarRapidas() {
     const cont = $("rapidas");

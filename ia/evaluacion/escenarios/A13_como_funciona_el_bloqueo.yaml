@@ -1,0 +1,16 @@
+id: A13_como_funciona_el_bloqueo
+version: 1.0.0
+categoria: A
+descripcion: "Conversación abierta: pregunta cómo funciona el bloqueo de la tarjeta; el asistente lo explica y no bloquea nada. Solo quiere entender, no bloquear."
+cliente: CUST-0001
+guion:
+  objetivo: "Conversación abierta: pregunta cómo funciona el bloqueo de la tarjeta; el asistente lo explica y no bloquea nada. Solo quiere entender, no bloquear."
+  max_turnos: 6
+  turnos:
+    - decir: "¿Cómo funciona el bloqueo de la tarjeta? Todavía no quiero bloquearla."
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false

@@ -1,0 +1,17 @@
+id: A12_ultimos_movimientos
+version: 1.0.0
+categoria: A
+descripcion: "Conversación abierta: pide ver sus últimos movimientos; el asistente los lista con comercio, monto y fecha y no ejecuta nada. No desconoce ninguno."
+cliente: CUST-0001
+guion:
+  objetivo: "Conversación abierta: pide ver sus últimos movimientos; el asistente los lista con comercio, monto y fecha y no ejecuta nada. No desconoce ninguno."
+  max_turnos: 6
+  turnos:
+    - decir: "¿Me muestra mis últimos movimientos, por favor?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]

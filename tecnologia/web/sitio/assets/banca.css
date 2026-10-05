@@ -358,3 +358,58 @@ dialog::backdrop { background: var(--velo); }
 .bw-lanzador { padding-left: .45rem; gap: .6rem; font-weight: 700; }
 .bw-lanzador .bn-ico { display: none; }
 .bw-lanzador::before { content: ""; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: url("lia.svg") center / cover; box-shadow: 0 0 0 2px rgb(255 255 255 / .6); }
+
+/* ===== Portal de banca en línea: barra propia (siempre oscura), secciones y acciones por producto ===== */
+body[data-pagina] { background: var(--superficie); }
+.bn-demo { background: var(--fondo); color: var(--suave); border-bottom: 1px solid var(--borde); }
+.bn-demo strong { background: var(--aviso-fondo); color: var(--aviso-texto); }
+.bn-demo .nota { color: var(--suave); }
+.bn-cabecera { background: #0b2a3f; border-bottom: 0; color: #fff; position: sticky; top: 0; z-index: 12; backdrop-filter: none; box-shadow: 0 2px 12px rgb(8 20 30 / .25); }
+.bn-cabecera .contenedor { min-height: 3.75rem; gap: .5rem 1rem; }
+.bn-cabecera .marca { color: #fff; }
+.bn-cabecera .marca .marca-b { color: #9fdcf2; }
+.bn-cabecera .marca svg { box-shadow: 0 0 0 1px rgb(255 255 255 / .18); }
+.bn-portal { font-family: var(--fuente-marca); font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #cfe3ec; padding-left: 1rem; border-left: 1px solid rgb(255 255 255 / .25); white-space: nowrap; }
+.bn-cabecera .nav { margin-left: 1rem; gap: .15rem; }
+.bn-cabecera .nav a { color: #d5e4ec; padding: .45rem .9rem; border-radius: 999px; font-weight: 500; }
+.bn-cabecera .nav a::after { display: none; }
+.bn-cabecera .nav a:hover { background: rgb(255 255 255 / .1); color: #fff; }
+.bn-cabecera .nav a[aria-current="page"] { background: rgb(255 255 255 / .16); color: #fff; font-weight: 600; }
+.bn-cabecera :focus-visible { outline-color: #fbbf24; }
+.bn-cabecera .idioma select { color: #fff; background-color: rgb(255 255 255 / .1); border: 0; }
+.bn-cabecera .idioma select:hover { background-color: rgb(255 255 255 / .18); }
+.bn-cabecera .idioma select option { color: #14202b; background: #fff; }
+.bn-segura { display: inline-flex; align-items: center; gap: .35rem; margin-right: .5rem; padding: .2rem .65rem; border-radius: 999px; font-size: .78rem; font-weight: 600; color: #a7f3d0; background: rgb(52 211 153 / .14); white-space: nowrap; }
+.bn-segura .bn-ico { width: .95rem; height: .95rem; }
+.bn-cabecera .bn-quien { color: #fff; }
+.bn-cabecera .bn-enlace { color: #cfe3ec; }
+.bn-cabecera .bn-enlace:hover { background: rgb(255 255 255 / .12); color: #fff; }
+#t-productos, #t-mov { scroll-margin-top: 5rem; }
+/* Acciones de cada producto */
+.bn-prod-acciones { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+.bn-pagina .bn-prod-accion { min-height: 36px; padding: .25rem .7rem; gap: .35rem; border-radius: 999px; font-size: .8125rem; font-weight: 600; box-shadow: none; }
+.bn-prod-accion .bn-ico { width: 1rem; height: 1rem; }
+.bn-plastico .bn-prod-accion { color: #fff; background: rgb(255 255 255 / .14); border-color: transparent; }
+.bn-plastico .bn-prod-accion:hover:not(:disabled) { background: rgb(255 255 255 / .26); border-color: rgb(255 255 255 / .5); }
+.bn-plastico .bn-prod-accion:focus-visible { outline-color: #fbbf24; }
+.bn-cuenta-tile .bn-prod-accion { color: var(--acento); background: var(--acento-tenue); border-color: transparent; }
+.bn-cuenta-tile .bn-prod-accion:hover { border-color: var(--acento); }
+.bn-plastico { min-height: 0; }
+/* El portal usa un ancho mayor que el sitio público y la barra nunca se monta sobre sí misma */
+body[data-pagina] .contenedor { max-width: 76rem; }
+.bn-cabecera .nav { flex: 0 1 auto; flex-wrap: nowrap; min-width: 0; }
+.bn-cabecera .nav a { white-space: nowrap; }
+.bn-cabecera .selector-idioma { margin-left: auto; flex: none; }
+#zona-sesion { flex: none; }
+@media (max-width: 80rem) { .bn-segura span { display: none; } .bn-segura { padding: .35rem; margin-right: .25rem; } }
+@media (max-width: 68rem) { .bn-portal { display: none; } .bn-cabecera .nav { margin-left: .25rem; } .bn-cabecera .nav a { padding-inline: .65rem; } }
+@media (max-width: 48rem) {
+  .bn-cabecera .nav { margin-left: 0; padding-bottom: .4rem; }
+}
+/* Portal en móvil */
+@media (max-width: 34rem) {
+  .bn-segura { display: none; }
+  .bn-cabecera .contenedor { column-gap: .35rem; }
+  .bn-cabecera .idioma select { max-width: 6.75rem; padding-left: .7rem; font-size: .84rem; text-overflow: ellipsis; }
+  .bn-cabecera .bn-enlace { padding-inline: .45rem; }
+}

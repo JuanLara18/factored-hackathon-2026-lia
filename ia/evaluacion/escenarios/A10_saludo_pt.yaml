@@ -1,0 +1,20 @@
+id: A10_saludo_pt
+version: 1.0.0
+categoria: A
+descripcion: "Conversa aberta em português: cumprimenta e pergunta em que podem ajudar; o assistente conta o que faz e não executa nada. Não tem cobrança para contestar."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Conversa aberta em português: cumprimenta e pergunta em que podem ajudar; o assistente conta o que faz e não executa nada. Não tem cobrança para contestar."
+  max_turnos: 6
+  turnos:
+    - decir: "Oi, em que você pode me ajudar?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]
