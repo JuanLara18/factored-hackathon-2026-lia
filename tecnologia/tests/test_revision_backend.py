@@ -120,6 +120,22 @@ def test_sesion_de_operador_vence_y_los_alias_no_se_reusan() -> None:
     assert tomados == {"Experto 2", "Experto 3"}  # el alias de la sesión vencida no se reutiliza
 
 
+def test_con_el_cupo_de_expertos_lleno_sale_la_sesion_mas_antigua() -> None:
+    """Negar el ingreso dejó la consola cerrada en producción: ahora entra el nuevo y sale el más antiguo."""
+    from latam_tecnologia.banca.api import MAX_OPERADORES
+
+    mundo = _mundo([])
+    primero = mundo.operador()
+    for _ in range(MAX_OPERADORES - 1):
+        mundo.reloj.t += timedelta(seconds=1)
+        mundo.operador()
+    assert mundo.c.get("/api/operador/cola", headers=primero).status_code == 200
+    mundo.reloj.t += timedelta(seconds=1)
+    nuevo = mundo.operador()  # la número cincuenta y uno
+    assert mundo.c.get("/api/operador/cola", headers=nuevo).status_code == 200
+    assert mundo.c.get("/api/operador/cola", headers=primero).status_code == 401
+
+
 def test_codigo_de_operador_se_limita_tras_cinco_fallos() -> None:
     mundo = _mundo([])
     for _ in range(5):

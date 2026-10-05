@@ -563,8 +563,10 @@ def crear_router(
         numeracion.fallos = 0
         for vencido in [t for t, (_, exp) in operadores.items() if ahora >= exp]:
             del operadores[vencido]
-        if len(operadores) >= MAX_OPERADORES:
-            return _error("demasiadas_sesiones", 429)
+        # Con el cupo lleno sale la sesión más antigua: negar el ingreso dejaba la consola cerrada durante horas
+        # (pasó el 5 oct, cuando la instancia dejó de apagarse y las pruebas agotaron las cincuenta sesiones).
+        while len(operadores) >= MAX_OPERADORES:
+            del operadores[min(operadores, key=lambda t: operadores[t][1])]
         token = uuid.uuid4().hex
         operadores[token] = (f"Experto {numeracion.siguiente}", ahora + VIGENCIA_OPERADOR)
         numeracion.siguiente += 1
