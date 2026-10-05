@@ -171,7 +171,7 @@
     el.lanzador.setAttribute("aria-expanded", "true");
     el.lanzador.classList.add("oculto");
     el.lanzador.classList.remove("nuevo");
-    el.lanzadorTxt.textContent = T("Asistente");
+    el.lanzadorTxt.textContent = T("Hable con Lía");
     el.titulo.focus();
     if (o.conversacion && o.conversacion !== est.conversacion) await empezar(o.conversacion, o.contexto);
     else if (!est.conversacion && !o.conversacion) mostrarSinContexto();

@@ -460,7 +460,7 @@
       try {
         const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice, registro: registro() } });
         const base = lista.find((c) => c.indice === indice) || {};
-        guardarSesion({ sesion: r.sesion, cliente: Object.assign({ indice, nombre: base.nombre }, r.cliente) });
+        guardarSesion({ sesion: r.sesion, conversacion: r.conversacion, cliente: Object.assign({ indice, nombre: base.nombre }, r.cliente) });
         window.location.href = "/banca/index.html" + (MOCK ? "?demo=local" : "");
       } catch (e) {
         err.textContent = mensajeDeError(e);
@@ -966,7 +966,7 @@
     // Revisión visual en modo local: ?cliente=1 entra sin pasar por el formulario.
     if (MOCK && !sesion() && params.get("cliente")) {
       const r = await llamar("/api/banca/ingresar", { metodo: "POST", cuerpo: { indice: Number(params.get("cliente")) - 1 } });
-      guardarSesion({ sesion: r.sesion, cliente: r.cliente });
+      guardarSesion({ sesion: r.sesion, conversacion: r.conversacion, cliente: r.cliente });
     }
     const s = sesion();
     cabeceraSesion();

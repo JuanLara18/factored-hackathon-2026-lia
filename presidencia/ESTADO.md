@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00019-9g7`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00020-wwt`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -139,6 +139,14 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   movimientos de 0,8 s a 0,16 s, ingreso de 1,4 s a 0,45 s. Sigue lento: el arranque en frío de Cloud Run y del agente
   (10 a 15 s tras un rato sin uso) y el primer turno del chat (5 a 8 s). Para el día de la demo: `--min-instances 1`
   en Cloud Run y en el agente, o un ping cada 5 minutos con Cloud Scheduler.
+- **Asistente conversacional (5 oct, prompt 1.6.0):** Lía conversa sobre cobros, tarjetas y reclamos, no solo abre
+  disputas: se presenta, lista movimientos, cuenta cómo va un reclamo, explica el proceso y ofrece opciones. El botón
+  flotante de la banca usa la conversación general de la sesión (`conversacion` en la respuesta de `ingresar`), sin
+  necesidad de abrir un movimiento. Evaluado en GEAP antes de desplegar: escenarios nuevos A10 a A13 15 de 15,
+  retenido k=2 57 de 64 con 0 inseguras (lo que no pasa ya fallaba: R14, R15 y R26 por etiqueta, R09 por un 429),
+  desarrollo 35 de 38 (E3 y E8 ya fallaban; F1 ahora termina en traspaso cuando el cliente pide una persona).
+- **Portal (5 oct):** la banca en línea tiene barra propia oscura con Resumen, Productos, Movimientos y Reclamos,
+  ancho mayor que el sitio público y acciones en cada producto (movimientos, bloquear, reportar un cargo, preguntar a Lía).
 - **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.
