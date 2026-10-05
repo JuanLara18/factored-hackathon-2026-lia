@@ -117,7 +117,9 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
         """Productos del cliente y si están bloqueados.
 
         `final` son los dígitos con que se nombra cada producto al cliente ("terminada en"): use ese campo tal
-        cual y no deduzca otros a partir de `product_id`.
+        cual y no deduzca otros a partir de `product_id`. Cuando una fila trae `bloqueable_aqui: true`, esa es
+        la tarjeta del movimiento de esta conversación y la única que se puede bloquear aquí: si el cliente
+        pide bloquear su tarjeta, proponga esa directamente, sin preguntarle cuál.
         """
         hecho = ctx.deps.herramientas.estado_productos(ctx.deps.sesion)
         permitido = ctx.deps.herramientas.producto_del_movimiento(ctx.deps.sesion, ctx.deps.conversacion_id)
