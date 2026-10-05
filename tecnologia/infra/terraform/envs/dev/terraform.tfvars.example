@@ -6,6 +6,8 @@ dueno_email     = "dueno@example.com"
 # project_id            = "latam-bank-hackaton-2026"
 # project_number        = "47808508188"
 # presupuesto_monto     = 20000   # COP por mes (D-29, D-32)
-# trabajador_version    = "0.2.0"
+# trabajador_version    = "0.7.0"
 # agent_runtime_recurso = "projects/<numero>/locations/us-central1/reasoningEngines/<id>"
-# operador_codigo       = "experto-xxxxxx"   # o TF_VAR_operador_codigo
+
+# Obligatorio y fuera del repositorio: el código de la consola del experto que ya tiene el servicio.
+#   export TF_VAR_operador_codigo=<valor de LATAM_OPERADOR_CODIGO en Cloud Run>

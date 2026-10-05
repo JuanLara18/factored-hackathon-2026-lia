@@ -6,6 +6,7 @@ resource "google_bigquery_dataset" "d" {
   project                     = var.project_id
   dataset_id                  = each.key
   location                    = var.location
+  description                 = each.value.descripcion
   labels                      = merge(var.etiquetas, { componente = each.key })
   default_table_expiration_ms = each.value.vencimiento_ms
   delete_contents_on_destroy  = false

@@ -16,4 +16,8 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
+
+  # Con credenciales de usuario, APIs como la de presupuestos exigen un proyecto de cuota.
+  user_project_override = true
+  billing_project       = var.project_id
 }

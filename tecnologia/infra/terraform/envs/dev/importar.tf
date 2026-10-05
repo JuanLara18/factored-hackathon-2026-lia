@@ -38,6 +38,21 @@ import {
   id       = "projects/${var.project_id}/datasets/${each.value}"
 }
 
+import {
+  to = module.chat.google_secret_manager_secret.ref
+  id = "projects/${var.project_id}/secrets/latam-ref-secreto"
+}
+
+import {
+  to = module.chat.google_secret_manager_secret_iam_member.ref
+  id = "projects/${var.project_id}/secrets/latam-ref-secreto roles/secretmanager.secretAccessor serviceAccount:latam-chat@${var.project_id}.iam.gserviceaccount.com"
+}
+
+import {
+  to = module.chat.google_cloud_scheduler_job.despierto
+  id = "projects/${var.project_id}/locations/${var.region}/jobs/latam-chat-despierto"
+}
+
 # El presupuesto se importa con su id de la cuenta de facturación:
 #   gcloud billing budgets list --billing-account=<cuenta>
 #   terraform import module.presupuesto.google_billing_budget.presupuesto billingAccounts/<cuenta>/budgets/<id>

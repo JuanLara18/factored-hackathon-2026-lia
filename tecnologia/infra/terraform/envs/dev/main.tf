@@ -34,6 +34,7 @@ module "chat" {
   project_id      = var.project_id
   region          = var.region
   etiquetas       = merge(local.etiquetas, { componente = "chat" })
+  project_number  = var.project_number
   bucket_staging  = "${var.project_id}-staging"
   operador_codigo = var.operador_codigo
   env = {
@@ -43,6 +44,16 @@ module "chat" {
     LATAM_TRABAJADOR_VERSION    = var.trabajador_version
     LATAM_AGENT_RUNTIME_RECURSO = var.agent_runtime_recurso
   }
+  depends_on = [module.proyecto]
+}
+
+module "monitoreo" {
+  source     = "../../modules/monitoreo"
+  project_id = var.project_id
+  # Por nombre y no por salida del módulo del chat: las alertas se pueden aplicar sin tocar el servicio.
+  servicio   = "latam-chat"
+  url        = "https://latam-chat-${var.project_number}.${var.region}.run.app"
+  correo     = var.dueno_email
   depends_on = [module.proyecto]
 }
 

@@ -4,3 +4,8 @@ variable "location" {
   type        = string
   default     = "nam5"
 }
+variable "colecciones_con_vencimiento" {
+  description = "Debe coincidir con COLECCIONES_CON_VENCIMIENTO de latam_tecnologia.banca.firestore."
+  type        = list(string)
+  default     = ["casos", "bloqueos", "traspasos", "conversaciones", "mensajes"]
+}

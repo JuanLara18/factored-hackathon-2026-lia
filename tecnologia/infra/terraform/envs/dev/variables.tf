@@ -31,7 +31,7 @@ variable "bigquery_location" {
 variable "trabajador_version" {
   description = "Debe coincidir con ia/agentes/trabajadores/disputas.yaml."
   type        = string
-  default     = "0.2.0"
+  default     = "0.7.0"
 }
 variable "agent_runtime_recurso" {
   description = "projects/<numero>/locations/us-central1/reasoningEngines/<id>, que imprime desplegar.py."
@@ -39,7 +39,7 @@ variable "agent_runtime_recurso" {
   default     = "projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272"
 }
 variable "operador_codigo" {
-  type      = string
-  default   = null
-  sensitive = true
+  description = "Se pasa con TF_VAR_operador_codigo (el valor vive en el servicio, no en el repositorio)."
+  type        = string
+  sensitive   = true
 }

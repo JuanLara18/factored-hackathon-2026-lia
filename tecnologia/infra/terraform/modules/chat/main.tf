@@ -23,6 +23,24 @@ resource "google_project_iam_member" "chat" {
   member   = "serviceAccount:${google_service_account.chat.email}"
 }
 
+# Clave de las referencias opacas de la API (D-33). Terraform adopta el secreto y el permiso, no el valor:
+# las versiones se crean a mano (`gcloud secrets versions add`) y nunca pasan por el estado.
+resource "google_secret_manager_secret" "ref" {
+  project   = var.project_id
+  secret_id = var.secreto_ref
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_iam_member" "ref" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.ref.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.chat.email}"
+}
+
 # Paquetes del despliegue de Agent Runtime: se borran a los 7 días.
 resource "google_storage_bucket" "staging" {
   project                     = var.project_id
@@ -46,10 +64,11 @@ resource "google_cloud_run_v2_service" "chat" {
   name                = var.servicio
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
-  deletion_protection = false
+  deletion_protection = true
   labels              = merge(var.etiquetas, { proyecto = "latam-bank" })
 
   template {
+    labels                           = { proyecto = "latam-bank" }
     service_account                  = google_service_account.chat.email
     timeout                          = "300s"
     max_instance_request_concurrency = 40
@@ -82,12 +101,20 @@ resource "google_cloud_run_v2_service" "chat" {
         }
       }
 
-      dynamic "env" {
-        for_each = var.operador_codigo == null ? [] : [1]
-        content {
-          name  = "LATAM_OPERADOR_CODIGO"
-          value = var.operador_codigo
+      # Sin esta variable el servicio no arranca (latam_tecnologia.banca.refs).
+      env {
+        name = "LATAM_REF_SECRETO"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ref.secret_id
+            version = "latest"
+          }
         }
+      }
+
+      env {
+        name  = "LATAM_OPERADOR_CODIGO"
+        value = var.operador_codigo
       }
     }
   }
@@ -95,6 +122,8 @@ resource "google_cloud_run_v2_service" "chat" {
   lifecycle {
     ignore_changes = [
       template[0].containers[0].image,
+      build_config, # lo escribe `gcloud run deploy --source` en cada despliegue
+      scaling,      # el día de la demo se sube a mano con --min-instances 1
       client,
       client_version,
     ]
@@ -108,4 +137,29 @@ resource "google_cloud_run_v2_service_iam_member" "publico" {
   name     = google_cloud_run_v2_service.chat.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# Mantiene despierta la instancia: sin el ping, el primer acceso tras un rato paga el arranque en frío.
+# No despierta al agente de Agent Runtime.
+resource "google_cloud_scheduler_job" "despierto" {
+  project          = var.project_id
+  region           = var.region
+  name             = "${var.servicio}-despierto"
+  description      = "Mantiene despierta la instancia de Cloud Run del demo (evita el arranque en frio)"
+  schedule         = "*/5 * * * *"
+  time_zone        = "America/Bogota"
+  attempt_deadline = "60s"
+
+  http_target {
+    http_method = "GET"
+    uri         = "https://${var.servicio}-${var.project_number}.${var.region}.run.app/api/textos?registro=usted"
+  }
+
+  retry_config {
+    max_backoff_duration = "3600s"
+    max_doublings        = 5
+    max_retry_duration   = "0s"
+    min_backoff_duration = "5s"
+    retry_count          = 0
+  }
 }
