@@ -4,6 +4,10 @@ Colecciones: `casos`, `bloqueos`, `traspasos` y `conversaciones/{id}/mensajes`. 
 deterministas (caso por cliente y transacción, bloqueo por cliente y producto, traspaso por conversación), así
 que `create` (falla si existe) da la idempotencia sin transacciones y sin depender del proceso que escribe.
 Las consultas filtran por un solo campo: no piden índices compuestos.
+
+Retención (D-27): cada documento lleva `expira_en`, una marca de tiempo nativa a 30 días de su creación, y la
+política de TTL de Firestore sobre ese campo lo borra (`tecnologia/infra/terraform/modules/firestore`). El
+campo es de almacenamiento: se quita al leer y no existe en los modelos.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ from latam_comun.dominio import Dinero, PaqueteTraspaso
 
 from latam_tecnologia.banca.banco import (
     LIMITE_TRANSCRIPCION,
+    RETENCION_OPERATIVA,
     caso_nuevo,
     id_caso,
     id_traspaso,
@@ -32,9 +37,16 @@ from latam_tecnologia.banca.modelos import Caso, Mensaje, RegistroConversacion, 
 from latam_tecnologia.banca.refs import hash_corto
 from latam_tecnologia.herramientas.puertos import CasoAbierto
 
+CAMPO_VENCIMIENTO = "expira_en"
+COLECCIONES_CON_VENCIMIENTO = ("casos", "bloqueos", "traspasos", "conversaciones", "mensajes")
+
 
 def _ahora() -> datetime:
     return datetime.now(UTC)
+
+
+def sin_vencimiento(datos: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in datos.items() if k != CAMPO_VENCIMIENTO}
 
 
 class BancoFirestore:
@@ -48,6 +60,9 @@ class BancoFirestore:
     ) -> None:
         self._db: Any = cliente or firestore.Client(project=proyecto, database=base)
         self._reloj = reloj
+
+    def _con_vencimiento(self, datos: dict[str, Any]) -> dict[str, Any]:
+        return {**datos, CAMPO_VENCIMIENTO: self._reloj() + RETENCION_OPERATIVA}
 
     # Efectos del agente (ServiciosBanco)
 
@@ -69,7 +84,7 @@ class BancoFirestore:
             if existente.exists and existente.to_dict().get("estado") == "abierto":
                 return  # otra instancia lo abrió antes: el crédito lo concedió ella
             # caso cerrado: se reabre uno nuevo sobre el mismo documento
-            transaccion.set(documento, caso.model_dump(mode="json"))
+            transaccion.set(documento, self._con_vencimiento(caso.model_dump(mode="json")))
 
         transaccional: Any = getattr(firestore, "transactional")  # noqa: B009
         transaccional(_abrir)(self._db.transaction())
@@ -90,11 +105,13 @@ class BancoFirestore:
         documento = self._db.collection("bloqueos").document(hash_corto("bloqueo", cliente_id, producto_id))
         with contextlib.suppress(AlreadyExists):
             documento.create(
-                {
-                    "cliente_id": cliente_id,
-                    "producto_id": producto_id,
-                    "bloqueado_en": self._reloj().isoformat(),
-                }
+                self._con_vencimiento(
+                    {
+                        "cliente_id": cliente_id,
+                        "producto_id": producto_id,
+                        "bloqueado_en": self._reloj().isoformat(),
+                    }
+                )
             )
         return f"bloqueada:{producto_id}"
 
@@ -109,11 +126,11 @@ class BancoFirestore:
 
     def caso(self, caso_ref: str) -> Caso | None:
         d = self._db.collection("casos").document(caso_ref).get()
-        return Caso.model_validate(d.to_dict()) if d.exists else None
+        return Caso.model_validate(sin_vencimiento(d.to_dict())) if d.exists else None
 
     def casos_de(self, cliente_id: str) -> tuple[Caso, ...]:
         consulta = self._db.collection("casos").where(filter=FieldFilter("cliente_id", "==", cliente_id))
-        return tuple(Caso.model_validate(d.to_dict()) for d in consulta.stream())
+        return tuple(Caso.model_validate(sin_vencimiento(d.to_dict())) for d in consulta.stream())
 
     def bloqueado(self, cliente_id: str, producto_id: str) -> bool:
         return bool(
@@ -130,11 +147,11 @@ class BancoFirestore:
 
     def registrar_conversacion(self, conversacion: RegistroConversacion) -> None:
         with contextlib.suppress(AlreadyExists):
-            self._conv(conversacion.id).create(conversacion.model_dump(mode="json"))
+            self._conv(conversacion.id).create(self._con_vencimiento(conversacion.model_dump(mode="json")))
 
     def conversacion(self, conversacion_id: str) -> RegistroConversacion | None:
         d = self._conv(conversacion_id).get()
-        return RegistroConversacion.model_validate(d.to_dict()) if d.exists else None
+        return RegistroConversacion.model_validate(sin_vencimiento(d.to_dict())) if d.exists else None
 
     def registrar_solicitud(self, conversacion_id: str, texto: str) -> None:
         if self.conversacion(conversacion_id) is not None:
@@ -148,7 +165,7 @@ class BancoFirestore:
             d = documento.get(transaction=transaccion)
             if not d.exists:
                 return
-            actual = RegistroConversacion.model_validate(d.to_dict())
+            actual = RegistroConversacion.model_validate(sin_vencimiento(d.to_dict()))
             turnos = [*actual.transcripcion, nuevo][-LIMITE_TRANSCRIPCION:]
             transaccion.update(
                 documento,
@@ -164,13 +181,13 @@ class BancoFirestore:
     def agregar_mensaje(self, conversacion_id: str, autor: str, texto: str) -> str:
         mensaje = mensaje_nuevo(autor, texto, self._reloj())
         self._conv(conversacion_id).collection("mensajes").document(mensaje.id).set(
-            mensaje.model_dump(mode="json")
+            self._con_vencimiento(mensaje.model_dump(mode="json"))
         )
         return mensaje.id
 
     def mensajes(self, conversacion_id: str, desde: str | None = None) -> list[Mensaje]:
         todos = [
-            Mensaje.model_validate(d.to_dict())
+            Mensaje.model_validate(sin_vencimiento(d.to_dict()))
             for d in self._conv(conversacion_id).collection("mensajes").stream()
         ]
         return sorted((m for m in todos if desde is None or m.id > desde), key=lambda m: m.id)
@@ -194,7 +211,7 @@ class BancoFirestore:
 
     @staticmethod
     def _leer(datos: dict[str, Any]) -> Traspaso:
-        crudo = dict(datos)
+        crudo = sin_vencimiento(datos)
         crudo["paquete"] = PaqueteTraspaso.model_validate_json(crudo.pop("paquete_json"))
         return Traspaso.model_validate(crudo)
 
@@ -213,7 +230,9 @@ class BancoFirestore:
             }
         )
         with contextlib.suppress(AlreadyExists):
-            self._db.collection("traspasos").document(identificador).create(self._guardar(registro))
+            self._db.collection("traspasos").document(identificador).create(
+                self._con_vencimiento(self._guardar(registro))
+            )
         return identificador
 
     def traspaso(self, id_traspaso: str) -> Traspaso | None:

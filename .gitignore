@@ -63,3 +63,4 @@ ia/evaluacion/reportes/*
 # Artefactos de experimentos de IA (modelos y cachés)
 ia/artefactos/
 *.joblib
+*_local.tf

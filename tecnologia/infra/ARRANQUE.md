@@ -29,9 +29,12 @@ adopta con `importar.tf`. **Terraform no se ha aplicado nunca**: `terraform vali
 - **Retirado** por no existir en el proyecto: Cloud SQL, Workload Identity Federation y cuenta de despliegue, Cloud Run
   Job `pipeline-datos` y Artifact Registry propio. El pipeline de datos corre desde la máquina del dueño (dbt y la
   carga usan sus credenciales).
-- **Secret Manager.** Existe un secreto creado a mano el 30 sep, `latam-ref-secreto` (clave de las referencias opacas
-  de la API), que Cloud Run monta como `LATAM_REF_SECRETO` y que `latam-chat@` lee con `secretAccessor`. Todavía no
-  está en Terraform: hay que añadirlo al adoptar lo desplegado.
+- **Secret Manager.** El secreto `latam-ref-secreto` (clave de las referencias opacas de la API) se creó a mano el
+  30 sep; Terraform adopta el secreto y el permiso de `latam-chat@`, nunca el valor. Cloud Run lo monta como
+  `LATAM_REF_SECRETO` y `desplegar.py` se lo entrega también al agente. Un servicio desplegado sin esa variable no
+  arranca (`latam_tecnologia.banca.refs`).
+- **Código del experto.** `operador_codigo` es obligatorio y se pasa con `TF_VAR_operador_codigo`: sin él, un apply
+  quitaría `LATAM_OPERADOR_CODIGO` del servicio.
 
 ## Adoptar lo desplegado (sin aplicar)
 
@@ -39,8 +42,24 @@ adopta con `importar.tf`. **Terraform no se ha aplicado nunca**: `terraform vali
 cd tecnologia/infra/terraform/envs/dev
 cp terraform.tfvars.example terraform.tfvars      # billing_account y dueno_email
 terraform init
+export GOOGLE_OAUTH_ACCESS_TOKEN=$(gcloud auth print-access-token)
+export TF_VAR_operador_codigo=<valor de LATAM_OPERADOR_CODIGO en Cloud Run>
 terraform plan                                    # leer el plan: debe adoptar sin destruir
 ```
+
+**Plan del 5 de octubre de 2026** (primera vez contra el proyecto): 16 por adoptar, 30 por crear, 5 por cambiar y 0
+por destruir. Los cambios son etiquetas en datasets, bucket y servicio, y `LATAM_TRABAJADOR_VERSION` (el servicio
+tenía 0.6.0). Lo que se crea: 20 `google_project_service` (habilitar una API ya habilitada no cambia nada), 5 políticas de TTL de Firestore y
+el módulo `monitoreo` (canal de correo, comprobación de disponibilidad y tres alertas).
+
+Para activar solo lo aditivo, sin tocar el servicio ni los datasets:
+
+```bash
+terraform apply -target=module.monitoreo -target=module.firestore.google_firestore_field.vencimiento
+```
+
+El presupuesto se adopta con un archivo local ignorado por git (`importar_presupuesto_local.tf`, patrón
+`*_local.tf`) con el bloque `import` y el id que da `gcloud billing budgets list`.
 
 El presupuesto se importa a mano (ver el final de `importar.tf`). Dos diferencias a tener presentes: los datasets
 tienen vencimiento por defecto de 60 días (7 en `latam_pruebas`) y las tablas vigentes vencen el 28 de noviembre de 2026.

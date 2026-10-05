@@ -29,8 +29,13 @@ variable "env" {
   type        = map(string)
 }
 variable "operador_codigo" {
-  description = "Código de acceso de la consola del experto (LATAM_OPERADOR_CODIGO). Nulo = no se declara."
+  description = "Código de acceso de la consola del experto (LATAM_OPERADOR_CODIGO). Obligatorio: sin él un apply lo quitaría del servicio."
   type        = string
-  default     = null
   sensitive   = true
 }
+variable "secreto_ref" {
+  description = "Secreto de Secret Manager con la clave de las referencias opacas (LATAM_REF_SECRETO)."
+  type        = string
+  default     = "latam-ref-secreto"
+}
+variable "project_number" { type = string }

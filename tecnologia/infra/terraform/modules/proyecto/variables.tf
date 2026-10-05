@@ -19,6 +19,8 @@ variable "apis" {
     "cloudtrace.googleapis.com",
     "logging.googleapis.com",
     "monitoring.googleapis.com",
+    "secretmanager.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "firebase.googleapis.com",
     "firebasehosting.googleapis.com",
   ]
