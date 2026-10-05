@@ -18,7 +18,7 @@
 </head>
 <body data-pagina="inicio">
 <a class="salto" href="#principal">Ir al contenido</a>
-<div class="bn-demo"><div class="contenedor"><p><strong>Demostración</strong></p><p>Clientes y movimientos ficticios. LATAM Bank no es un banco real.</p><p id="modo-local" class="oculto">Datos de ejemplo locales, sin servidor.</p><div id="selector-idioma" class="selector-idioma"></div></div></div>
+<div class="bn-demo"><div class="contenedor"><p><strong>Demostración</strong></p><p>Clientes y movimientos ficticios. LATAM Bank no es un banco real.</p><p id="modo-local" class="oculto">Datos de ejemplo locales, sin servidor.</p><div id="selector-idioma" class="selector-idioma"></div><label class="pais" for="pais"><span class="visualmente-oculto">País</span><select id="pais" aria-label="País"><option value="MX">México</option><option value="CO">Colombia</option><option value="AR">Argentina</option></select></label></div></div>
 <header class="cabecera bn-cabecera">
   <div class="contenedor">
     <a class="marca" href="/banca/index.html"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="#0a5a7a"/><path d="M9 32h14a9 9 0 0 0 9-9v-9c-3 10-11 17-23 18z" fill="#0f7ea8"/><path d="M10.5 8v12.5a1.5 1.5 0 0 0 1.5 1.5h8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.6" fill="#5eead4"/></svg><span>LATAM <span class="marca-b">Bank</span></span></a>
@@ -101,6 +101,7 @@
 <p id="anuncio" class="visualmente-oculto" role="status" aria-live="assertive"></p>
 <script src="../config.js"></script>
 <script src="../assets/idioma.js"></script>
+<script src="../assets/pais.js" defer></script>
 <script src="../assets/banca.js" defer></script>
 <script src="../assets/widget.js" defer></script>
 </body>

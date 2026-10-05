@@ -6,6 +6,7 @@
   var aviso = document.getElementById("resultado");
   var vacio = document.getElementById("sin-resultados");
   if (!campo) { return; }
+  var T = function (texto, valores) { return window.Idioma ? window.Idioma.t(texto, valores) : texto.replace("{n}", valores.n); };
   function normal(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
   function filtrar() {
     var q = normal(campo.value.trim());
@@ -16,14 +17,17 @@
       if (ok) { n++; }
     }
     vacio.classList.toggle("oculto", n !== 0);
-    aviso.textContent = q === "" ? "" : n + (n === 1 ? " pregunta encontrada" : " preguntas encontradas");
+    aviso.textContent = q === "" ? "" : T(n === 1 ? "{n} pregunta encontrada" : "{n} preguntas encontradas", { n: n });
   }
   campo.addEventListener("input", filtrar);
   // Temas frecuentes: cada botón escribe su palabra en el buscador.
   var temas = document.querySelectorAll("[data-buscar]");
   for (var t = 0; t < temas.length; t++) {
     temas[t].addEventListener("click", function () {
-      campo.value = this.getAttribute("data-buscar");
+      var palabra = this.getAttribute("data-buscar") || "";
+      var clave = "buscar:" + palabra;
+      var traducida = window.Idioma ? window.Idioma.t(clave) : clave;
+      campo.value = traducida === clave ? palabra : traducida;
       filtrar();
     });
   }

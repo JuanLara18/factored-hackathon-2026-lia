@@ -109,6 +109,10 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
+## Hecho el 5 oct
+
+- **País e idioma, una sola preferencia en todo el sitio** (rama `feature/clientes-cli-1-6-idioma-y-pais`, sin desplegar): las ocho páginas públicas cargan `idioma.js` y `idioma-sitio.js`, tienen selector de idioma junto al de país, y están en portugués (você) y con `vos`; la banca tiene el selector de país junto al de idioma y, en el ingreso, pone primero y preselecciona a un cliente del país elegido. Sin trato elegido, Argentina sugiere `vos`. Una prueba estática falla si un texto visible no tiene portugués, y hay e2e del recorrido. El portugués sigue sin revisión de un hablante nativo.
+
 ## Hecho el 4 oct
 
 - **Rediseño** de banca (ingreso con personas ficticias, resumen, tarjetas, movimientos con íconos y signo, detalle, panel del

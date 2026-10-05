@@ -32,9 +32,15 @@
   var sel = document.getElementById("pais");
   if (sel) {
     sel.value = pais;
-    sel.addEventListener("change", function () { pais = sel.value; guardar(pais); aplicar(pais); });
+    sel.addEventListener("change", function () {
+      pais = sel.value; guardar(pais); aplicar(pais);
+      document.dispatchEvent(new CustomEvent("latam:pais", { detail: pais }));
+      if (window.Idioma && window.Idioma.alCambiarPais) { window.Idioma.alCambiarPais(); }
+    });
   }
   aplicar(pais);
+  // La banca lo usa para preseleccionar un cliente del país elegido.
+  window.Pais = { actual: function () { return pais; } };
   // Menú de la cabecera en pantallas angostas: botón de despliegue, Escape lo cierra.
   var btn = document.querySelector(".menu-btn");
   var cab = document.querySelector(".cabecera");

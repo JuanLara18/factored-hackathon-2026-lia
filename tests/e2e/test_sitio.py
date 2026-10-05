@@ -74,3 +74,47 @@ def test_ayuda_busqueda(abrir):
     assert page.locator(".faq:not(.oculto)").count() == 0
     page.fill("#buscar", "")
     assert page.locator(".faq:not(.oculto)").count() == total
+
+
+def _esperar_trato(page, trato: str) -> None:
+    page.wait_for_function(f"document.documentElement.dataset.trato === '{trato}'")
+
+
+def test_portugues_elegido_en_el_inicio_vale_en_todo_el_sitio(abrir):
+    page, vigia = abrir()
+    page.goto(URL + "/", wait_until="networkidle")
+    assert page.evaluate("document.documentElement.lang") == "es"
+    page.select_option("#idioma", "voce")
+    _esperar_trato(page, "voce")
+    assert page.evaluate("document.documentElement.lang") == "pt-BR"
+    assert "Se você não reconhece uma cobrança" in page.locator("h1").inner_text()
+    page.goto(URL + "/productos", wait_until="networkidle")
+    assert page.evaluate("document.documentElement.lang") == "pt-BR"
+    assert page.input_value("#idioma") == "voce"
+    assert page.title() == "Produtos, LATAM Bank"
+    assert "Contas e cartões" in page.locator("h1").inner_text()
+    page.goto(URL + "/banca/", wait_until="networkidle")
+    assert page.evaluate("document.documentElement.lang") == "pt-BR"
+    assert page.input_value("#idioma") == "voce"
+    page.goto(URL + "/privacidade".replace("privacidade", "privacidad"), wait_until="networkidle")
+    assert page.title() == "Aviso de privacidade, LATAM Bank"
+    assert vigia.limpio() == []
+
+
+def test_argentina_sugiere_vos_sin_pisar_la_eleccion(abrir):
+    page, _ = abrir()
+    page.goto(URL + "/", wait_until="networkidle")
+    assert page.evaluate("document.documentElement.dataset.trato") == "usted"
+    page.select_option("#pais", "AR")
+    _esperar_trato(page, "vos")
+    assert page.input_value("#idioma") == "vos"
+    assert page.evaluate("document.documentElement.lang") == "es"
+    assert "Si no reconocés un cargo" in page.locator("h1").inner_text()
+    # una elección explícita no se pisa, ni al cambiar de país ni al volver a Argentina
+    page.select_option("#idioma", "usted")
+    _esperar_trato(page, "usted")
+    page.select_option("#pais", "CO")
+    page.select_option("#pais", "AR")
+    page.goto(URL + "/ayuda", wait_until="networkidle")
+    assert page.evaluate("document.documentElement.dataset.trato") == "usted"
+    assert page.input_value("#pais") == "AR"

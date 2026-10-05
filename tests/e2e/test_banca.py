@@ -204,3 +204,38 @@ def test_acciones_de_cada_producto(abrir):
     page.click("#confirmar-no")  # se cancela: nada cambia
     assert page.locator("#productos .bn-bloqueado").count() == 0
     assert vigia.limpio() == []
+
+
+def _clientes_del_ingreso(page) -> list[tuple[bool, str]]:
+    page.wait_for_selector("input[name=cliente]")
+    return page.eval_on_selector_all(
+        "input[name=cliente]",
+        "els => els.map(e => [e.checked, e.closest('label').querySelector('.bn-persona-meta').textContent])",
+    )
+
+
+def test_ingreso_preselecciona_un_cliente_del_pais_elegido(abrir):
+    page, vigia = abrir()
+    page.goto(URL + "/", wait_until="networkidle")
+    page.select_option("#pais", "AR")
+    page.wait_for_function("document.documentElement.dataset.trato === 'vos'")  # espera la recarga del trato
+    page.goto(URL + "/banca/", wait_until="networkidle")
+    assert page.input_value("#pais") == "AR"
+    clientes = _clientes_del_ingreso(page)
+    assert clientes[0][0] and clientes[0][1].startswith("Argentina")
+    assert clientes[1][1].startswith("Argentina") and not clientes[1][0]
+    assert sum(1 for marcado, _ in clientes if marcado) == 1
+    # Argentina sin trato elegido: la banca habla con vos
+    assert page.evaluate("document.documentElement.dataset.trato") == "vos"
+    assert "Ingresá a la banca en línea" in page.locator("#ingreso-titulo").inner_text()
+    # cambiar el país en la propia banca reordena y vuelve a preseleccionar
+    page.select_option("#pais", "CO")
+    page.wait_for_function(
+        "() => document.querySelector('.bn-persona-meta')?.textContent.startsWith('Colombia')"
+    )
+    clientes = _clientes_del_ingreso(page)
+    assert clientes[0][0] and clientes[0][1].startswith("Colombia")
+    # la preselección es la que se usa al ingresar
+    page.click("#form-ingreso button[type=submit]")
+    page.wait_for_selector("#productos .bn-producto")
+    assert vigia.limpio() == []
