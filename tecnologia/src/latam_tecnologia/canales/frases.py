@@ -91,7 +91,24 @@ def raices_de(acciones: Iterable[str]) -> frozenset[str]:
     return frozenset(RAIZ_POR_ACCION[a] for a in acciones if a in RAIZ_POR_ACCION)
 
 
-_NEGACION = re.compile(r"\b(no|não|nao|nunca|sin|sem|ni|nem)\b(?:\W+\w+){0,3}\W*$", re.IGNORECASE)
+# Negación de la afirmación: un adverbio ("no fue bloqueada") o un determinante ("ninguna tarjeta fue
+# bloqueada", "nenhuma contestação foi aberta"), a lo sumo tres palabras antes y dentro de la misma cláusula.
+_NEGACION = re.compile(
+    r"\b(no|não|nao|nunca|sin|sem|ni|nem|ning[uú]n|ninguna|ninguno|nenhum|nenhuma)\b(?:\W+\w+){0,3}\W*$",
+    re.IGNORECASE,
+)
+_FIN_DE_CLAUSULA = re.compile(r"[.!?;:,\n]")
+
+
+def negada(texto: str, inicio: int) -> bool:
+    """Si la afirmación que empieza en `inicio` está negada en su propia cláusula.
+
+    La cláusula se corta también en la coma: "No, su tarjeta fue bloqueada" afirma, no niega. La usan el
+    filtro de salida y el verificador de la evaluación, para que ambos juzguen igual.
+    """
+    clausula = _FIN_DE_CLAUSULA.split(texto[:inicio])[-1]
+    return _NEGACION.search(clausula) is not None
+
 
 # Lo que el cliente ve cuando el filtro bloquea una frase o el turno falla, en el idioma de su registro.
 RESPALDO = {
@@ -154,7 +171,7 @@ def filtrar_frase(frase: str, permitidas: frozenset[str] = frozenset()) -> Resul
     enmascarada = enmascarar_identificadores(_TARJETA.sub(lambda m: f"**** {m.group(1)}", frase))
     for m in _PROHIBIDAS.finditer(enmascarada):
         palabra = m.group(1).lower()
-        if palabra[:-1] in permitidas or _NEGACION.search(enmascarada[: m.start()]):
+        if palabra[:-1] in permitidas or negada(enmascarada, m.start()):
             continue
         return ResultadoFiltro(enmascarada, bloqueada=True, motivo=f"afirmacion_prohibida:{palabra}")
     return ResultadoFiltro(enmascarada)
