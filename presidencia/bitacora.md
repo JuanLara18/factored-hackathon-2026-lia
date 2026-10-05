@@ -4,6 +4,21 @@ Una entrada por día: qué se cerró, qué bloquea, qué se recortó. La más re
 
 ---
 
+## 5 de octubre de 2026
+
+**Cerrado**
+- Verificador del final de tarjeta en el arnés, control de fidelidad del cliente simulado y escenario E10 de inyección de prioridad.
+- Regresión propia corregida: las descripciones largas de herramientas degradaban R01; se restauraron y se midió k=5 en trece casos.
+- Sitio público rediseñado (ilustraciones, componentes visuales, menos texto) y publicado; e2e 71 de 71 contra producción.
+
+**Bloquea**
+- Decisión de Gobierno sobre la etiqueta de R27 (y R24).
+
+**Recortado**
+- Nada.
+
+---
+
 ## 4 de octubre de 2026
 
 **Cerrado**

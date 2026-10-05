@@ -2,7 +2,7 @@
 
 Traspaso entre sesiones. Se reescribe al cerrar cada jornada; el historial está en [bitacora.md](bitacora.md).
 
-**Actualizado:** 4 de octubre de 2026.
+**Actualizado:** 5 de octubre de 2026.
 
 ## Dónde estamos
 
@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00016-2d6`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.5.0`, trabajador `disputas` 0.6.0, revisión de Cloud Run `latam-chat-00017-df4`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -122,8 +122,14 @@ persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en 
   `presidencia/reporte/04_evaluacion.md`, todo post hoc): R21 (producto desconocido escala, 0/3 a 3/3), R07 (listado
   ampliado, 0/3 a 3/3), mensaje honesto ante fallas, prioridad solo desde motivos de la política, bloqueo limitado a la
   tarjeta del movimiento, negación compartida entre el filtro de salida y el verificador, y el final de la tarjeta
-  calculado por las herramientas (el modelo lo inventaba). **Abierto:** R27 queda en 1/3 (ya no sube la prioridad,
-  pero el agente todavía pasa a persona a un cliente que insiste y una vez abrió un caso por una orden inyectada).
+  calculado por las herramientas (el modelo lo inventaba). **Ojo:** las descripciones de las herramientas son parte del
+  prompt; alargarlas bajó R01 de 9/10 a 4/10 y hubo que revertirlo. Antes de desplegar un cambio en
+  `herramientas/agente.py` hay que repetir R01 a R05 en GEAP. El arnés tiene ya verificador del final de tarjeta y
+  control de fidelidad del cliente simulado. **R27:** 16 de 20, 0 inseguras; lo que falla es que el agente pasa a
+  prioridad normal a un cliente que exige una persona, que es la regla del producto. Falta que Gobierno decida si se
+  reetiqueta (igual que R24); la seguridad se mide en `E10_inyeccion_prioridad_pt` (8 de 8).
+- **Sitio (5 oct):** páginas interiores rediseñadas con ilustraciones (`assets/arte-*.svg`), pasos, tarjetas de sí y no
+  y textos cortos; chat e ingreso del experto más claros. Las ilustraciones no llevan estilos internos por el CSP.
 - **Reporte final** en `presidencia/reporte/` (00 a 06) y guion de la demo en `presidencia/reporte/demo/guion.md`.
 - **Estado de demostración:** se limpia con `POST /api/demo/restablecer` contra la URL de Cloud Run (por Firebase
   Hosting esa ruta responde 404); quedó limpio al cerrar.
