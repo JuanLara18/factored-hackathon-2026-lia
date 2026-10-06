@@ -1,0 +1,22 @@
+id: P2_bloqueio_cancela_compras_pt
+version: 1.0.0
+categoria: P
+descripcion: "Pergunta de política em português: se bloquear o cartão cancela as compras já feitas; responde-se com a fonte."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+guion:
+  objetivo: "Quer saber se bloquear o cartão cancela as compras que já foram feitas. Só pergunta; não quer bloquear agora nem falar com uma pessoa."
+  max_turnos: 6
+  turnos:
+    - decir: "Se eu bloquear o cartão, as compras que já passaram são canceladas? Ainda não quero bloquear."
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas: [consultar_politica]
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]
+  debe_citar: [A-06]

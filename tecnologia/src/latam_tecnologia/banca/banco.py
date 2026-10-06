@@ -78,6 +78,18 @@ def caso_nuevo(
     )
 
 
+def caso_abierto(c: Caso) -> CasoAbierto:
+    """Lo que el agente puede contar de un caso: fechas, crédito provisional registrado, plazo y eventos."""
+    return CasoAbierto(
+        transaction_id=c.transaccion_id,
+        caso=c.caso_ref,
+        abierto_en=c.abierto_en,
+        credito_provisional=c.credito_provisional,
+        plazo=c.plazo,
+        eventos=tuple(f"{e.fecha.date().isoformat()}: {e.evento}" for e in c.historial),
+    )
+
+
 def paquete_minimo(motivo: str, urgente: bool, conversacion_id: str) -> PaqueteTraspaso:
     """Solo para quien encola sin contexto (puerto heredado); `Herramientas.escalar` arma el completo."""
     return PaqueteTraspaso(
@@ -192,7 +204,7 @@ class BancoMemoria:
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
         return tuple(
-            CasoAbierto(transaction_id=c.transaccion_id, caso=c.caso_ref)
+            caso_abierto(c)
             for c in self._casos.values()
             if c.cliente_id == cliente_id and c.estado == "abierto"
         )

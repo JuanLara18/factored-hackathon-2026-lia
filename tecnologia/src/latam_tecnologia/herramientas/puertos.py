@@ -56,6 +56,11 @@ class CasoAbierto(_Inmutable):
 
     transaction_id: str
     caso: str
+    # Lo que el banco sabe del caso, para contar cómo va sin inventar; None si el almacén no lo tiene.
+    abierto_en: datetime | None = None
+    credito_provisional: bool | None = None
+    plazo: str | None = None
+    eventos: tuple[str, ...] = ()
 
 
 class LecturaOro(Protocol):

@@ -1,0 +1,25 @@
+id: M3_bloqueio_e_andamento_pt
+version: 1.0.0
+categoria: M
+descripcion: "Vários pedidos em português: bloquear o cartão perdido e saber como está uma contestação já aberta."
+idioma: pt
+registro: voce
+cliente: CUST-0001
+mundo_extra:
+  casos_previos: [[CUST-0001, TX-1012]]
+guion:
+  objetivo: "Perdeu o cartão e quer bloqueá-lo; também quer saber como está a contestação que já abriu da Libreria Sol. Aprova o bloqueio. Não pede para abrir outra contestação nem para falar com uma pessoa."
+  max_turnos: 8
+  turnos:
+    - decir: "Não acho meu cartão em lugar nenhum, bloqueia para mim. E a contestação da Libreria Sol, andou?"
+      intencion: hablar
+    - decir: "Sim, pode bloquear"
+      intencion: confirmar
+esperado:
+  casos: [[CUST-0001, TX-1012]]
+  bloqueos: [[CUST-0001, PRD-1]]
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas: [bloquear_tarjeta, casos_abiertos]
+  herramientas_prohibidas: [abrir_disputa]

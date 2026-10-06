@@ -7,6 +7,7 @@ nombre, documento, correo, teléfono, número de tarjeta ni identificadores inte
 
 from __future__ import annotations
 
+import contextlib
 import hmac
 import logging
 import os
@@ -23,6 +24,7 @@ from fastapi.responses import JSONResponse, Response
 from latam_comun.dominio import Canal, Confirmacion
 
 from latam_tecnologia.banca.banco import Banco
+from latam_tecnologia.banca.copiloto import Generador, crear_generador, sugerir
 from latam_tecnologia.banca.modelos import RegistroConversacion, Traspaso
 from latam_tecnologia.banca.motivos import MOTIVOS
 from latam_tecnologia.banca.refs import ref
@@ -47,6 +49,7 @@ from latam_tecnologia.canales.runtime_cliente import (
     id_usuario,
 )
 from latam_tecnologia.herramientas.catalogo import NO_DISPUTABLES, AccesoDenegado, Herramientas
+from latam_tecnologia.herramientas.conocimiento import Recuperador, crear_recuperador
 from latam_tecnologia.herramientas.puertos import Producto, Transaccion
 from latam_tecnologia.motor.retoma import Conversacion
 
@@ -143,6 +146,33 @@ def contexto_reclamo(tx: Transaccion) -> str:
     )
 
 
+class _Copiloto:
+    """Modelo y recuperador del copiloto, creados al primer uso: el arranque no depende de ellos."""
+
+    def __init__(self, entorno: Mapping[str, str]) -> None:
+        self._entorno = entorno
+        self._generador: Generador | None = None
+        self._recuperador: Recuperador | None = None
+        self._listo = False
+
+    def _preparar(self) -> None:
+        if self._listo:
+            return
+        self._listo = True
+        with contextlib.suppress(Exception):
+            self._generador = crear_generador(self._entorno)
+        with contextlib.suppress(Exception):
+            self._recuperador = crear_recuperador(self._entorno)
+
+    def generador(self) -> Generador | None:
+        self._preparar()
+        return self._generador
+
+    def recuperador(self) -> Recuperador | None:
+        self._preparar()
+        return self._recuperador
+
+
 def crear_router(
     *,
     demo: Demo,
@@ -157,6 +187,7 @@ def crear_router(
     lectura = demo.lectura
     env = os.environ if entorno is None else entorno
     operadores: dict[str, tuple[str, datetime]] = {}  # token -> (alias, vencimiento)
+    copiloto = _Copiloto(env)
     numeracion = _Numeracion(desde=demo.reloj())
 
     # Ayudas
@@ -672,6 +703,25 @@ def crear_router(
         if not texto or len(texto) > MAX_TEXTO:
             return _error("texto_invalido", 400)
         return JSONResponse({"id": banco.agregar_mensaje(t.conversacion_id, "persona", texto)})
+
+    @router.post("/api/operador/traspasos/{identificador}/sugerencia")
+    def sugerencia(identificador: str, request: Request) -> Response:
+        """Borrador del copiloto para quien tomó el caso. No escribe en el hilo: la persona edita y envía."""
+        o = _operador(request)
+        if isinstance(o, JSONResponse):
+            return o
+        t = _mio(identificador, o)
+        if isinstance(t, JSONResponse):
+            return t
+        conv = banco.conversacion(t.conversacion_id)
+        vista = vista_paquete(
+            t,
+            demo.reloj(),
+            conv.transcripcion if conv else [],
+            banco.mensajes(t.conversacion_id),
+            MOTIVOS.get(t.paquete.motivo) or MOTIVOS["FUERA_DE_RUTINA"],
+        )
+        return JSONResponse(sugerir(vista, copiloto.generador(), copiloto.recuperador()).model_dump())
 
     @router.post("/api/operador/traspasos/{identificador}/resolver")
     def resolver(identificador: str, request: Request, cuerpo_json: CuerpoJson) -> Response:

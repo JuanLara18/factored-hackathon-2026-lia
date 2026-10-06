@@ -78,7 +78,7 @@ class ServiciosBancoFalsos:
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
         return tuple(
-            CasoAbierto(transaction_id=tx, caso=caso)
+            CasoAbierto(transaction_id=tx, caso=caso, credito_provisional=caso in self.creditos_provisionales)
             for (c, tx), caso in self.casos.items()
             if c == cliente_id
         )

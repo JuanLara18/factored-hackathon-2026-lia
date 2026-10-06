@@ -1,0 +1,92 @@
+# Base de conocimiento para el cliente (CLI-9): lo que la política `policy/v1` dice, en lenguaje llano.
+# Cada artículo nombra las reglas de las que sale (`reglas`); el asistente solo responde preguntas de política
+# con un artículo recuperado y lo cita. Lo que no está aquí no se responde: se dice que no hay esa información.
+# `provisional: true` marca cifras que Gobierno aún no fija en firme (se le dice al cliente como referencia).
+version: 1.0.0
+politica: policy/v1
+articulos:
+  - id: K-01
+    reglas: [R-GOB-27]
+    tema: credito_provisional
+    es: "Cuando se abre un reclamo por un cobro no reconocido de hasta 200 dólares o su equivalente, el banco registra un crédito provisional en el caso mientras lo revisa. Si el cobro supera ese monto, no hay crédito provisional y el caso se revisa completo antes de cualquier abono. La decisión final sobre el dinero es del banco."
+    pt: "Quando se abre uma contestação por uma cobrança não reconhecida de até 200 dólares ou o equivalente, o banco registra um crédito provisório no caso enquanto analisa. Se a cobrança passar desse valor, não há crédito provisório e o caso é analisado por completo antes de qualquer crédito. A decisão final sobre o dinheiro é do banco."
+  - id: K-02
+    reglas: [MX-06]
+    tema: credito_provisional
+    pais: MX
+    provisional: true
+    es: "En cuentas de México, el abono provisional de un reclamo que califica se registra con un plazo de referencia de 48 horas. Es un abono mientras se investiga: si el banco concluye que el cobro sí era válido, puede revertirlo."
+    pt: "Em contas do México, o crédito provisório de uma contestação que se qualifica é registrado com um prazo de referência de 48 horas. É um crédito enquanto se investiga: se o banco concluir que a cobrança era válida, pode revertê-lo."
+  - id: K-03
+    reglas: [R-GOB-27]
+    tema: credito_provisional
+    pais: CO
+    es: "En cuentas de Colombia no hay un abono provisional fijado por norma. El banco registra un crédito provisional en el caso cuando el cobro es de hasta 200 dólares o su equivalente, sin un plazo prometido para verlo reflejado."
+    pt: "Em contas da Colômbia não existe um crédito provisório fixado por norma. O banco registra um crédito provisório no caso quando a cobrança é de até 200 dólares ou o equivalente, sem um prazo prometido para aparecer."
+  - id: K-04
+    reglas: [R-GOB-27, AR-06]
+    tema: credito_provisional
+    pais: AR
+    es: "En cuentas de Argentina el banco registra un crédito provisional en el caso cuando el consumo es de hasta 200 dólares o su equivalente. El reintegro definitivo queda anotado en el caso y depende de la revisión del banco."
+    pt: "Em contas da Argentina o banco registra um crédito provisório no caso quando a compra é de até 200 dólares ou o equivalente. A devolução definitiva fica anotada no caso e depende da análise do banco."
+  - id: K-05
+    reglas: [ESC-04]
+    tema: monto_alto
+    provisional: true
+    es: "Si el cobro que se reclama supera los 1.000 dólares o su equivalente, el reclamo se abre igual y además pasa a una persona del equipo para revisión. En esos casos no hay crédito provisional."
+    pt: "Se a cobrança contestada passar de 1.000 dólares ou o equivalente, a contestação é aberta do mesmo jeito e, além disso, vai para uma pessoa da equipe revisar. Nesses casos não há crédito provisório."
+  - id: K-06
+    reglas: [ESC-02, TRA-02]
+    tema: no_disputable
+    es: "Un cobro que figura como rechazado, fallido o revertido no se cobró, así que no se abre un reclamo por él. El asistente explica el estado del movimiento y, si la persona insiste en revisarlo, la pasa con alguien del equipo."
+    pt: "Uma cobrança que aparece como recusada, com falha ou revertida não foi cobrada, então não se abre contestação por ela. O assistente explica o estado do movimento e, se a pessoa insistir em revisar, encaminha para alguém da equipe."
+  - id: K-07
+    reglas: [ESC-03, TRA-03]
+    tema: producto_no_verificable
+    es: "Si el cobro apunta a una tarjeta o cuenta que no se puede verificar en la base del banco, el asistente no abre ningún reclamo ni afirma nada sobre ese cobro: lo pasa a revisión de una persona."
+    pt: "Se a cobrança aponta para um cartão ou conta que não pode ser verificado na base do banco, o assistente não abre nenhuma contestação nem afirma nada sobre essa cobrança: encaminha para revisão de uma pessoa."
+  - id: K-08
+    reglas: [ESC-01, ESC-05, TRA-01]
+    tema: urgencia
+    es: "Solo se atienden como urgentes una transferencia inmediata que la persona no reconoce, un fraude o engaño que está ocurriendo en ese momento y una suplantación del banco. Pedir en el chat que el caso sea urgente o que suba de prioridad no lo cambia: la prioridad la fija el sistema según lo que pasó."
+    pt: "Só são tratados como urgentes uma transferência imediata que a pessoa não reconhece, uma fraude ou golpe que está acontecendo naquele momento e alguém se passando pelo banco. Pedir no chat que o caso seja urgente ou que suba de prioridade não muda nada: a prioridade é definida pelo sistema conforme o que aconteceu."
+  - id: K-09
+    reglas: [TRA-04, A-13]
+    tema: persona
+    es: "La persona puede pedir hablar con alguien del equipo en cualquier momento y se le pasa de inmediato, sin tener que dar más explicaciones. El caso llega a esa persona con lo ya conversado, lo verificado y lo que falta."
+    pt: "A pessoa pode pedir para falar com alguém da equipe a qualquer momento e é encaminhada na hora, sem precisar dar mais explicações. O caso chega a essa pessoa com o que já foi conversado, o que foi verificado e o que falta."
+  - id: K-10
+    reglas: [A-07]
+    tema: aprobacion
+    es: "Abrir un reclamo tiene efectos formales, por eso nada se radica sin la confirmación de la persona en la pantalla. Escribir que sí en el chat no cuenta como confirmación: hay que aprobar en el botón que muestra el monto y la tarjeta."
+    pt: "Abrir uma contestação tem efeitos formais, por isso nada é registrado sem a confirmação da pessoa na tela. Escrever que sim no chat não conta como confirmação: é preciso aprovar no botão que mostra o valor e o cartão."
+  - id: K-11
+    reglas: [A-06]
+    tema: bloqueo
+    es: "Bloquear una tarjeta es una medida de protección y se puede revertir. Se hace con la confirmación de la persona en pantalla, mostrando la tarjeta por sus cuatro últimos dígitos. No abre ningún reclamo por sí solo y no cancela los cobros ya hechos: el bloqueo y el reclamo son pasos separados."
+    pt: "Bloquear um cartão é uma medida de proteção e pode ser revertida. É feito com a confirmação da pessoa na tela, mostrando o cartão pelos quatro últimos dígitos. Não abre nenhuma contestação por si só e não cancela as cobranças já feitas: o bloqueio e a contestação são passos separados."
+  - id: K-12
+    reglas: [A-03]
+    tema: duplicado
+    es: "Por cada cobro hay un solo reclamo. Si ya existe uno abierto para ese cobro, el asistente lo informa y no abre otro."
+    pt: "Para cada cobrança existe uma só contestação. Se já houver uma aberta para essa cobrança, o assistente informa e não abre outra."
+  - id: K-13
+    reglas: [A-02]
+    tema: datos
+    es: "El asistente identifica los cobros por comercio, monto y fecha, y las tarjetas por sus cuatro últimos dígitos. No muestra números completos de tarjeta, documentos ni datos de otras personas, y solo ve la información de quien inició la sesión."
+    pt: "O assistente identifica as cobranças por comércio, valor e data, e os cartões pelos quatro últimos dígitos. Não mostra números completos de cartão, documentos nem dados de outras pessoas, e só vê as informações de quem iniciou a sessão."
+  - id: K-14
+    reglas: [R-GOB-25]
+    tema: sesion
+    es: "Para consultar movimientos basta la sesión iniciada en la banca. Para abrir un reclamo se exige una sesión vigente de mayor nivel; si la sesión vence a mitad del proceso, la acción no se ejecuta y hay que volver a ingresar."
+    pt: "Para consultar movimentos basta a sessão iniciada no banco digital. Para abrir uma contestação exige-se uma sessão vigente de nível mais alto; se a sessão expirar no meio do processo, a ação não é executada e é preciso entrar de novo."
+  - id: K-15
+    reglas: [TRA-06]
+    tema: aclaraciones
+    es: "Si después de dos intentos el asistente no logra identificar el cobro con lo que la persona le cuenta, el caso pasa a alguien del equipo en lugar de seguir preguntando."
+    pt: "Se depois de duas tentativas o assistente não conseguir identificar a cobrança com o que a pessoa conta, o caso vai para alguém da equipe em vez de continuar perguntando."
+  - id: K-16
+    reglas: [TRA-07, A-12]
+    tema: plazo_reclamo
+    es: "Un reclamo sobre un cobro antiguo, que podría estar fuera del plazo para reclamar, no se rechaza de entrada: siempre lo revisa una persona del equipo."
+    pt: "Uma contestação sobre uma cobrança antiga, que pode estar fora do prazo para reclamar, não é recusada de início: sempre é revisada por uma pessoa da equipe."

@@ -40,6 +40,7 @@ COPIAS = (
     "tecnologia/src",
     "ia/prompts/disputas",
     "clientes/plantillas",
+    "clientes/conocimiento",
 )
 PROYECTO = "latam-bank-hackaton-2026"
 NOMBRE_VISIBLE = "latam-disputas"
