@@ -119,6 +119,13 @@ async function mock(metodo, ruta, cuerpo) {
     return { id };
   }
   if (g[2] === "resolver") { item.estado = p.estado = "resuelto"; p.correccion = cuerpo; return { estado: "resuelto" }; }
+  if (g[2] === "sugerencia") {
+    return {
+      resumen: "El cliente no reconoce un cargo y pidió una persona. El cargo está verificado y no se ha abierto reclamo. Falta confirmar si quiere bloquear la tarjeta.",
+      respuesta: "Hola, soy del equipo de LATAM Bank. Ya leí lo que le contó al asistente y no tiene que repetirlo. Voy a revisar el cargo con usted y le cuento el siguiente paso por este mismo chat.",
+      fuentes: ["TRA-04", "A-13"], origen: "modelo", aviso: null,
+    };
+  }
   throw new ErrorApi("Ruta desconocida.", 404);
 }
 
@@ -493,6 +500,11 @@ function pintarCaso() {
     f.appendChild(ta);
     const bs = el("button", "op-boton", "Enviar", { type: "submit" });
     f.appendChild(bs); f.addEventListener("submit", enviarMensaje);
+    // Copiloto: el borrador llega al cuadro de texto y la persona lo revisa; nada se envía solo.
+    const bb = el("button", "op-boton op-secundario", "Sugerir borrador con IA", { type: "button", id: "op-sugerir" });
+    bb.addEventListener("click", sugerirBorrador);
+    f.appendChild(bb);
+    f.appendChild(el("div", "op-borrador", null, { id: "op-borrador", "aria-live": "polite" }));
     s.appendChild(f);
     s.appendChild(formularioResolver());
   }
@@ -581,11 +593,41 @@ async function tomar() {
     $("op-error-caso").textContent = e.message;
   }
 }
+async function sugerirBorrador() {
+  const b = $("op-sugerir"), caja = $("op-borrador"), ta = $("op-texto");
+  b.disabled = true; caja.replaceChildren(el("p", "op-suave", "Preparando el borrador."));
+  try {
+    const r = await api("POST", "/api/operador/traspasos/" + encodeURIComponent(est.actual) + "/sugerencia", {});
+    caja.replaceChildren();
+    caja.appendChild(el("p", "op-borrador-aviso", r.origen === "modelo"
+      ? "Borrador de inteligencia artificial. Revíselo y edítelo antes de enviar: usted responde por el mensaje."
+      : (r.aviso || "Texto de plantilla.")));
+    caja.appendChild(el("h5", null, "Resumen para usted"));
+    caja.appendChild(el("p", null, r.resumen));
+    if ((r.fuentes || []).length) caja.appendChild(el("p", "op-suave", "Fuente: política del banco, regla " + r.fuentes.join(", ")));
+    ta.value = r.respuesta;
+    est.borrador = { caso: est.actual, texto: r.respuesta, origen: r.origen };
+    ta.focus();
+    anunciar("Borrador listo para revisar.");
+  } catch (e) {
+    caja.replaceChildren(el("p", "op-error", e.message));
+  }
+  b.disabled = false;
+}
+// Qué hizo la persona con el borrador: queda en la etiqueta de corrección como medida de supervisión humana.
+function usoDelBorrador(texto) {
+  const d = est.borrador;
+  if (!d || d.caso !== est.actual) return null;
+  return texto === d.texto.trim() ? "enviado_sin_cambios" : "editado";
+}
 async function enviarMensaje(ev) {
   ev.preventDefault();
   const ta = $("op-texto");
   const texto = ta.value.trim();
   if (!texto) { ta.focus(); return; }
+  const uso = usoDelBorrador(texto);
+  // cuenta el primer mensaje tras el borrador; los siguientes ya son de la persona
+  if (uso && !(est.borradorUso && est.borradorUso.caso === est.actual)) est.borradorUso = { caso: est.actual, uso, origen: est.borrador.origen };
   if (RE_PII.test(texto)) { $("op-error-caso").textContent = "El mensaje parece traer un número de tarjeta completo. Quítelo antes de enviar."; ta.focus(); return; }
   const b = ev.target.querySelector("button"); b.disabled = true;
   try {
@@ -616,6 +658,9 @@ async function resolver(ev) {
     utilidad_paquete: v("op-utilidad") ? Number(v("op-utilidad")) : null,
     preguntas_repetidas: $("op-repetidas").value.trim() || null,
     comentario: nota || null,
+    borrador_ia: est.borradorUso && est.borradorUso.caso === est.actual
+      ? est.borradorUso.uso + ":" + est.borradorUso.origen
+      : (est.borrador && est.borrador.caso === est.actual ? "pedido_y_descartado" : "no_pedido"),
   };
   const b = ev.target.querySelector("button[type=submit]"); b.disabled = true;
   try {

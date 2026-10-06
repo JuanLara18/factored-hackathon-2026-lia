@@ -203,3 +203,11 @@ blockquote { border-left-color: var(--acento); font-style: italic; padding-left:
 }
 /* El ingreso no se estira a toda la altura (main es flexible en site.css) */
 .op-ingreso { flex: none; }
+
+/* Copiloto: el borrador se distingue del texto de la persona y nunca parece un mensaje enviado */
+.op-borrador { margin-top: .75rem; }
+.op-borrador:empty { display: none; }
+.op-borrador > * { margin: .25rem 0; }
+.op-borrador h5 { font-size: .85rem; margin-top: .5rem; }
+.op-borrador-aviso { border-left: 3px solid currentColor; padding-left: .6rem; font-size: .9rem; }
+#op-sugerir { margin-left: .5rem; }

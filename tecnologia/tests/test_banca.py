@@ -359,6 +359,11 @@ def test_flujo_completo_cliente_experto(mundo: Mundo) -> None:
     otro = mundo.operador()
     assert mundo.c.post(f"/api/operador/traspasos/{idt}/tomar", headers=otro).status_code == 409
     assert mundo.c.get("/api/operador/cola", headers=op).json()[0]["tomado_por"] == "Experto 1"
+    # Copiloto: solo para quien tomó el caso; sin modelo entrega la plantilla y no escribe en el hilo
+    assert mundo.c.post(f"/api/operador/traspasos/{idt}/sugerencia", headers=otro).status_code == 409
+    borrador = mundo.c.post(f"/api/operador/traspasos/{idt}/sugerencia", headers=op).json()
+    assert borrador["origen"] == "plantilla" and borrador["respuesta"] and borrador["resumen"]
+    assert mundo.c.get(f"/api/operador/traspasos/{idt}", headers=op).json()["mensajes"] == []
 
     m1 = mundo.c.post(
         f"/api/operador/traspasos/{idt}/mensaje", headers=op, json={"texto": "Buenas tardes"}
