@@ -9,6 +9,7 @@ Solución para la **Factored AI & Data Hackathon 2026**: un banco inventado, LAT
 | What | Where |
 |---|---|
 | Live solution | https://latam-bank-hackaton-2026.web.app (online banking demo at `/banca/`, human expert console at `/operador/`; the console access code is in the submission email) |
+| Video pitch (2:19) | https://latam-bank-hackaton-2026.web.app/pitch/video.mp4 |
 | Slides (6) | [`presidencia/entrega/LATAM_Bank_Factored_Hackathon_2026.pdf`](presidencia/entrega/LATAM_Bank_Factored_Hackathon_2026.pdf) |
 | Final report, in Spanish | [`presidencia/reporte/00_reporte_final.md`](presidencia/reporte/00_reporte_final.md): problem, solution, data and ML, evaluation, fairness, production |
 | Held-out evaluation | [`presidencia/reporte/04_evaluacion.md`](presidencia/reporte/04_evaluacion.md) |

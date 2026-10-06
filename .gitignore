@@ -65,3 +65,6 @@ ia/evaluacion/reportes/*
 ia/artefactos/
 *.joblib
 *_local.tf
+
+# El video de la entrega se publica con el sitio y como archivo de la versión en GitHub, no en git
+tecnologia/web/sitio/pitch/*.mp4
