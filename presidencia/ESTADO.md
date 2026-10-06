@@ -120,12 +120,12 @@ Regla: el retenido v3 se congela antes de tocar el agente y se corre una sola ve
 | 2 | Agente: seguimiento del caso y varios pedidos en una conversación | hecho y desplegado el 5 oct (datos del caso enriquecidos; el prompt ya lo hacía) |
 | 3 | Política con citas: `consultar_politica`, base de conocimiento de 16 artículos, recuperador vectorial 0,897 contra 0,515 de BM25, verificadores `citas` y `cita_sin_fuente` | hecho y desplegado el 5 oct |
 | 4 | Copiloto del experto en la consola (resumen, borrador de respuesta, uso del borrador en la etiqueta; aprueba la persona) | hecho y desplegado el 5 oct |
-| 5 | Voz con ElevenLabs como capa delgada, con medición de transcripción y latencia; solo con llave y tiempo | pendiente |
+| 5 | Voz con ElevenLabs | descartada por la Presidencia el 5 oct: no habrá llave. La voz y WhatsApp siguen como diseño (ADR 0003, 0004 y 0008) y así se declara |
 | 6 | Correr el retenido v3 sobre el sistema final y la línea base; juez de tono validado; reporte | pendiente |
 | 7 | Resumen de dos páginas en inglés, guion y lista para grabar | pendiente |
 
 Las fases 2 a 4 se iteran solo con el conjunto de desarrollo. De la Presidencia hace falta: autorización de despliegue
-por fase, fecha y formato de entrega, la llave de ElevenLabs en Secret Manager, grabar la demo y, opcional, etiquetar a
+por fase (dada el 5 oct), fecha y formato de entrega, grabar la demo y, opcional, etiquetar a
 ciegas una muestra del v3 como segundo etiquetador.
 
 ## Hecho el 5 oct: fases 2 a 4 del plan de cierre (desplegado)

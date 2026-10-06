@@ -197,6 +197,7 @@ def correr_sistema(
     env: Mapping[str, str] | None = None,
     max_llamadas: int | None = None,
     avisar: Callable[[str], None] = lambda _: None,
+    directorio: Path = DIR_RETENIDO,
 ) -> dict[str, Any]:
     """Corre `k` repeticiones de cada caso (en orden intercalado) y devuelve el JSON crudo del sistema."""
     entorno = dict(os.environ if env is None else env)
@@ -232,7 +233,7 @@ def correr_sistema(
             "modelo": entorno.get("LATAM_MODELO") or registro.modelo.id if registro.modelo else None,
             "prompt": registro.prompt,
             "trabajador": f"{registro.id} {registro.version}",
-            "huella_retenido": huella_retenido(),
+            "huella_retenido": huella_retenido(directorio),
             "casos": len(escenarios),
             "llamadas_modelo_total": MEDIDOR.llamadas - base,
             "reintentos_modelo": MEDIDOR.reintentos,

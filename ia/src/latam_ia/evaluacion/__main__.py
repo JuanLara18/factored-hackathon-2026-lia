@@ -11,7 +11,13 @@ from typing import cast
 
 from latam_tecnologia.canales.geap import VARIABLE_PROVEEDOR
 
-from latam_ia.evaluacion.esquema import DIR_EVALUACION, cargar_escenarios, cargar_retenidos
+from latam_ia.evaluacion.esquema import (
+    DIR_EVALUACION,
+    DIR_RETENIDO,
+    DIR_RETENIDO_V3,
+    cargar_escenarios,
+    cargar_retenidos,
+)
 from latam_ia.evaluacion.reporte import (
     K_POR_DEFECTO,
     a_dict,
@@ -36,16 +42,21 @@ from latam_ia.evaluacion.retenido import (
 def _retenido(args: argparse.Namespace) -> int:
     """Corre un sistema sobre el conjunto retenido y guarda el JSON crudo (fuera de git)."""
     cast(io.TextIOWrapper, sys.stdout).reconfigure(encoding="utf-8")
-    salida: Path = args.salida
+    v3 = args.conjunto == "v3"
+    directorio = DIR_RETENIDO_V3 if v3 else DIR_RETENIDO
+    # el v3 escribe en su propia carpeta: los crudos congelados del conjunto anterior no se pisan
+    salida: Path = args.salida / "v3" if v3 else args.salida
     if args.tablas:
         crudos = cargar_crudos(salida)
         print(tablas_markdown(crudos) if crudos else "no hay JSON crudos de retenido en " + str(salida))
         for datos in crudos.values():
-            escribir_casos_equidad(datos, cargar_retenidos(), salida)
+            escribir_casos_equidad(datos, cargar_retenidos(directorio), salida)
         return 0 if crudos else 2
     ids = {i for i in args.ids.split(",") if i}
-    escenarios = [e for e in cargar_retenidos() if e.id.startswith(args.filtro) and (not ids or e.id in ids)]
-    problemas = validar_etiquetas(cargar_retenidos())
+    escenarios = [
+        e for e in cargar_retenidos(directorio) if e.id.startswith(args.filtro) and (not ids or e.id in ids)
+    ]
+    problemas = validar_etiquetas(cargar_retenidos(directorio))
     if problemas:
         print(chr(10).join(problemas))
         return 2
@@ -63,7 +74,13 @@ def _retenido(args: argparse.Namespace) -> int:
         por_cat[c][i] for i in range(max(map(len, por_cat.values()))) for c in cats if i < len(por_cat[c])
     ]
     datos = correr_sistema(
-        sistema, orden, k, simulador=simulador, max_llamadas=args.max_llamadas, avisar=print
+        sistema,
+        orden,
+        k,
+        simulador=simulador,
+        max_llamadas=args.max_llamadas,
+        avisar=print,
+        directorio=directorio,
     )
     ruta = escribir_crudo(datos, salida)
     print(f"Escrito: {ruta} y {escribir_casos_equidad(datos, escenarios, salida)}")
@@ -99,6 +116,9 @@ def main(argv: list[str]) -> int:
     )
     p.add_argument(
         "--tablas", action="store_true", help="con --retenido: imprime las tablas desde los JSON crudos"
+    )
+    p.add_argument(
+        "--conjunto", choices=("v2", "v3"), default="v2", help="con --retenido: qué conjunto retenido corre"
     )
     args = p.parse_args(argv)
     if args.retenido:
