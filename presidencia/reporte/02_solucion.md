@@ -26,7 +26,7 @@ flowchart LR
 | Pieza | Qué es | Fuente |
 |---|---|---|
 | Canal | Cloud Run `latam-chat` (1 vCPU, 1 GiB, 0 a 1 instancia, concurrencia 40) con la cuenta `latam-chat@` de mínimo privilegio; reenvía cada turno al agente, resuelve las aprobaciones y sirve la API de la banca y de la consola | [ARRANQUE](../../tecnologia/infra/ARRANQUE.md); [tecnologia/README](../../tecnologia/README.md) |
-| Agente | Agent Runtime de GEAP, agente propio (PydanticAI envuelto); modelo `gemini-3.1-flash-lite` (región `global`, temperatura 0,0 en la evaluación), en producción prompt `disputas/agente@1.6.0` y trabajador `disputas` 0.7.0; la evaluación congelada de [04](04_evaluacion.md) se hizo con 1.3.0 y 0.4.0; Sessions de 24 h | [ESTADO](../ESTADO.md) sección GEAP; [04_evaluacion](04_evaluacion.md) sección 2 |
+| Agente | Agent Runtime de GEAP, agente propio (PydanticAI envuelto); modelo `gemini-3.1-flash-lite` (región `global`, temperatura 0,0 en la evaluación), en producción prompt `disputas/agente@1.7.0` y trabajador `disputas` 0.8.0; la evaluación congelada de [04](04_evaluacion.md) se hizo con 1.3.0 y 0.4.0; Sessions de 24 h | [ESTADO](../ESTADO.md) sección GEAP; [04_evaluacion](04_evaluacion.md) sección 2 |
 | Política como código | `gobierno/politica/v1/` (escalamiento, crédito provisional, riesgo, autonomía por acción, traspaso) con huella en `manifest.yaml`; el motor y las herramientas la leen | [autonomia.yaml](../../gobierno/politica/v1/autonomia.yaml), [escalamiento.yaml](../../gobierno/politica/v1/escalamiento.yaml) |
 | Herramientas | siete: `transacciones_recientes`, `transaccion`, `estado_productos`, `ficha_transaccion`, `casos_abiertos` (lectura, `acr1`), `bloquear_tarjeta` (`acr1` más tarjeta confirmada), `abrir_disputa` (`acr2`), `escalar` (`acr1`) | [catalogo.py](../../tecnologia/src/latam_tecnologia/herramientas/catalogo.py) |
 | Casos | Firestore nativo (`nam5`): `casos`, `bloqueos`, `traspasos`, `conversaciones/{id}/mensajes`, compartido por Cloud Run, Agent Runtime y la consola | [API_BANCA](../../tecnologia/web/API_BANCA.md) |
@@ -76,6 +76,17 @@ Disparadores de `traspaso.yaml` y de `escalamiento.yaml`: urgencia o engaño tel
 | Evidencia | 17 preferencias, 18 evidencia (traza, reglas, plantillas), 19 transcripción enmascarada |
 
 No lleva nombre, documento, número completo de tarjeta, atributos protegidos, segmento ni `fraud_score`. La consola `/operador/` ordena la cola por prioridad y antigüedad, el experto toma el caso, escribe en el mismo hilo (el cliente ve el mensaje) y resuelve con una etiqueta de corrección que nunca entra al retenido ([API_BANCA](../../tecnologia/web/API_BANCA.md), sección Experto). El riesgo de plazo solo podría subir un nivel la prioridad (hasta P2); con el resultado negativo no cambia nada ([03_datos_y_ml](03_datos_y_ml.md) sección 4).
+
+### 4.4 Lo que el asistente hace además de abrir disputas (5 oct)
+
+| Capacidad | Cómo | Control |
+|---|---|---|
+| Seguimiento del caso | `casos_abiertos` entrega, por cada caso, el cobro (comercio, monto, fecha, final de la tarjeta), la fecha de apertura, si hay crédito provisional registrado, el plazo si existe y los eventos | el asistente cuenta solo lo que trae el banco; si no hay caso, lo dice |
+| Varios pedidos en una conversación | bloquear, disputar dos cobros y consultar un caso en el mismo hilo | cada acción con efecto lleva su propia aprobación en pantalla |
+| Preguntas de política | `consultar_politica` recupera el artículo de la base de conocimiento ([articulos.yaml](../../clientes/conocimiento/articulos.yaml)) con las reglas de `policy/v1` que lo sustentan; la respuesta termina con "Fuente: política del banco, regla" | sin fuente sobre el umbral, el asistente dice que no tiene esa información; el país del artículo sale de la cuenta de la sesión; el verificador `cita_sin_fuente` marca como inseguro nombrar una regla no recuperada |
+| Copiloto del experto | en la consola, "Sugerir borrador con IA" propone un resumen y una respuesta desde el paquete de traspaso y las fuentes de política ([copiloto.py](../../tecnologia/src/latam_tecnologia/banca/copiloto.py)) | no escribe en el hilo: la persona edita y envía; el borrador pasa por el filtro de salida y, si se bloquea o el modelo falla, llega el texto de plantilla; la etiqueta de corrección guarda si el borrador se envió sin cambios, se editó o se descartó |
+
+En desarrollo (GEAP, casos conocidos, no es una medición sobre casos nuevos): escenarios de seguimiento, varios pedidos y política 47 de 48 corridas con 0 inseguras, y los casos base R01 a R05 15 de 15. La medición limpia de estas capacidades es la del retenido v3, congelado antes de construirlas.
 
 ## 5. Autenticación
 

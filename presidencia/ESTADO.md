@@ -38,7 +38,7 @@ Dataset `latam_bank`, con la capa como prefijo de tabla (7,2 GB lógicos en 45 o
 - **Chat público → Cloud Run → Agent Runtime.** `latam-chat` (Cloud Run, cuenta `latam-chat@` de mínimo
   privilegio) reenvía cada turno al agente `projects/47808508188/locations/us-central1/reasoningEngines/6796256743388086272`
   (Agent Runtime, escala a cero, Sessions de 24 h; se invoca con la cuenta `latam-chat@`). Modelo: `gemini-3.1-flash-lite`
-  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.6.0`, trabajador `disputas` 0.7.0, revisión de Cloud Run `latam-chat-00022-5jq`.
+  con el proveedor nativo de Google en GEAP (región `global`), prompt `disputas/agente@1.7.0`, trabajador `disputas` 0.8.0, revisión de Cloud Run `latam-chat-00023-8vw`.
   Trazas en Cloud Trace con `latam.trabajador.id` y versión.
 - **Redesplegar el agente (actualiza el mismo recurso):** `uv run --with "google-cloud-aiplatform[agent_engines]" --with
   cloudpickle python tecnologia/infra/agent_runtime/desplegar.py --bucket latam-bank-hackaton-2026-staging --recurso
@@ -117,9 +117,9 @@ Regla: el retenido v3 se congela antes de tocar el agente y se corre una sola ve
 | Fase | Qué | Estado |
 |---|---|---|
 | 1 | Retenido v3 escrito y congelado (`ia/evaluacion/escenarios/retenido_v3/`, 43 casos, huella `2e231851…`) | hecho el 5 oct, sin correr |
-| 2 | Agente: seguimiento del caso y varios pedidos en una conversación | pendiente |
-| 3 | Política con citas: recuperación sobre `policy/v1` y plantillas, evaluada con juicios de relevancia contra una línea base de palabras clave; verificador de `debe_citar` y `sin_citas` | pendiente |
-| 4 | Copiloto del experto en la consola (resumen, respuesta sugerida, etiqueta; aprueba la persona) | pendiente |
+| 2 | Agente: seguimiento del caso y varios pedidos en una conversación | hecho y desplegado el 5 oct (datos del caso enriquecidos; el prompt ya lo hacía) |
+| 3 | Política con citas: `consultar_politica`, base de conocimiento de 16 artículos, recuperador vectorial 0,897 contra 0,515 de BM25, verificadores `citas` y `cita_sin_fuente` | hecho y desplegado el 5 oct |
+| 4 | Copiloto del experto en la consola (resumen, borrador de respuesta, uso del borrador en la etiqueta; aprueba la persona) | hecho y desplegado el 5 oct |
 | 5 | Voz con ElevenLabs como capa delgada, con medición de transcripción y latencia; solo con llave y tiempo | pendiente |
 | 6 | Correr el retenido v3 sobre el sistema final y la línea base; juez de tono validado; reporte | pendiente |
 | 7 | Resumen de dos páginas en inglés, guion y lista para grabar | pendiente |
@@ -127,6 +127,15 @@ Regla: el retenido v3 se congela antes de tocar el agente y se corre una sola ve
 Las fases 2 a 4 se iteran solo con el conjunto de desarrollo. De la Presidencia hace falta: autorización de despliegue
 por fase, fecha y formato de entrega, la llave de ElevenLabs en Secret Manager, grabar la demo y, opcional, etiquetar a
 ciegas una muestra del v3 como segundo etiquetador.
+
+## Hecho el 5 oct: fases 2 a 4 del plan de cierre (desplegado)
+
+- **Seguimiento y varios pedidos:** `casos_abiertos` entrega cobro, fecha de apertura, crédito provisional registrado, plazo y eventos. Medido en GEAP antes y después: el prompt 1.6.0 ya resolvía varios pedidos (33 de 33), así que no se tocó para eso.
+- **Política con cita:** herramienta `consultar_politica` (prompt 1.7.0, trabajador 0.8.0), base `clientes/conocimiento/articulos.yaml`, vectores en el repositorio, respaldo BM25 y filtro por país de la cuenta. Evaluación en `ia/evaluacion/reportes/recuperacion_2026-10-05.md`. Si se edita un artículo hay que regenerar los vectores (`uv run python -m latam_ia.recuperacion --escribir`); una prueba lo exige.
+- **Copiloto del experto:** `POST /api/operador/traspasos/<id>/sugerencia` y botón en la consola; cae a plantilla si el modelo falla o el filtro bloquea.
+- **Compuerta:** 588 pruebas; GEAP en desarrollo 47 de 48 corridas con 0 inseguras; casos base R01 a R05 15 de 15. Dos lecciones: el modelo a veces resume la pregunta al llamar la herramienta y queda bajo el umbral (se busca de nuevo con el mensaje original), y el filtro de salida bloquea palabras como "estornada" o "reembolso" aunque vengan de una fuente (los artículos las evitan y una prueba lo vigila).
+- **Desplegado:** agente en el mismo recurso, chat en `latam-chat-00023-8vw`, sitio en Firebase Hosting; e2e 81 de 81 contra el sitio y el backend publicados.
+- **Tensión conocida antes de correr el v3:** el caso V42 espera que un cobro revertido se explique sin escalar si el cliente no insiste (texto de ESC-02); el prompt escala de una vez (regla del producto, escenario N7). No se cambió nada por eso: se informará como salga.
 
 ## Hecho el 5 oct: coherencia del reporte y operación (desplegado)
 

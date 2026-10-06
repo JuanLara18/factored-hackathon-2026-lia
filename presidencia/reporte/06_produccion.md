@@ -15,7 +15,7 @@
 | Controles de acceso | parciales | sección 7 |
 | Retención | implementada para los registros operativos: vencimiento a 30 días por documento y política de TTL de Firestore | sección 8 |
 
-**Estado de despliegue de lo hecho el 5 de octubre.** El vencimiento de los documentos, el arranque que exige la clave de referencias y su entrega al agente están desplegados (revisión `latam-chat-00022-5jq`, agente actualizado en el mismo recurso), y del plan de Terraform se aplicó la parte que solo crea: las cinco políticas de TTL de Firestore, la comprobación de disponibilidad y las tres alertas. Verificado el mismo día: 81 de 81 pruebas de extremo a extremo contra el backend de producción, políticas de TTL activas y documentos nuevos con `expira_en`. El resto del plan (adoptar el servicio, los datasets, el secreto y el ping, con cambios solo de etiquetas) no se ha aplicado ([ESTADO](../ESTADO.md)).
+**Estado de despliegue de lo hecho el 5 de octubre.** El vencimiento de los documentos, el arranque que exige la clave de referencias y su entrega al agente están desplegados (hoy en la revisión `latam-chat-00023-8vw`, agente actualizado en el mismo recurso), y del plan de Terraform se aplicó la parte que solo crea: las cinco políticas de TTL de Firestore, la comprobación de disponibilidad y las tres alertas. Verificado el mismo día: 81 de 81 pruebas de extremo a extremo contra el backend de producción, políticas de TTL activas y documentos nuevos con `expira_en`. El resto del plan (adoptar el servicio, los datasets, el secreto y el ping, con cambios solo de etiquetas) no se ha aplicado ([ESTADO](../ESTADO.md)).
 
 ## 2. Trazas y explicaciones auditables
 
@@ -44,7 +44,7 @@ Las explicaciones se basan en tres cosas verificables: la **fuente** de cada hec
 - Datos: manifiesto encadenado y `just verificar-cadena`; análisis regenerable con `uv run python -m latam_datos.analisis`; dbt aislado con `uvx`.
 - Agente: `tecnologia/infra/agent_runtime/desplegar.py` actualiza el mismo recurso; el chat se despliega con `just desplegar-chat-run-agente`.
 - Terraform declara presupuesto, APIs, Firestore con su política de TTL, `latam-chat` con su secreto y su ping, alertas, buckets y BigQuery. El 5 de octubre se corrió `terraform plan` por primera vez contra el proyecto: 16 recursos por adoptar, 30 por crear y 0 por destruir. Ese plan encontró deriva que se corrigió en el código antes de cualquier `apply` (el vencimiento de 60 días del sandbox habría vuelto a los datasets, el código del experto habría salido del servicio y la versión del trabajador estaba fija en un valor viejo). No se ha aplicado por completo y el estado es local ([ARRANQUE](../../tecnologia/infra/ARRANQUE.md)). El agente de Agent Runtime y la imagen de Cloud Run quedan fuera de Terraform por diseño.
-- Verificado en producción el 5 oct, con el prompt 1.6.0 y el trabajador 0.7.0: la suite de Playwright en `tests/e2e/` pasó entera (81 pruebas, ninguna omitida, tras el último despliegue) ([ESTADO](../ESTADO.md)).
+- Verificado en producción el 5 oct, con el prompt 1.7.0 y el trabajador 0.8.0 (revisión `latam-chat-00023-8vw`): la suite de Playwright en `tests/e2e/` pasó (81 de 81 contra el sitio y el backend publicados) ([ESTADO](../ESTADO.md)).
 
 ## 5. Capacidad y límites
 

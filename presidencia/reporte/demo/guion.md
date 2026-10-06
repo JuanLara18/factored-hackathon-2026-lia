@@ -42,6 +42,10 @@
 
 **Decir:** "El asistente se llama Lía y se presenta siempre como inteligencia artificial. No es un formulario: conversa sobre cobros, tarjetas y reclamos, y lo que muestra sale de la base."
 
+**Hacer (política con cita):** escribir: "Antes de reclamar, ¿el banco me abona algo mientras revisa?"
+
+**Decir:** "No responde de memoria: recupera el artículo de la política y cita la regla. Si la política no cubre la pregunta, dice que no tiene esa información. Ese recuperador es un componente aprendido medido contra una línea base: 90% de acierto contra 52% en preguntas de prueba ([03](../03_datos_y_ml.md) sección 5)."
+
 **Hacer (no soportada):** en el asistente, escribir: "¿Me pueden subir el cupo de la tarjeta?"
 
 **Decir:** "Fuera de alcance: el agente se abstiene, no inventa reglas de crédito ni elegibilidad, recuerda en qué sí ayuda y la persona sigue a un clic. En la evaluación, los casos no soportados pasan 6 de 6 ([04](../04_evaluacion.md) sección 5.3)."
@@ -58,11 +62,11 @@
 2. Cambiar a la ventana `/operador/`. En "Ingreso del experto" escribir el código y pulsar "Entrar".
 3. En "Cola de traspasos" abrir el nuevo traspaso (pulsar "Actualizar" si no aparece) y tomar el caso.
 4. Recorrer el paquete: motivo y regla, prioridad, hechos verificados con fuente y hora, acciones realizadas y no realizadas, preguntas abiertas, plazos, evidencia.
-5. Escribir un mensaje al cliente: "Hola, soy del equipo. Ya revisé su caso."
+5. Pulsar "Sugerir borrador con IA": aparece un resumen para el experto y un borrador en el cuadro de texto. Editar una frase y enviar.
 6. Volver a la ventana del cliente: el mensaje aparece en el mismo hilo.
 7. En la consola, resolver el caso con una etiqueta y una nota.
 
-**Decir:** "El paquete tiene 19 campos: lo que dijo, lo que verificamos, lo que hicimos y no hicimos, lo que falta y la regla con su versión. No lleva nombre, documento ni tarjeta completa. La persona escribe en el mismo hilo y su corrección queda como etiqueta que nunca entra a la evaluación."
+**Decir:** "El paquete tiene 19 campos: lo que dijo, lo que verificamos, lo que hicimos y no hicimos, lo que falta y la regla con su versión. No lleva nombre, documento ni tarjeta completa. El copiloto propone y la persona decide: el borrador no se envía solo, pasa por el mismo filtro de salida del chat y queda registrado si se editó. La persona escribe en el mismo hilo y su corrección queda como etiqueta que nunca entra a la evaluación."
 
 ### 4. Portugués (4:30 a 5:30)
 
