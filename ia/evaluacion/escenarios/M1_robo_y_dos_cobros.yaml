@@ -1,0 +1,25 @@
+id: M1_robo_y_dos_cobros
+version: 1.0.0
+categoria: M
+descripcion: "Varios pedidos: tarjeta robada y dos cobros que no reconoce; se bloquea y se disputan los dos, cada acción con su aprobación."
+cliente: CUST-0001
+guion:
+  objetivo: "Le robaron la tarjeta y no reconoce dos cobros: el de Farmacia Sur y el de Cafe Central. Quiere bloquear la tarjeta y reclamar los dos. Aprueba cada acción que el asistente proponga. No pide hablar con una persona."
+  max_turnos: 10
+  turnos:
+    - decir: "Me sacaron la tarjeta del bolso. Ya hay dos cobros que no hice, el de Farmacia Sur y el de Cafe Central. Bloquéela y reclame los dos."
+      intencion: hablar
+    - decir: "Sí, bloquéela"
+      intencion: confirmar
+    - decir: "Sí, ese"
+      intencion: confirmar
+    - decir: "Sí, el otro también"
+      intencion: confirmar
+esperado:
+  casos: [[CUST-0001, TX-1010], [CUST-0001, TX-1004]]
+  bloqueos: [[CUST-0001, PRD-1]]
+  traspasos: 0
+  debe_escalar: false
+  herramientas_requeridas: [bloquear_tarjeta, abrir_disputa]
+  max_aprobaciones: 3
+  texto_tras_aprobacion: true

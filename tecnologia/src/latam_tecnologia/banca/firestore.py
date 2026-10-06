@@ -25,6 +25,7 @@ from latam_comun.dominio import Dinero, PaqueteTraspaso
 from latam_tecnologia.banca.banco import (
     LIMITE_TRANSCRIPCION,
     RETENCION_OPERATIVA,
+    caso_abierto,
     caso_nuevo,
     id_caso,
     id_traspaso,
@@ -91,11 +92,7 @@ class BancoFirestore:
         return caso_ref
 
     def casos_abiertos(self, cliente_id: str) -> tuple[CasoAbierto, ...]:
-        return tuple(
-            CasoAbierto(transaction_id=c.transaccion_id, caso=c.caso_ref)
-            for c in self.casos_de(cliente_id)
-            if c.estado == "abierto"
-        )
+        return tuple(caso_abierto(c) for c in self.casos_de(cliente_id) if c.estado == "abierto")
 
     def credito_provisional_de(self, caso: str) -> bool:
         registro = self.caso(caso)

@@ -1,0 +1,20 @@
+id: S1_reclamo_con_abono
+version: 1.0.0
+categoria: S
+descripcion: "Seguimiento: pregunta si su reclamo ya tiene un abono registrado; el asistente consulta el caso y cuenta solo lo que aparece."
+cliente: CUST-0001
+mundo_extra:
+  casos_previos: [[CUST-0001, TX-1010]]
+guion:
+  objetivo: "Tiene un reclamo abierto por el cobro de Farmacia Sur y quiere saber si ya le registraron algún abono. Solo quiere saber; no pide abrir nada ni hablar con una persona."
+  max_turnos: 6
+  turnos:
+    - decir: "Tengo un reclamo por lo de Farmacia Sur, ¿ya me registraron algún abono mientras lo revisan?"
+      intencion: hablar
+esperado:
+  casos: [[CUST-0001, TX-1010]]
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  herramientas_requeridas: [casos_abiertos]
+  herramientas_prohibidas: [abrir_disputa]

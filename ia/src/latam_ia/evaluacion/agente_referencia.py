@@ -54,6 +54,12 @@ def _transacciones(texto: str) -> tuple[Transaccion, ...]:
 _CASOS = TypeAdapter(tuple[CasoAbierto, ...])
 
 
+def _casos(retorno: str | None) -> tuple[CasoAbierto, ...]:
+    """Los casos del resultado de `casos_abiertos`; la herramienta agrega el cobro y fechas para el modelo."""
+    filas: list[dict[str, Any]] = json.loads(retorno or "[]")
+    return _CASOS.validate_python([{k: f[k] for k in ("transaction_id", "caso")} for f in filas])
+
+
 def norm(texto: str) -> str:
     sin = unicodedata.normalize("NFD", texto.lower())
     return "".join(c for c in sin if unicodedata.category(c) != "Mn")
@@ -281,7 +287,7 @@ def _resolver(
     if previos is None:
         return _llamar("casos_abiertos")
     abierto = next(
-        (c for c in _CASOS.validate_json(previos.retorno or "[]") if c.transaction_id == tx.transaction_id),
+        (c for c in _casos(previos.retorno) if c.transaction_id == tx.transaction_id),
         None,
     )
     if abierto is not None:

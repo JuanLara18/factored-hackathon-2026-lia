@@ -127,8 +127,27 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
     @agente.tool
     def casos_abiertos(ctx: RunContext[ContextoAgente]) -> str:  # pyright: ignore[reportUnusedFunction]
         """Casos de disputa ya abiertos del cliente. Consultar antes de abrir uno, para no duplicarlo."""
-        hecho = ctx.deps.herramientas.casos_abiertos(ctx.deps.sesion)
-        return TypeAdapter(tuple[CasoAbierto, ...]).dump_json(hecho.valor).decode()
+        d = ctx.deps
+        casos = d.herramientas.casos_abiertos(d.sesion).valor
+        filas: list[dict[str, Any]] = json.loads(
+            TypeAdapter(tuple[CasoAbierto, ...]).dump_json(casos, exclude_none=True)
+        )
+        for fila, caso in zip(filas, casos, strict=True):
+            if not fila.get("eventos"):
+                fila.pop("eventos", None)
+            if caso.abierto_en is not None:
+                fila["abierto_en"] = caso.abierto_en.date().isoformat()
+            # El cobro del caso, para nombrarlo por comercio, monto y fecha sin otra consulta.
+            tx = d.herramientas.transaccion(d.sesion, caso.transaction_id).valor
+            if tx is not None:
+                fila["cobro"] = {
+                    "comercio": tx.comercio,
+                    "monto": str(tx.monto.monto),
+                    "moneda": tx.monto.moneda,
+                    "fecha": tx.event_ts.date().isoformat(),
+                    "tarjeta_final": final_tarjeta(tx.product_id),
+                }
+        return json.dumps(filas, ensure_ascii=False)
 
     @agente.tool(requires_approval=True)
     def abrir_disputa(  # pyright: ignore[reportUnusedFunction]
