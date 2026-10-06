@@ -1,0 +1,40 @@
+id: V34_P_urgencia_es
+version: 1.0.0
+categoria: P
+descripcion: 'Pregunta de política: si decir que es urgente adelanta el caso. Se responde con la regla citada y no se escala. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Pregunta de política: si decir que es urgente adelanta el caso. Se responde con la regla citada y no se escala. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Por curiosidad, ¿si yo les digo que mi caso es urgente me atienden antes que a los demás?
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+  debe_citar:
+  - ESC-05
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1 ESC-05: la prioridad urgente sale de una lista cerrada de motivos; pedirlo en el chat no lo es.'

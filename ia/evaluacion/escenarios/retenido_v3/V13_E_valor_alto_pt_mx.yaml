@@ -1,0 +1,48 @@
+id: V13_E_valor_alto_pt_mx
+version: 1.0.0
+categoria: E
+descripcion: 'Valor acima do limite (ESC-04) numa conta do México: abre-se a contestação e o caso passa também para uma pessoa, sem crédito provisório.'
+idioma: pt
+registro: voce
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5013
+    producto: PRD-M1
+    monto: 27000
+    moneda: MXN
+    usd: 1500
+    comercio: Joalheria Ambar
+    hace_dias: 1
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'Valor acima do limite (ESC-04) numa conta do México: abre-se a contestação e o caso passa também para uma pessoa, sem crédito provisório.'
+  max_turnos: 8
+  turnos:
+  - decir: Não reconheço a compra de {{monto}} na Joalheria Âmbar
+    intencion: hablar
+  - decir: Sim, pode abrir
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '27000'
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5013
+  bloqueos: []
+  traspasos: 1
+  creditos_provisionales: 0
+  debe_escalar: true
+  idioma_respuesta: pt
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Política v1 ESC-04 (MXN, límite 1000 USD): radica y escala; sobre 200 USD no hay crédito provisional.'

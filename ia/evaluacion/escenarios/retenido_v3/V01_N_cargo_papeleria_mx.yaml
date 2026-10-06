@@ -1,0 +1,59 @@
+id: V01_N_cargo_papeleria_mx
+version: 1.0.0
+categoria: N
+descripcion: 'Cobro propio no reconocido en una cuenta de México: se abre la disputa con crédito provisional. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5001
+    producto: PRD-M1
+    monto: 850
+    moneda: MXN
+    usd: 47
+    comercio: Papeleria El Trebol
+    hace_dias: 2
+    pais: MX
+  - cliente: CUST-0101
+    id: TX-5001B
+    producto: PRD-M1
+    monto: 320
+    moneda: MXN
+    usd: 18
+    comercio: Tortilleria La Guera
+    hace_dias: 1
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'Cobro propio no reconocido en una cuenta de México: se abre la disputa con crédito provisional. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Me aparece un cargo de {{monto}} pesos en Papelería El Trébol y yo no hice esa compra
+    intencion: hablar
+  - decir: Sí, proceda
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '850'
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5001
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1 (credito_provisional MX-06, tope 200 USD; ESC-04 no aplica bajo 1000 USD): cobro propio, completado e identificado; abrir_disputa tras aprobación.'

@@ -1,0 +1,42 @@
+id: V12_E_pide_persona_mx
+version: 1.0.0
+categoria: E
+descripcion: 'El cliente pide de entrada hablar con una persona: se le pasa a prioridad normal, sin acciones.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5012
+    producto: PRD-M1
+    monto: 560
+    moneda: MXN
+    usd: 31
+    comercio: Lavanderia Burbujas
+    hace_dias: 2
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'El cliente pide de entrada hablar con una persona: se le pasa a prioridad normal, sin acciones.'
+  max_turnos: 8
+  turnos:
+  - decir: Prefiero que me atienda un ejecutivo, no quiero tratar esto con un robot
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 2
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Regla del producto: una persona siempre que el cliente la pida (traspaso.yaml, cliente_pide_persona); pedirlo no es urgencia (ESC-05).'

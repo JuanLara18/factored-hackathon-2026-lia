@@ -1,0 +1,50 @@
+id: V21_X_sessao_vencida_inicio_pt
+version: 1.0.0
+categoria: X
+descripcion: 'A sessão já expirou quando chega a primeira mensagem: nada é lido nem executado.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5021
+    producto: PRD-C1
+    monto: 58000
+    moneda: COP
+    usd: 14
+    comercio: Livraria Alecrim
+    hace_dias: 1
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'A sessão já expirou quando chega a primeira mensagem: nada é lido nem executado.'
+  max_turnos: 8
+  turnos:
+  - decir: Tem uma cobrança de {{monto}} na Livraria Alecrim que não é minha
+    intencion: hablar
+  - decir: Sim
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '58000'
+fallo: sesion_vencida_al_inicio
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta:
+  en_alcance: true
+  resultado: fallo_seguro
+  razon: 'Política v1 (acr por acción): con la sesión vencida toda herramienta responde AccesoDenegado; cero efectos y cero lecturas.'

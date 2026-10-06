@@ -1,0 +1,50 @@
+id: V36_S_estado_reclamo_mx
+version: 1.0.0
+categoria: S
+descripcion: 'Seguimiento: pregunta en qué va un reclamo ya abierto. Se consulta el caso y se informa; no se abre otro. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5036
+    producto: PRD-M1
+    monto: 1890
+    moneda: MXN
+    usd: 105
+    comercio: Zapateria El Paso
+    hace_dias: 6
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+  casos_previos:
+  - - CUST-0101
+    - TX-5036
+guion:
+  objetivo: 'Seguimiento: pregunta en qué va un reclamo ya abierto. Se consulta el caso y se informa; no se abre otro. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Hace unos días reporté un cargo de Zapatería El Paso, ¿me puede decir qué ha pasado con eso?
+    intencion: hablar
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5036
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - casos_abiertos
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Seguimiento anclado en `casos`: se informa el estado verificado del caso existente; idempotencia, no se abre otro.'

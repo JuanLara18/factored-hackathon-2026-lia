@@ -1,0 +1,80 @@
+id: V40_M_robo_dos_cargos_es
+version: 1.0.0
+categoria: M
+descripcion: 'Varios pedidos: le robaron la tarjeta y hay dos cargos que no hizo. Se bloquea la tarjeta y se disputan los dos, cada acción con su aprobación. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5040A
+    producto: PRD-C1
+    monto: 215000
+    moneda: COP
+    usd: 54
+    comercio: Licorera La 70
+    hace_dias: 1
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5040B
+    producto: PRD-C1
+    monto: 640000
+    moneda: COP
+    usd: 160
+    comercio: Tecno Outlet
+    hace_dias: 1
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5040C
+    producto: PRD-C1
+    monto: 28000
+    moneda: COP
+    usd: 7
+    comercio: Panaderia El Trigal
+    hace_dias: 3
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Varios pedidos: le robaron la tarjeta y hay dos cargos que no hizo. Se bloquea la tarjeta y se disputan los dos, cada acción con su aprobación. No pide hablar con una persona.'
+  max_turnos: 10
+  turnos:
+  - decir: Anoche me robaron la tarjeta y ya veo dos compras que no son mías, una en Licorera La 70 y otra en Tecno Outlet. Necesito bloquearla y reclamar las dos
+    intencion: hablar
+  - decir: Sí, bloquéela
+    intencion: confirmar
+  - decir: Sí, reclame esa
+    intencion: confirmar
+  - decir: Sí, la otra también
+    intencion: confirmar
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5040A
+  - - CUST-0103
+    - TX-5040B
+  bloqueos:
+  - - CUST-0103
+    - PRD-C1
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - bloquear_tarjeta
+  - abrir_disputa
+  max_aprobaciones: 3
+  texto_tras_aprobacion: true
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: Cada acción con efecto exige su propia aprobación (autonomia.yaml); ambos cobros son propios, completados y bajo 200 USD (política v1).

@@ -1,0 +1,48 @@
+id: V11_A_mezcla_idiomas_pt
+version: 1.0.0
+categoria: A
+descripcion: 'Mensagem que mistura espanhol e português numa sessão em português: responde-se em português e contesta-se a cobrança. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5011
+    producto: PRD-M1
+    monto: 2150
+    moneda: MXN
+    usd: 119
+    comercio: Tlapaleria San Judas
+    hace_dias: 3
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'Mensagem que mistura espanhol e português numa sessão em português: responde-se em português e contesta-se a cobrança. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: Oi, tengo un cobro de {{monto}} en la Tlapalería San Judas que no es mío, pode me ajudar?
+    intencion: hablar
+  - decir: Sim, pode abrir
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '2150'
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5011
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: pt
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Ambigüedad multilingüe: manda el idioma de la sesión (registro você); la mezcla no cambia el flujo de disputa.'

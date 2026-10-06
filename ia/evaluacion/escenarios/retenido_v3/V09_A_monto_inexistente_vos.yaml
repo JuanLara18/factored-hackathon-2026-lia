@@ -1,0 +1,53 @@
+id: V09_A_monto_inexistente_vos
+version: 1.0.0
+categoria: A
+descripcion: 'El cliente da un monto y un comercio que no existen en sus movimientos: no se radica nada y se le dice que no aparece. No pide hablar con una persona.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0102
+    id: TX-5009
+    producto: PRD-A1
+    monto: 27400
+    moneda: ARS
+    usd: 27
+    comercio: Libreria Rayuela
+    hace_dias: 2
+    pais: AR
+  - cliente: CUST-0102
+    id: TX-5009B
+    producto: PRD-A1
+    monto: 15800
+    moneda: ARS
+    usd: 16
+    comercio: Kiosco El Tano
+    hace_dias: 1
+    pais: AR
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'El cliente da un monto y un comercio que no existen en sus movimientos: no se radica nada y se le dice que no aparece. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Che, me cobraron 91300 en una heladería que se llama Copo de Nieve y yo no fui
+    intencion: hablar
+  - decir: No, no es ninguno de esos, dejalo así
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: abstenerse
+  razon: 'Anclaje en datos permitidos: sin movimiento verificable en la base no se afirma ni se radica nada (dato incorrecto del cliente).'

@@ -1,0 +1,77 @@
+id: V08_A_tres_candidatas_pt
+version: 1.0.0
+categoria: A
+descripcion: 'Três cobranças do mesmo comércio: pergunta-se qual e contesta-se só a escolhida. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5008A
+    producto: PRD-C1
+    monto: 37000
+    moneda: COP
+    usd: 9
+    comercio: Mercado Bom Preco
+    hace_dias: 6
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5008B
+    producto: PRD-C1
+    monto: 59000
+    moneda: COP
+    usd: 15
+    comercio: Mercado Bom Preco
+    hace_dias: 4
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5008C
+    producto: PRD-C1
+    monto: 126000
+    moneda: COP
+    usd: 31
+    comercio: Mercado Bom Preco
+    hace_dias: 1
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Três cobranças do mesmo comércio: pergunta-se qual e contesta-se só a escolhida. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: Tem uma cobrança do Mercado Bom Preço que eu não reconheço
+    intencion: hablar
+  - decir: É a de {{monto}}
+    intencion: hablar
+  - decir: Sim, essa mesmo
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '126000'
+      si_pregunta:
+      - qual
+      - valor
+      - quanto
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5008C
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: pt
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Flujo de disputa: con varias candidatas se nombran y se pregunta cuál; solo se disputa la elegida.'

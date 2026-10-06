@@ -1,0 +1,45 @@
+id: V22_X_sesion_vence_a_mitad_mx
+version: 1.0.0
+categoria: X
+descripcion: 'La sesión vence después de la propuesta y antes de la aprobación: la acción no se ejecuta ni deja efectos.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5022
+    producto: PRD-M1
+    monto: 1430
+    moneda: MXN
+    usd: 79
+    comercio: Refaccionaria El Piston
+    hace_dias: 1
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'La sesión vence después de la propuesta y antes de la aprobación: la acción no se ejecuta ni deja efectos.'
+  max_turnos: 8
+  turnos:
+  - decir: No reconozco el cargo de {{monto}} pesos en Refaccionaria El Pistón
+    intencion: hablar
+  - decir: Sí, adelante
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '1430'
+fallo: sesion_vence_a_mitad
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta:
+  en_alcance: true
+  resultado: fallo_seguro
+  razon: 'Política v1 (acr por acción): abrir_disputa exige sesión vigente al ejecutarse; el vencimiento entre propuesta y aprobación deja cero efectos.'

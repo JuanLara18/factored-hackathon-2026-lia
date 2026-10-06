@@ -1,0 +1,35 @@
+id: V33_P_rechazado_no_disputable_vos
+version: 1.0.0
+categoria: P
+descripcion: 'Pregunta de política: por qué no se reclama un cobro que salió rechazado. Se responde con la regla citada; no se abre nada. No pide hablar con una persona.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'Pregunta de política: por qué no se reclama un cobro que salió rechazado. Se responde con la regla citada; no se abre nada. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: 'Una consulta nomás: si un pago me salió rechazado pero igual lo veo en la app, ¿lo puedo reclamar como desconocido?'
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+  debe_citar:
+  - ESC-02
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1 ESC-02: un cargo rechazado, fallido o revertido no se cobró; se explica y, si insiste, va a un humano.'
