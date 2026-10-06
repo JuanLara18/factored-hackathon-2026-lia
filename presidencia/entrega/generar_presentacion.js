@@ -169,23 +169,27 @@ function stat(slide, x, y, w, h, big, label, color) {
 
   // ---------- 5. Evaluation
   s = pres.addSlide();
-  title(s, "Zero unsafe outcomes in 96 runs, and an honest baseline");
-  stat(s, 0.6, 1.5, 2.9, 2.05, "0 / 96", "unsafe outcomes. Bounds the risk at 4%, does not prove zero");
-  stat(s, 3.7, 1.5, 2.9, 2.05, "81%", "safe automated resolution on resolvable cases (29 of 36)");
-  stat(s, 6.8, 1.5, 2.9, 2.05, "1.4 s", "median agent turn. p95 4.6 s");
-  stat(s, 9.9, 1.5, 2.85, 2.05, "$0.002", "model cost per attempted case");
-  s.addChart(pres.charts.BAR, [{ name: "Runs passing every check", labels: ["Rules baseline", "AI agent"], values: [91, 80] }], {
-    x: 0.5, y: 3.85, w: 5.6, h: 2.95, barDir: "bar", chartColors: [LINE, GREEN],
+  title(s, "On a fresh held-out set, the agent beats the rules baseline");
+  stat(s, 0.6, 1.5, 2.9, 2.05, "89%", "of 129 runs pass every check. 43 new cases, frozen before building");
+  stat(s, 3.7, 1.5, 2.9, 2.05, "82%", "safe automated resolution on resolvable cases. Rules: 62%");
+  stat(s, 6.8, 1.5, 2.9, 2.05, "0 / 18", "missed handoffs to a human");
+  stat(s, 9.9, 1.5, 2.85, 2.05, "1 / 129", "real unsafe outcome (echoed typed card digits). 3 more flags: fixture artifact", RED);
+  s.addChart(pres.charts.BAR, [
+    { name: "AI agent", labels: ["Dispute flow (30 cases)", "Policy, follow-up, multi-request (13)"], values: [92, 82] },
+    { name: "Rules baseline", labels: ["Dispute flow (30 cases)", "Policy, follow-up, multi-request (13)"], values: [87, 38] },
+  ], {
+    x: 0.5, y: 3.8, w: 6.6, h: 3.05, barDir: "col", barGrouping: "clustered", chartColors: [GREEN, LINE],
     showTitle: true, title: "Runs passing every check (%)", titleFontSize: 13, titleColor: INK, titleFontFace: FONT,
     showValue: true, dataLabelPosition: "outEnd", dataLabelColor: INK, dataLabelFontSize: 13, dataLabelFontFace: FONT,
-    catAxisLabelColor: INK, catAxisLabelFontSize: 13, catAxisLabelFontFace: FONT, valAxisHidden: true, valAxisMaxVal: 110, valGridLine: { style: "none" }, catGridLine: { style: "none" }, showLegend: false, barGapWidthPct: 50,
+    catAxisLabelColor: INK, catAxisLabelFontSize: 12, catAxisLabelFontFace: FONT, valAxisHidden: true, valAxisMaxVal: 110, valGridLine: { style: "none" }, catGridLine: { style: "none" },
+    showLegend: true, legendPos: "t", legendFontSize: 12, legendFontFace: FONT, legendColor: INK, barGapWidthPct: 60,
   });
-  t(s, "Rules follow policy as well as the agent. The agent adds language, conversation and coverage. Four defects found, fixed in the tool layer.", { x: 6.5, y: 3.95, w: 6.2, h: 1.0, fontSize: 14.5, color: INK });
+  t(s, "Rules tie on the core flow. The agent wins where rules cannot go. On an older set and version, rules led 91 to 80, with 0 of 96 unsafe.", { x: 7.5, y: 3.9, w: 5.2, h: 1.05, fontSize: 14.5, color: INK });
   const tested = [[fa.FaClock, "Expired session"], [fa.FaUserSecret, "Unauthorized access"], [fa.FaSyringe, "Prompt injection"], [fa.FaPlug, "Tool outage"], [fa.FaQuestion, "Missing data"], [fa.FaLanguage, "Mixed languages"]];
   for (let i = 0; i < tested.length; i++) {
-    const x = 6.5 + (i % 3) * 2.1, y = 5.15 + Math.floor(i / 3) * 0.82;
-    await badge(s, tested[i][0], x, y, 0.5, PALE, GREEN);
-    t(s, tested[i][1], { x: x + 0.6, y: y + 0.03, w: 1.45, h: 0.5, fontSize: 12.5, color: INK, valign: "middle" });
+    const x = 7.5 + (i % 2) * 2.7, y = 5.05 + Math.floor(i / 2) * 0.6;
+    await badge(s, tested[i][0], x, y, 0.44, PALE, GREEN);
+    t(s, tested[i][1], { x: x + 0.55, y: y + 0.02, w: 2.05, h: 0.42, fontSize: 12.5, color: INK, valign: "middle" });
   }
   foot(s, 5);
 
