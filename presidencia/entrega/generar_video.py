@@ -20,16 +20,16 @@ LLAVE = Path("G:/My Drive/Professional/Hackathons/Factored_2026/API.txt")
 
 # (id, fuente, narración). fuente: "slide:N" o "clip"
 GUION = [
-    ("01", "slide:1", "LATAM Bank. An AI-first way to handle unrecognized card charges, in Spanish and Portuguese."),
-    ("02", "slide:2", "We started from the data. Across sixty-seven thousand complaints, unrecognized charges are the largest group, and the first answer takes thirty-seven hours. Fraud is contained in minutes, so we built one focused workflow: dispute intake."),
-    ("03", "clip", "This is the live system. The customer opens a charge in online banking and tells Lía, our assistant, that it is not theirs. The server pins the transaction, not the model. Lía reads the data and proposes a claim, and nothing happens until the customer approves on screen."),
-    ("04", "clip", "Policy questions are answered only from a retrieved source, with the rule cited. That retriever is a learned component: ninety percent accuracy, against fifty-two for a keyword baseline. Out of scope, like a credit limit, Lía abstains and never invents eligibility."),
-    ("05", "clip", "A human is always one click away. The expert receives a package with the request, the verified facts, the actions taken, and the rule that triggered the handoff. An AI copilot drafts the reply. The expert edits it and sends it, in the same conversation."),
-    ("06", "clip", "And the same assistant answers in Portuguese, for customers across the region. The data has no Brazilian accounts, and we say so."),
-    ("07", "slide:3", "Behind it, the model understands and writes, and code decides. Permissions, approvals and policy live outside the prompt, in versioned rules. A prompt injection cannot open a claim or reach another customer's data."),
-    ("08", "slide:4", "The data runs through tested layers in BigQuery, with contracts and lineage. We evaluated three learned components against baselines. One clearly wins. One helps a little. And one has no signal, so we report it, and it abstains."),
-    ("09", "slide:5", "We froze a new held-out set before building the latest features, and ran it once. The agent passes eighty-nine percent of runs. Simple rules tie on the core dispute flow, and fall to thirty-eight percent on policy questions, follow-up and multi-request conversations. One real unsafe outcome in one hundred twenty-nine runs: the agent repeated card digits the customer had typed. We report it."),
-    ("10", "slide:6", "It is live on Google Cloud today, with tracing, retention and alerts. And we are clear about what is still missing. Thank you."),
+    ("01", "slide:1", "Most teams would build a chatbot. We built a bank. LATAM Bank: a bank that keeps its word, by design."),
+    ("02", "slide:2", "Here is the promise banks break every day. A customer sees a charge they never made, and waits thirty-seven hours for a first answer. Fraud moves in minutes. Trust is lost in hours."),
+    ("03", "slide:3", "So we ran this project like a bank. A presidency, five vice presidencies, and an independent audit. Twenty-one research studies. Thirty-four recorded decisions. Governance challenged the design, and audit reviewed it cold."),
+    ("04", "clip", "This is the result, live. Camila opens a charge she does not recognize, and tells Lía. The server pins the transaction, not the model. In seconds, Lía finds it and proposes a claim. And nothing happens until Camila says yes, on screen."),
+    ("05", "clip", "She asks about the bank's policy. Lía answers from the source, and cites the rule. She asks for more credit. Lía says no, honestly, and never invents an answer. Every reply is grounded in the bank's own rules."),
+    ("06", "clip", "She wants a person. One click. The expert receives her whole story: what she asked, what was verified, what was done, and what is still open. An AI copilot drafts the reply, and the expert edits and sends it. Camila never repeats herself."),
+    ("07", "clip", "And in Portuguese, the same care."),
+    ("08", "slide:4", "These are five promises a bank can actually keep. They are enforced in code and versioned policy, not in a prompt. No prompt injection can break them."),
+    ("09", "slide:5", "Under the hood, a Gemini agent with typed tools runs on Google Cloud. Policy lives as versioned code. Answers are retrieved, not remembered. Nineteen million rows flow through tested data layers in BigQuery. And every model is measured against a baseline."),
+    ("10", "slide:6", "Then we tried to break it. On a fresh test set, frozen before we built the latest features, the assistant passes eighty-nine percent of runs, against seventy-two for a rules engine. Zero actions without approval. Zero missed handoffs. And one real flaw, which we found and published. This is what changes when a bank keeps its word. LATAM Bank. Live today."),
 ]
 
 
@@ -121,16 +121,16 @@ def clips():
     c, e, q = m["cliente"], m["experto"], m["pt"]
     tmp = AQUI / "tmp"
     tmp.mkdir(exist_ok=True)
-    recorte("crudo_cliente", c["banca_lista"] + 0.8, c["asistente_abierto"] + 3.5, tmp / "03a.mp4")
-    recorte("crudo_cliente", c["aprobacion_visible"] - 5.0, c["reclamo_abierto"] + 3.5, tmp / "03b.mp4", acercar=True)
-    unir([tmp / "03a.mp4", tmp / "03b.mp4"], tmp / "03.mp4")
-    recorte("crudo_cliente", c["reclamo_abierto"] + 4.3, c["respuesta_cupo"] + 4.0, tmp / "04.mp4", acercar=True)
-    recorte("crudo_cliente", c["pide_persona"] - 0.8, c["esperando_persona"] + 2.0, tmp / "05a.mp4", acercar=True)
-    recorte("crudo_experto", e["paquete"] - 0.8, e["paquete"] + 8.7, tmp / "05b.mp4")
-    recorte("crudo_experto", e["tomado"] + 0.5, e["enviado"] + 1.3, tmp / "05c.mp4")
-    recorte("crudo_cliente", c["mensaje_del_experto_enviado"] + 0.4, c["fin"], tmp / "05d.mp4", acercar=True)
-    unir([tmp / "05a.mp4", tmp / "05b.mp4", tmp / "05c.mp4", tmp / "05d.mp4"], tmp / "05.mp4")
-    recorte("crudo_pt", q["pregunta"] - 3.2, q["respuesta"] + 3.0, tmp / "06.mp4", acercar=True)
+    recorte("crudo_cliente", c["banca_lista"] + 0.8, c["asistente_abierto"] + 3.5, tmp / "04a.mp4")
+    recorte("crudo_cliente", c["aprobacion_visible"] - 5.0, c["reclamo_abierto"] + 3.5, tmp / "04b.mp4", acercar=True)
+    unir([tmp / "04a.mp4", tmp / "04b.mp4"], tmp / "04.mp4")
+    recorte("crudo_cliente", c["reclamo_abierto"] + 4.3, c["respuesta_cupo"] + 4.0, tmp / "05.mp4", acercar=True)
+    recorte("crudo_cliente", c["pide_persona"] - 0.8, c["esperando_persona"] + 2.0, tmp / "06a.mp4", acercar=True)
+    recorte("crudo_experto", e["paquete"] - 0.8, e["paquete"] + 8.7, tmp / "06b.mp4")
+    recorte("crudo_experto", e["tomado"] + 0.5, e["enviado"] + 1.3, tmp / "06c.mp4")
+    recorte("crudo_cliente", c["mensaje_del_experto_enviado"] + 0.4, c["fin"], tmp / "06d.mp4", acercar=True)
+    unir([tmp / "06a.mp4", tmp / "06b.mp4", tmp / "06c.mp4", tmp / "06d.mp4"], tmp / "06.mp4")
+    recorte("crudo_pt", q["respuesta"] - 1.5, q["respuesta"] + 3.5, tmp / "07.mp4", acercar=True)
     return tmp
 
 
@@ -159,18 +159,20 @@ def montar():
         salida = SEG / f"{ident}.mp4"
         desv = f"fade=t=in:st=0:d=0.3,fade=t=out:st={d - 0.3:.2f}:d=0.3"
         if fuente.startswith("slide:"):
-            png = AQUI / "slides" / f"Slide{fuente.split(':')[1]}.PNG"
+            png = AQUI / "slides3" / f"Slide{fuente.split(':')[1]}.PNG"
             n = int(d * 30)
             zoom = f"scale=2880:1620,zoompan=z='min(1.0+0.00018*on,1.06)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n}:s=1920x1080:fps=30,format=yuv420p,{desv}"
-            correr(["-loop", "1", "-i", str(png), "-i", str(audio), "-filter_complex", f"[0:v]{zoom}[v];[1:a]apad=pad_dur=0.45[a]", "-map", "[v]", "-map", "[a]", "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", str(salida)])
+            correr(["-loop", "1", "-i", str(png), "-i", str(audio), "-filter_complex", f"[0:v]{zoom}[v];[1:a]apad[a]", "-map", "[v]", "-map", "[a]", "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", str(salida)])
         else:
             clip = tmp / f"{ident}.mp4"
             dc = duracion(clip)
+            d = max(d, dc / 1.6 + 0.2)  # nunca más de 1,6 veces la velocidad real: se deja ver el producto
+            desv = f"fade=t=in:st=0:d=0.3,fade=t=out:st={d - 0.3:.2f}:d=0.3"
             factor = d / dc  # <1 acelera, >1 frena; no se frena más de 1,15: se congela el último cuadro
             factor_v = min(factor, 1.15)
             relleno = max(0.0, d - dc * factor_v) + 0.1
             vf = f"setpts={factor_v:.4f}*PTS,tpad=stop_mode=clone:stop_duration={relleno:.2f},fps=30,format=yuv420p,{desv}"
-            correr(["-i", str(clip), "-i", str(audio), "-filter_complex", f"[0:v]{vf}[v];[1:a]apad=pad_dur=0.45[a]", "-map", "[v]", "-map", "[a]", "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", str(salida)])
+            correr(["-i", str(clip), "-i", str(audio), "-filter_complex", f"[0:v]{vf}[v];[1:a]apad[a]", "-map", "[v]", "-map", "[a]", "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", str(salida)])
             print("clip", ident, "audio", round(d, 1), "clip", round(dc, 1), "factor", round(factor, 2), flush=True)
         partes.append(salida)
     final = AQUI / "LATAM_Bank_video_pitch.mp4"
