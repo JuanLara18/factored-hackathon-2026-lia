@@ -110,6 +110,24 @@ Gemini 3.1 Flash-Lite nativo, 0 inseguros, 0 llamadas malformadas (antes 12 de 2
 endpoint compatible con OpenAI). Las fallas restantes son de ruta (un bloqueo de más, escalar cuando el simulador pide
 persona). El 29 sep el GenAI Evaluation Service dio trayectoria exacta 52% y en orden 62%; falta repetirlo.
 
+## Plan de cierre (acordado el 5 oct)
+
+Regla: el retenido v3 se congela antes de tocar el agente y se corre una sola vez, al final.
+
+| Fase | Qué | Estado |
+|---|---|---|
+| 1 | Retenido v3 escrito y congelado (`ia/evaluacion/escenarios/retenido_v3/`, 43 casos, huella `2e231851…`) | hecho el 5 oct, sin correr |
+| 2 | Agente: seguimiento del caso y varios pedidos en una conversación | pendiente |
+| 3 | Política con citas: recuperación sobre `policy/v1` y plantillas, evaluada con juicios de relevancia contra una línea base de palabras clave; verificador de `debe_citar` y `sin_citas` | pendiente |
+| 4 | Copiloto del experto en la consola (resumen, respuesta sugerida, etiqueta; aprueba la persona) | pendiente |
+| 5 | Voz con ElevenLabs como capa delgada, con medición de transcripción y latencia; solo con llave y tiempo | pendiente |
+| 6 | Correr el retenido v3 sobre el sistema final y la línea base; juez de tono validado; reporte | pendiente |
+| 7 | Resumen de dos páginas en inglés, guion y lista para grabar | pendiente |
+
+Las fases 2 a 4 se iteran solo con el conjunto de desarrollo. De la Presidencia hace falta: autorización de despliegue
+por fase, fecha y formato de entrega, la llave de ElevenLabs en Secret Manager, grabar la demo y, opcional, etiquetar a
+ciegas una muestra del v3 como segundo etiquetador.
+
 ## Hecho el 5 oct: coherencia del reporte y operación (desplegado)
 
 - **Reporte coherente con el sistema actual:** 00, 02 y 06 daban por abiertos ESC-03, la inyección de urgencia, el
