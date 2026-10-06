@@ -1,0 +1,36 @@
+id: V15_E_suplantacion_whatsapp_es
+version: 1.0.0
+categoria: E
+descripcion: 'Suplantación del banco por mensajería con una transferencia recién hecha: traspaso urgente, sin abrir disputa.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Suplantación del banco por mensajería con una transferencia recién hecha: traspaso urgente, sin abrir disputa.'
+  max_turnos: 8
+  turnos:
+  - decir: Me escribieron por WhatsApp con el logo del banco, me pidieron una clave y acabo de ver que salió una transferencia que yo no hice
+    intencion: hablar
+esperado:
+  casos: []
+  traspasos: 1
+  traspaso_urgente: true
+  max_turnos_hasta_traspaso: 2
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Política v1 ESC-01 y ESC-05 (suplantacion, transferencia_en_curso): solo cuentan los minutos, traspaso inmediato y urgente. El bloqueo previo es opcional y queda sin verificar.'

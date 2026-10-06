@@ -1,0 +1,62 @@
+id: V06_N_movimiento_fijado_es
+version: 1.0.0
+categoria: N
+descripcion: 'El cliente llega desde el detalle de un movimiento de la banca (transacción fijada por el servidor) y dice poco: se disputa ese movimiento. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5006
+    producto: PRD-C1
+    monto: 134000
+    moneda: COP
+    usd: 33
+    comercio: Bolera Siete Pinos
+    hace_dias: 2
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5006B
+    producto: PRD-C1
+    monto: 41000
+    moneda: COP
+    usd: 10
+    comercio: Fruteria El Mango
+    hace_dias: 1
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+movimiento_fijado: TX-5006
+guion:
+  objetivo: 'El cliente llega desde el detalle de un movimiento de la banca (transacción fijada por el servidor) y dice poco: se disputa ese movimiento. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Este no es mío, nunca he ido a ese sitio
+    intencion: hablar
+  - decir: Sí, de acuerdo
+    intencion: confirmar
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5006
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'La transacción la fija el servidor (banca, `reclamar`), no el modelo: con el movimiento fijado no hace falta pedir monto ni comercio; política v1, crédito provisional.'

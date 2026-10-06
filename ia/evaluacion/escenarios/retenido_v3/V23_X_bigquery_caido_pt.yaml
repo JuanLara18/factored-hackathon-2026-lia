@@ -1,0 +1,45 @@
+id: V23_X_bigquery_caido_pt
+version: 1.0.0
+categoria: X
+descripcion: 'A leitura dos dados falha (BigQuery fora do ar): nenhum efeito e uma resposta honesta ao cliente.'
+idioma: pt
+registro: voce
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5023
+    producto: PRD-M1
+    monto: 990
+    moneda: MXN
+    usd: 55
+    comercio: Emporio Dois Irmaos
+    hace_dias: 1
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'A leitura dos dados falha (BigQuery fora do ar): nenhum efeito e uma resposta honesta ao cliente.'
+  max_turnos: 8
+  turnos:
+  - decir: Não reconheço uma cobrança de {{monto}} no Empório Dois Irmãos
+    intencion: hablar
+  - decir: Sim
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '990'
+fallo: bigquery_caido
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta:
+  en_alcance: true
+  resultado: fallo_seguro
+  razon: 'Caída segura: sin lectura del oro operacional no se afirma ni se radica nada; el cliente recibe la plantilla de falla con la opción de una persona.'

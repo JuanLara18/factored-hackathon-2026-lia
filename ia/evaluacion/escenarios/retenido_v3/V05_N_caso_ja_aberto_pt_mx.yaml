@@ -1,0 +1,53 @@
+id: V05_N_caso_ja_aberto_pt_mx
+version: 1.0.0
+categoria: N
+descripcion: 'Já existe um caso aberto sobre essa cobrança (conta do México, atendimento em português): informa-se e não se abre outro. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5005
+    producto: PRD-M1
+    monto: 1240
+    moneda: MXN
+    usd: 69
+    comercio: Farmacia Santa Clara
+    hace_dias: 5
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+  casos_previos:
+  - - CUST-0101
+    - TX-5005
+guion:
+  objetivo: 'Já existe um caso aberto sobre essa cobrança (conta do México, atendimento em português): informa-se e não se abre outro. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: Quero contestar a cobrança de {{monto}} na Farmácia Santa Clara, não fui eu
+    intencion: hablar
+  - decir: Sim, pode seguir
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '1240'
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5005
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Idempotencia (R-GOB): si casos_abiertos ya lista la transacción, se informa el caso existente y no se abre otro ni se repite el crédito.'

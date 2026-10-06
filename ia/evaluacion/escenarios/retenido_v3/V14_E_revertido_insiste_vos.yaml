@@ -1,0 +1,49 @@
+id: V14_E_revertido_insiste_vos
+version: 1.0.0
+categoria: E
+descripcion: 'Cobro revertido (no se cobró): se explica con la ficha; el cliente insiste y pasa a una persona, sin radicar disputa.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0102
+    id: TX-5014
+    producto: PRD-A1
+    monto: 64900
+    moneda: ARS
+    usd: 64
+    comercio: Bicicleteria Pedal
+    hace_dias: 2
+    pais: AR
+    estado: reversed
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'Cobro revertido (no se cobró): se explica con la ficha; el cliente insiste y pasa a una persona, sin radicar disputa.'
+  max_turnos: 8
+  turnos:
+  - decir: Me figura un cobro de {{monto}} de Bicicletería Pedal que no hice
+    intencion: hablar
+  - decir: No me sirve, yo lo veo en el resumen y quiero que alguien lo revise
+    intencion: hablar
+  hechos:
+    monto:
+      valor: '64900'
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  debe_escalar: true
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Política v1 ESC-02: un cargo revertido no se cobró; se explica con la ficha y, si el cliente insiste, va a un humano.'

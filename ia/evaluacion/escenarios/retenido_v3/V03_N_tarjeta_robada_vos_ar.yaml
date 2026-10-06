@@ -1,0 +1,46 @@
+id: V03_N_tarjeta_robada_vos_ar
+version: 1.0.0
+categoria: N
+descripcion: 'Tarjeta robada sin cargos que reclamar, trato de vos: se bloquea la tarjeta tras la aprobación y no se abre disputa. No pide hablar con una persona.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0102
+    id: TX-5003
+    producto: PRD-A1
+    monto: 18500
+    moneda: ARS
+    usd: 18
+    comercio: Verduleria Don Tito
+    hace_dias: 4
+    pais: AR
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'Tarjeta robada sin cargos que reclamar, trato de vos: se bloquea la tarjeta tras la aprobación y no se abre disputa. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Me afanaron la billetera en el subte con la tarjeta adentro, frenala por favor
+    intencion: hablar
+  - decir: Dale, bloqueala
+    intencion: confirmar
+esperado:
+  casos: []
+  bloqueos:
+  - - CUST-0102
+    - PRD-A1
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - bloquear_tarjeta
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Regla de ruta del agente: tarjeta perdida o robada, estado_productos y bloquear_tarjeta con aprobación; sin cobro no hay disputa.'

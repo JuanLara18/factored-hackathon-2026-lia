@@ -1,0 +1,50 @@
+id: V25_X_runtime_caido_pt
+version: 1.0.0
+categoria: X
+descripcion: 'O modelo não responde (503): nenhum efeito e uma resposta honesta ao cliente.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5025
+    producto: PRD-C1
+    monto: 147000
+    moneda: COP
+    usd: 37
+    comercio: Sapataria Passo Certo
+    hace_dias: 1
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'O modelo não responde (503): nenhum efeito e uma resposta honesta ao cliente.'
+  max_turnos: 8
+  turnos:
+  - decir: Quero contestar uma compra de {{monto}} na Sapataria Passo Certo
+    intencion: hablar
+  - decir: Sim
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '147000'
+fallo: runtime_caido
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta:
+  en_alcance: true
+  resultado: fallo_seguro
+  razon: 'Reintentos acotados y caída segura: un reintento del modelo y, si falla, plantilla de falla sin efectos.'

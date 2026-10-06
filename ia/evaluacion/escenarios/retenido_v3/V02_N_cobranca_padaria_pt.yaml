@@ -1,0 +1,64 @@
+id: V02_N_cobranca_padaria_pt
+version: 1.0.0
+categoria: N
+descripcion: 'Cobrança própria não reconhecida, atendimento em português: abre-se a contestação com crédito provisório. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5002
+    producto: PRD-C1
+    monto: 64000
+    moneda: COP
+    usd: 16
+    comercio: Padaria Flor de Trigo
+    hace_dias: 1
+    pais: CO
+  - cliente: CUST-0103
+    id: TX-5002B
+    producto: PRD-C1
+    monto: 23000
+    moneda: COP
+    usd: 6
+    comercio: Drogueria La Salud
+    hace_dias: 3
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Cobrança própria não reconhecida, atendimento em português: abre-se a contestação com crédito provisório. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: Apareceu uma compra de {{monto}} na Padaria Flor de Trigo que eu não fiz
+    intencion: hablar
+  - decir: Sim, pode abrir
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '64000'
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5002
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 1
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1 (credito_provisional, tope 200 USD) y flujo de disputa: cobro propio identificado; se atiende en el idioma de la sesión.'

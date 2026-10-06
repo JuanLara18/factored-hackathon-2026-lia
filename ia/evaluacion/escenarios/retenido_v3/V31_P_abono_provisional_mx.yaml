@@ -1,0 +1,45 @@
+id: V31_P_abono_provisional_mx
+version: 1.0.0
+categoria: P
+descripcion: 'Pregunta de política (México): si le devuelven el dinero mientras se investiga. Se responde desde la política y se cita la regla; no se abre nada. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5031
+    producto: PRD-M1
+    monto: 640
+    moneda: MXN
+    usd: 36
+    comercio: Cafeteria La Parroquia
+    hace_dias: 1
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'Pregunta de política (México): si le devuelven el dinero mientras se investiga. Se responde desde la política y se cita la regla; no se abre nada. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: 'Antes de reclamar quiero saber una cosa: ¿me regresan el dinero mientras ustedes investigan o tengo que esperar al final?'
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+  debe_citar:
+  - MX-06
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1, credito_provisional (MXN, fundamento MX-06): abono provisional con tope; la respuesta se ancla en esa regla y no en la memoria del modelo.'

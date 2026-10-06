@@ -1,0 +1,40 @@
+id: V32_P_valor_alto_pt
+version: 1.0.0
+categoria: P
+descripcion: 'Pergunta de política: por que um valor alto vai para uma pessoa. Responde-se com a regra citada; nada é aberto. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Pergunta de política: por que um valor alto vai para uma pessoa. Responde-se com a regra citada; nada é aberto. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: 'Só uma dúvida: se a compra que eu contestar for de valor muito alto, o processo é diferente?'
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+  debe_citar:
+  - ESC-04
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Política v1 ESC-04 (radicar_y_escalar): sobre el umbral la disputa se radica y además la revisa una persona.'

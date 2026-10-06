@@ -1,0 +1,57 @@
+id: V39_S_estado_y_devolucion_es
+version: 1.0.0
+categoria: S
+descripcion: 'Seguimiento con pregunta de política: en qué va el reclamo y cuándo devuelven el dinero. Estado desde el caso y plazo desde la política, con cita. No pide hablar con una persona.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5039
+    producto: PRD-C1
+    monto: 93000
+    moneda: COP
+    usd: 23
+    comercio: Ferreteria El Maestro
+    hace_dias: 4
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+  casos_previos:
+  - - CUST-0103
+    - TX-5039
+guion:
+  objetivo: 'Seguimiento con pregunta de política: en qué va el reclamo y cuándo devuelven el dinero. Estado desde el caso y plazo desde la política, con cita. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: Quiero saber en qué va mi reclamo de la Ferretería El Maestro y si me van a devolver la plata mientras tanto
+    intencion: hablar
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5039
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas:
+  - casos_abiertos
+  herramientas_prohibidas:
+  - abrir_disputa
+  debe_citar:
+  - R-GOB-27
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Seguimiento anclado en `casos` y política v1 credito_provisional (COP, fundamento R-GOB-27): dos fuentes distintas en una respuesta.'

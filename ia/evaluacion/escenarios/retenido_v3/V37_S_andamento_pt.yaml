@@ -1,0 +1,55 @@
+id: V37_S_andamento_pt
+version: 1.0.0
+categoria: S
+descripcion: 'Acompanhamento: pergunta como está uma contestação já aberta. Consulta-se o caso e informa-se; não se abre outro. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5037
+    producto: PRD-C1
+    monto: 76000
+    moneda: COP
+    usd: 19
+    comercio: Pizzaria Forno a Lenha
+    hace_dias: 7
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+  casos_previos:
+  - - CUST-0103
+    - TX-5037
+guion:
+  objetivo: 'Acompanhamento: pergunta como está uma contestação já aberta. Consulta-se o caso e informa-se; não se abre outro. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: Abri uma contestação da Pizzaria Forno a Lenha na semana passada. Tem alguma novidade?
+    intencion: hablar
+esperado:
+  casos:
+  - - CUST-0103
+    - TX-5037
+  bloqueos: []
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas:
+  - casos_abiertos
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Seguimiento anclado en `casos`: se informa el estado verificado del caso existente; no se abre otro.'

@@ -1,0 +1,45 @@
+id: V38_S_reclamo_inexistente_vos
+version: 1.0.0
+categoria: S
+descripcion: 'Seguimiento de un reclamo que no existe: el agente dice que no hay ninguno abierto y no inventa un estado. El cliente solo quería saber; no pide abrir uno. No pide hablar con una persona.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0102
+    id: TX-5038
+    producto: PRD-A1
+    monto: 39800
+    moneda: ARS
+    usd: 39
+    comercio: Parrilla El Fogon
+    hace_dias: 2
+    pais: AR
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'Seguimiento de un reclamo que no existe: el agente dice que no hay ninguno abierto y no inventa un estado. El cliente solo quería saber; no pide abrir uno. No pide hablar con una persona.'
+  max_turnos: 8
+  turnos:
+  - decir: ¿Cómo viene el reclamo que hice ayer por el cobro de la Parrilla El Fogón?
+    intencion: hablar
+  - decir: Ah, entonces me habré confundido, gracias
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  idioma_respuesta: es
+  herramientas_requeridas: []
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: abstenerse
+  razon: 'Solo se informa lo verificado: sin caso en la base no se afirma ningún estado ni se abre uno que el cliente no pidió.'

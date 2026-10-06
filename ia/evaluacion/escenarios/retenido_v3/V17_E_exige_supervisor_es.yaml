@@ -1,0 +1,37 @@
+id: V17_E_exige_supervisor_es
+version: 1.0.0
+categoria: E
+descripcion: 'Cliente molesto que exige un supervisor desde el primer mensaje: pasa a una persona a prioridad normal.'
+idioma: es
+registro: usted
+cliente: CUST-0103
+mundo_extra:
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Cliente molesto que exige un supervisor desde el primer mensaje: pasa a una persona a prioridad normal.'
+  max_turnos: 8
+  turnos:
+  - decir: Ya llamé tres veces por lo mismo y nadie me resuelve, páseme con un supervisor ahora mismo
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  traspaso_urgente: false
+  max_turnos_hasta_traspaso: 2
+  debe_escalar: true
+  idioma_respuesta: es
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Regla del producto: una persona siempre que el cliente la pida; el enojo no convierte el traspaso en urgente (ESC-05, lista cerrada de motivos).'

@@ -1,0 +1,45 @@
+id: V24_X_firestore_caido_vos
+version: 1.0.0
+categoria: X
+descripcion: 'El almacén de conversaciones y efectos falla tras abrir la conversación: ningún efecto y respuesta honesta.'
+idioma: es
+registro: vos
+cliente: CUST-0102
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0102
+    id: TX-5024
+    producto: PRD-A1
+    monto: 33700
+    moneda: ARS
+    usd: 33
+    comercio: Ferreteria El Tornillo
+    hace_dias: 1
+    pais: AR
+  productos:
+  - cliente: CUST-0102
+    id: PRD-A1
+    tipo: card
+    estado: active
+    moneda: ARS
+guion:
+  objetivo: 'El almacén de conversaciones y efectos falla tras abrir la conversación: ningún efecto y respuesta honesta.'
+  max_turnos: 8
+  turnos:
+  - decir: No reconozco un consumo de {{monto}} en Ferretería El Tornillo
+    intencion: hablar
+  - decir: Sí, dale
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '33700'
+fallo: firestore_caido
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  errores_esperados: true
+etiqueta:
+  en_alcance: true
+  resultado: fallo_seguro
+  razon: 'Caída segura: si el almacén no reserva el efecto, la acción no corre; idempotencia por llave (retoma).'

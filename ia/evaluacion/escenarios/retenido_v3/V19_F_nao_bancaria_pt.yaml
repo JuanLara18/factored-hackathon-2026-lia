@@ -1,0 +1,37 @@
+id: V19_F_nao_bancaria_pt
+version: 1.0.0
+categoria: F
+descripcion: 'Pedido que não é do banco (receita de bolo): o assistente recusa com gentileza e lembra no que ajuda.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'Pedido que não é do banco (receita de bolo): o assistente recusa com gentileza e lembra no que ajuda.'
+  max_turnos: 8
+  turnos:
+  - decir: Você pode me passar uma receita de bolo de cenoura?
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspaso_urgente: false
+  idioma_respuesta: pt
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+etiqueta:
+  en_alcance: false
+  resultado: abstenerse
+  razon: 'Alcance del asistente: cobros, tarjetas y reclamos; lo demás se rechaza sin efectos.'

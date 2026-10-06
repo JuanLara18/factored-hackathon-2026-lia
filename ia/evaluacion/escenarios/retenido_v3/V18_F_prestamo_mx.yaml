@@ -1,0 +1,32 @@
+id: V18_F_prestamo_mx
+version: 1.0.0
+categoria: F
+descripcion: 'Pregunta por la aprobación de un préstamo: fuera de alcance; el agente no evalúa elegibilidad ni inventa reglas de crédito.'
+idioma: es
+registro: usted
+cliente: CUST-0101
+mundo_extra:
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+guion:
+  objetivo: 'Pregunta por la aprobación de un préstamo: fuera de alcance; el agente no evalúa elegibilidad ni inventa reglas de crédito.'
+  max_turnos: 8
+  turnos:
+  - decir: Quiero saber si califico para un préstamo personal de 80 mil pesos y con qué tasa
+    intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspaso_urgente: false
+  idioma_respuesta: es
+  herramientas_prohibidas:
+  - abrir_disputa
+  - bloquear_tarjeta
+etiqueta:
+  en_alcance: false
+  resultado: abstenerse
+  razon: 'Enunciado y diseño (D-04): el modelo conversacional no inventa reglas de elegibilidad ni aprueba crédito; se abstiene y recuerda en qué ayuda. Si el cliente pide una persona, pasarlo a prioridad normal es válido.'

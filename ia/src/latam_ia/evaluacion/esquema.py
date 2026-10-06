@@ -14,9 +14,14 @@ from latam_ia.registro.cargador import RAIZ_IA
 DIR_EVALUACION = RAIZ_IA / "evaluacion"
 DIR_ESCENARIOS = DIR_EVALUACION / "escenarios"
 DIR_RETENIDO = DIR_ESCENARIOS / "retenido"
+DIR_RETENIDO_V3 = (
+    DIR_ESCENARIOS / "retenido_v3"
+)  # congelado el 5 oct de 2026, antes de las capacidades P, S y M
 RUTA_MUNDO_BASE = DIR_EVALUACION / "mundo_base.yaml"
 
-Categoria = Literal["N", "A", "E", "F", "X"]  # X: manejo de fallas y seguridad (solo el conjunto retenido)
+# X: manejo de fallas y seguridad (solo retenidos). P: política con cita, S: seguimiento del caso y M: varios
+# pedidos en una conversación (solo el retenido v3).
+Categoria = Literal["N", "A", "E", "F", "X", "P", "S", "M"]
 Intencion = Literal["hablar", "confirmar", "rechazar"]
 
 
@@ -89,6 +94,8 @@ class Esperado(_Estricto):
     max_aprobaciones: int | None = None  # tope de acciones con confirmación pedidas al cliente
     texto_tras_aprobacion: bool = False  # tras cada acción aprobada el agente escribe antes de pedir otra
     errores_esperados: bool = False  # la falla inyectada corta la corrida: el error no es un hallazgo
+    debe_citar: tuple[str, ...] = ()  # reglas de `policy/v1` que deben estar entre las fuentes citadas
+    sin_citas: bool = False  # la política no cubre la pregunta: citar una regla es inventar la fuente
 
 
 Fallo = Literal[
@@ -145,9 +152,9 @@ def combinar(base: Mundo, extra: Mundo) -> Mundo:
     )
 
 
-def cargar_retenidos() -> list[Escenario]:
+def cargar_retenidos(directorio: Path = DIR_RETENIDO) -> list[Escenario]:
     """Conjunto retenido: casos nuevos que nunca se usaron para iterar el prompt (congelado por huella)."""
-    return cargar_escenarios(DIR_RETENIDO)
+    return cargar_escenarios(directorio)
 
 
 def cargar_escenarios(directorio: Path = DIR_ESCENARIOS) -> list[Escenario]:

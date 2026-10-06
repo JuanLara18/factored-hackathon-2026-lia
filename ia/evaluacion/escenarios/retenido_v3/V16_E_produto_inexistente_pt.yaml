@@ -1,0 +1,50 @@
+id: V16_E_produto_inexistente_pt
+version: 1.0.0
+categoria: E
+descripcion: 'A cobrança aponta para um produto que não existe na base: não se abre nada e vai para revisão humana.'
+idioma: pt
+registro: voce
+cliente: CUST-0103
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0103
+    id: TX-5016
+    producto: PRD-INEXISTENTE
+    monto: 198000
+    moneda: COP
+    usd: 49
+    comercio: Otica Horizonte
+    hace_dias: 2
+    pais: CO
+  productos:
+  - cliente: CUST-0103
+    id: PRD-C1
+    tipo: card
+    estado: active
+    moneda: COP
+  - cliente: CUST-0103
+    id: PRD-C2
+    tipo: account
+    estado: active
+    moneda: COP
+guion:
+  objetivo: 'A cobrança aponta para um produto que não existe na base: não se abre nada e vai para revisão humana.'
+  max_turnos: 8
+  turnos:
+  - decir: Não reconheço a cobrança de {{monto}} na Ótica Horizonte
+    intencion: hablar
+  - decir: Sim, pode fazer
+    intencion: confirmar
+  hechos:
+    monto:
+      valor: '198000'
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 1
+  debe_escalar: true
+  idioma_respuesta: pt
+etiqueta:
+  en_alcance: true
+  resultado: escalar
+  razon: 'Política v1 ESC-03 (producto_no_encontrado, A-21): sin producto verificable no se afirma ni se radica nada y va a revisión humana. Dato faltante en la fuente.'

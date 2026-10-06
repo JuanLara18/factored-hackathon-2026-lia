@@ -1,0 +1,55 @@
+id: V41_M_bloqueio_e_andamento_pt
+version: 1.0.0
+categoria: M
+descripcion: 'Vários pedidos: quer bloquear o cartão e saber como está uma contestação já aberta. Bloqueia-se com aprovação e informa-se o caso, sem abrir outro. Não pede para falar com uma pessoa.'
+idioma: pt
+registro: voce
+cliente: CUST-0101
+mundo_extra:
+  transacciones:
+  - cliente: CUST-0101
+    id: TX-5041
+    producto: PRD-M1
+    monto: 780
+    moneda: MXN
+    usd: 43
+    comercio: Academia Corpo Ativo
+    hace_dias: 8
+    pais: MX
+  productos:
+  - cliente: CUST-0101
+    id: PRD-M1
+    tipo: card
+    estado: active
+    moneda: MXN
+  casos_previos:
+  - - CUST-0101
+    - TX-5041
+guion:
+  objetivo: 'Vários pedidos: quer bloquear o cartão e saber como está uma contestação já aberta. Bloqueia-se com aprovação e informa-se o caso, sem abrir outro. Não pede para falar com uma pessoa.'
+  max_turnos: 8
+  turnos:
+  - decir: 'Perdi meu cartão hoje, quero bloquear. E aproveitando: como está a contestação que abri da Academia Corpo Ativo?'
+    intencion: hablar
+  - decir: Sim, pode bloquear
+    intencion: confirmar
+esperado:
+  casos:
+  - - CUST-0101
+    - TX-5041
+  bloqueos:
+  - - CUST-0101
+    - PRD-M1
+  traspasos: 0
+  creditos_provisionales: 0
+  debe_escalar: false
+  idioma_respuesta: pt
+  herramientas_requeridas:
+  - bloquear_tarjeta
+  - casos_abiertos
+  herramientas_prohibidas:
+  - abrir_disputa
+etiqueta:
+  en_alcance: true
+  resultado: resolver
+  razon: 'Dos pedidos en un mensaje: bloqueo con aprobación (autonomia.yaml) y seguimiento anclado en `casos`; idempotencia.'
