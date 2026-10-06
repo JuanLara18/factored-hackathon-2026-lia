@@ -1,0 +1,155 @@
+# Juicios de relevancia para la recuperación de política (IA-12): pregunta del cliente -> artículo relevante
+# de `clientes/conocimiento/articulos.yaml`. `articulo: null` es una pregunta que la base no cubre: lo correcto
+# es no citar nada. Escritas por el equipo (un solo autor), sin mirar resultados del recuperador. Ninguna repite
+# una pregunta de los escenarios de desarrollo ni de los conjuntos retenidos (lo comprueba una prueba).
+# La partición en validación y prueba se hace por código con semilla fija, estratificada por artículo.
+version: 1.0.0
+consultas:
+  # K-01 crédito provisional, regla general
+  - {q: "¿El banco me abona algo mientras revisa mi reclamo?", idioma: es, articulo: K-01}
+  - {q: "Si reclamo un cobro pequeño, ¿me ponen el dinero de vuelta de forma temporal?", idioma: es, articulo: K-01}
+  - {q: "¿Hasta qué monto dan crédito provisional?", idioma: es, articulo: K-01}
+  - {q: "che, mientras lo miran, ¿me acreditan la guita o no?", idioma: es, articulo: K-01}
+  - {q: "O banco me credita algum valor enquanto analisa a contestação?", idioma: pt, articulo: K-01}
+  - {q: "Existe um limite de valor para receber crédito provisório?", idioma: pt, articulo: K-01}
+  - {q: "¿Quién decide al final si me quedo con el dinero del reclamo?", idioma: es, articulo: K-01}
+  # K-02 México
+  - {q: "Mi cuenta es de México, ¿en cuánto tiempo veo el abono provisional?", idioma: es, articulo: K-02}
+  - {q: "¿Es cierto que en México son 48 horas para el abono?", idioma: es, articulo: K-02}
+  - {q: "Soy cliente en México, ¿el abono me lo pueden quitar después?", idioma: es, articulo: K-02}
+  - {q: "Tenho conta no México, em quanto tempo aparece o crédito provisório?", idioma: pt, articulo: K-02}
+  - {q: "No México, o crédito provisório pode ser revertido depois?", idioma: pt, articulo: K-02}
+  - {q: "¿Qué plazo manejan para el abono en cuentas mexicanas?", idioma: es, articulo: K-02}
+  # K-03 Colombia
+  - {q: "En Colombia, ¿hay una fecha fija para que me abonen mientras investigan?", idioma: es, articulo: K-03}
+  - {q: "Mi cuenta es colombiana, ¿cuándo se ve reflejado el crédito provisional?", idioma: es, articulo: K-03}
+  - {q: "¿La norma colombiana obliga al banco a abonarme provisionalmente?", idioma: es, articulo: K-03}
+  - {q: "Na Colômbia existe prazo garantido para o crédito provisório?", idioma: pt, articulo: K-03}
+  - {q: "Tenho conta na Colômbia, o crédito provisório é obrigatório por lei?", idioma: pt, articulo: K-03}
+  - {q: "Para cuentas de Colombia, ¿prometen algún plazo para el abono?", idioma: es, articulo: K-03}
+  # K-04 Argentina
+  - {q: "Tengo cuenta en Argentina, ¿cómo funciona el reintegro de un consumo que no hice?", idioma: es, articulo: K-04}
+  - {q: "en Argentina, ¿el reintegro definitivo de qué depende?", idioma: es, articulo: K-04}
+  - {q: "vos sabés si acá en Argentina me acreditan algo provisorio?", idioma: es, articulo: K-04}
+  - {q: "Na Argentina, o reembolso definitivo fica registrado onde?", idioma: pt, articulo: K-04}
+  - {q: "Conta argentina: há crédito provisório para compras pequenas?", idioma: pt, articulo: K-04}
+  - {q: "¿El reintegro en cuentas argentinas es automático?", idioma: es, articulo: K-04}
+  # K-05 monto alto
+  - {q: "¿Qué pasa si el cobro que reclamo es de más de mil dólares?", idioma: es, articulo: K-05}
+  - {q: "¿Los reclamos grandes los ve una persona?", idioma: es, articulo: K-05}
+  - {q: "Si la compra fue carísima, ¿igual me dan crédito provisional?", idioma: es, articulo: K-05}
+  - {q: "Compras acima de mil dólares têm um tratamento diferente?", idioma: pt, articulo: K-05}
+  - {q: "Uma contestação de valor alto é revisada por uma pessoa?", idioma: pt, articulo: K-05}
+  - {q: "¿Hay un tope a partir del cual el reclamo pasa a revisión humana?", idioma: es, articulo: K-05}
+  - {q: "si es mucha plata, ¿lo abrís vos o lo mira alguien más?", idioma: es, articulo: K-05}
+  # K-06 no disputable
+  - {q: "¿Puedo reclamar una compra que aparece como revertida?", idioma: es, articulo: K-06}
+  - {q: "El pago falló pero lo veo en mis movimientos, ¿se puede disputar?", idioma: es, articulo: K-06}
+  - {q: "¿Por qué no abren reclamo por un cobro que fue devuelto?", idioma: es, articulo: K-06}
+  - {q: "Uma cobrança estornada pode ser contestada?", idioma: pt, articulo: K-06}
+  - {q: "A compra foi recusada mas aparece no extrato, dá para contestar?", idioma: pt, articulo: K-06}
+  - {q: "¿Un movimiento fallido cuenta como cobro?", idioma: es, articulo: K-06}
+  - {q: "me figura un consumo anulado, ¿lo tengo que reclamar?", idioma: es, articulo: K-06}
+  # K-07 producto no verificable
+  - {q: "¿Qué hacen si el cobro es de una tarjeta que no aparece en el sistema?", idioma: es, articulo: K-07}
+  - {q: "El movimiento está asociado a un producto que no reconozco como mío, ¿qué sigue?", idioma: es, articulo: K-07}
+  - {q: "¿Por qué el asistente no abre el reclamo si no encuentra la tarjeta?", idioma: es, articulo: K-07}
+  - {q: "O que acontece se o cartão da cobrança não existe na base do banco?", idioma: pt, articulo: K-07}
+  - {q: "A cobrança está ligada a uma conta que o sistema não consegue verificar, e agora?", idioma: pt, articulo: K-07}
+  - {q: "Si no pueden verificar el producto del cobro, ¿quién lo revisa?", idioma: es, articulo: K-07}
+  # K-08 urgencia
+  - {q: "¿Qué casos atienden primero?", idioma: es, articulo: K-08}
+  - {q: "¿Puedo pedir que mi reclamo suba de prioridad?", idioma: es, articulo: K-08}
+  - {q: "¿Cuándo consideran que algo es una emergencia?", idioma: es, articulo: K-08}
+  - {q: "Quais situações são tratadas como urgentes?", idioma: pt, articulo: K-08}
+  - {q: "Se eu pedir prioridade no chat, meu caso passa na frente?", idioma: pt, articulo: K-08}
+  - {q: "¿Quién fija la prioridad de un caso?", idioma: es, articulo: K-08}
+  - {q: "si te digo que es re urgente, ¿me saltás la cola?", idioma: es, articulo: K-08}
+  # K-09 persona
+  - {q: "¿Tengo que explicar por qué quiero hablar con un humano?", idioma: es, articulo: K-09}
+  - {q: "¿En qué momento puedo pedir un asesor?", idioma: es, articulo: K-09}
+  - {q: "Si me pasan con una persona, ¿tengo que contar todo otra vez?", idioma: es, articulo: K-09}
+  - {q: "Posso pedir um atendente humano a qualquer momento?", idioma: pt, articulo: K-09}
+  - {q: "Quando sou transferido, a pessoa já sabe do meu caso?", idioma: pt, articulo: K-09}
+  - {q: "¿La persona del equipo recibe lo que ya hablé con el asistente?", idioma: es, articulo: K-09}
+  # K-10 aprobación
+  - {q: "¿Por qué tengo que oprimir un botón si ya le dije que sí?", idioma: es, articulo: K-10}
+  - {q: "¿Basta con escribir que acepto para que abran el reclamo?", idioma: es, articulo: K-10}
+  - {q: "¿Pueden abrir un reclamo sin que yo lo confirme?", idioma: es, articulo: K-10}
+  - {q: "Por que preciso confirmar na tela se já escrevi que concordo?", idioma: pt, articulo: K-10}
+  - {q: "A contestação pode ser aberta sem a minha aprovação?", idioma: pt, articulo: K-10}
+  - {q: "¿Qué muestra la pantalla de confirmación del reclamo?", idioma: es, articulo: K-10}
+  # K-11 bloqueo
+  - {q: "Si bloqueo la tarjeta, ¿se anulan las compras que ya hicieron con ella?", idioma: es, articulo: K-11}
+  - {q: "¿El bloqueo de la tarjeta es definitivo?", idioma: es, articulo: K-11}
+  - {q: "¿Bloquear es lo mismo que reclamar un cobro?", idioma: es, articulo: K-11}
+  - {q: "Bloquear o cartão cancela as cobranças que já foram feitas?", idioma: pt, articulo: K-11}
+  - {q: "Dá para desbloquear o cartão depois?", idioma: pt, articulo: K-11}
+  - {q: "si la bloqueo, ¿después la puedo volver a usar?", idioma: es, articulo: K-11}
+  - {q: "¿Al bloquear la tarjeta se abre un reclamo automáticamente?", idioma: es, articulo: K-11}
+  # K-12 duplicado
+  - {q: "¿Puedo abrir dos reclamos por la misma compra?", idioma: es, articulo: K-12}
+  - {q: "Ya reclamé ese cobro, ¿qué pasa si lo reclamo otra vez?", idioma: es, articulo: K-12}
+  - {q: "Posso abrir outra contestação para a mesma cobrança?", idioma: pt, articulo: K-12}
+  - {q: "Se já existe um caso para essa compra, abrem outro?", idioma: pt, articulo: K-12}
+  - {q: "¿Cuántos reclamos puede tener un mismo cobro?", idioma: es, articulo: K-12}
+  - {q: "¿Sirve de algo reportar varias veces el mismo movimiento?", idioma: es, articulo: K-12}
+  # K-13 datos
+  - {q: "¿Por qué no me muestran el número completo de mi tarjeta?", idioma: es, articulo: K-13}
+  - {q: "¿El asistente puede ver los movimientos de mi esposa?", idioma: es, articulo: K-13}
+  - {q: "¿Qué información mía ve el asistente?", idioma: es, articulo: K-13}
+  - {q: "Por que o cartão aparece só com os quatro últimos dígitos?", idioma: pt, articulo: K-13}
+  - {q: "O assistente consegue ver dados de outros clientes?", idioma: pt, articulo: K-13}
+  - {q: "¿Cómo identifican un cobro sin mostrar datos sensibles?", idioma: es, articulo: K-13}
+  # K-14 sesión
+  - {q: "Se me cerró la sesión cuando iba a confirmar, ¿quedó hecho el reclamo?", idioma: es, articulo: K-14}
+  - {q: "¿Por qué me piden volver a ingresar para reclamar?", idioma: es, articulo: K-14}
+  - {q: "¿Qué pasa si la sesión se vence a la mitad?", idioma: es, articulo: K-14}
+  - {q: "Minha sessão expirou no meio do processo, a contestação foi feita?", idioma: pt, articulo: K-14}
+  - {q: "Preciso estar logado para abrir uma contestação?", idioma: pt, articulo: K-14}
+  - {q: "¿Con solo estar en la banca ya puedo ver mis movimientos con el asistente?", idioma: es, articulo: K-14}
+  # K-15 aclaraciones
+  - {q: "¿Qué pasa si no logro explicarle al asistente cuál es el cobro?", idioma: es, articulo: K-15}
+  - {q: "¿Cuántas veces me va a preguntar antes de pasarme con alguien?", idioma: es, articulo: K-15}
+  - {q: "Si no me acuerdo de los datos de la compra, ¿me quedo sin ayuda?", idioma: es, articulo: K-15}
+  - {q: "E se o assistente não conseguir identificar a cobrança?", idioma: pt, articulo: K-15}
+  - {q: "Quantas tentativas o assistente faz antes de chamar uma pessoa?", idioma: pt, articulo: K-15}
+  - {q: "si no nos entendemos con el cobro, ¿cómo sigue?", idioma: es, articulo: K-15}
+  # K-16 plazo del reclamo
+  - {q: "¿Puedo reclamar una compra de hace varios meses?", idioma: es, articulo: K-16}
+  - {q: "¿Hay un tiempo límite para reportar un cobro no reconocido?", idioma: es, articulo: K-16}
+  - {q: "El cobro es viejo, ¿me lo van a rechazar por eso?", idioma: es, articulo: K-16}
+  - {q: "Posso contestar uma compra antiga, de meses atrás?", idioma: pt, articulo: K-16}
+  - {q: "Uma contestação fora do prazo é recusada automaticamente?", idioma: pt, articulo: K-16}
+  - {q: "¿Qué pasa con los reclamos que llegan tarde?", idioma: es, articulo: K-16}
+  # Fuera de la base: no se cita nada
+  - {q: "¿Cuál es la tasa de interés de mi tarjeta de crédito?", idioma: es, articulo: null}
+  - {q: "¿Cuánto cobran de cuota de manejo?", idioma: es, articulo: null}
+  - {q: "¿Qué requisitos piden para un crédito hipotecario?", idioma: es, articulo: null}
+  - {q: "¿A qué hora abren las sucursales los sábados?", idioma: es, articulo: null}
+  - {q: "¿Cómo activo las compras internacionales?", idioma: es, articulo: null}
+  - {q: "¿Cuántos puntos tengo en el programa de lealtad?", idioma: es, articulo: null}
+  - {q: "¿Cuál es el tipo de cambio de hoy?", idioma: es, articulo: null}
+  - {q: "¿Cómo cambio el PIN de la tarjeta?", idioma: es, articulo: null}
+  - {q: "¿Puedo pagar la luz desde la app?", idioma: es, articulo: null}
+  - {q: "¿Qué seguro incluye mi tarjeta cuando viajo?", idioma: es, articulo: null}
+  - {q: "¿Cuánto es el límite diario para retirar en cajero?", idioma: es, articulo: null}
+  - {q: "¿Cómo abro una cuenta para mi hijo menor de edad?", idioma: es, articulo: null}
+  - {q: "¿Me pueden diferir una compra a doce meses?", idioma: es, articulo: null}
+  - {q: "¿Qué rendimiento da el CDT a noventa días?", idioma: es, articulo: null}
+  - {q: "che, ¿cuánto sale mandar plata al exterior?", idioma: es, articulo: null}
+  - {q: "¿Cómo saco un certificado tributario?", idioma: es, articulo: null}
+  - {q: "¿Cuál es el horario de la línea de atención?", idioma: es, articulo: null}
+  - {q: "¿Qué es mejor, una cuenta de ahorros o una corriente?", idioma: es, articulo: null}
+  - {q: "Qual é a taxa de juros do parcelamento da fatura?", idioma: pt, articulo: null}
+  - {q: "Como aumento o limite do meu cartão?", idioma: pt, articulo: null}
+  - {q: "Quanto custa a anuidade do cartão?", idioma: pt, articulo: null}
+  - {q: "Como faço um Pix para outro banco?", idioma: pt, articulo: null}
+  - {q: "Qual o rendimento da poupança este mês?", idioma: pt, articulo: null}
+  - {q: "Como troco a senha do aplicativo?", idioma: pt, articulo: null}
+  - {q: "Vocês têm empréstimo consignado?", idioma: pt, articulo: null}
+  - {q: "Onde fica a agência mais próxima?", idioma: pt, articulo: null}
+  - {q: "Como peço um cartão adicional para minha filha?", idioma: pt, articulo: null}
+  - {q: "Qual é a cotação do dólar hoje?", idioma: pt, articulo: null}
+  - {q: "¿Qué tiempo hace mañana en Bogotá?", idioma: es, articulo: null}
+  - {q: "¿Me recomienda en qué invertir mis ahorros?", idioma: es, articulo: null}

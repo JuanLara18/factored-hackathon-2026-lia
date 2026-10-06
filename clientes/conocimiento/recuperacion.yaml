@@ -1,0 +1,9 @@
+modelo: gemini-embedding-001
+dimension: 768
+umbral: 0.6823
+margen: 0.01
+k: 2
+respaldo_lexico:
+  umbral: 5.4256
+elegido_en: validación de ia/evaluacion/recuperacion/consultas.yaml (semilla 202616737)
+huella_articulos: 85f54ca79abb00ea150b0f3e650d90aad1bc55096e8cf32815f7bfc6f57a4837
