@@ -46,16 +46,32 @@ def duracion(ruta):
     return int(h) * 3600 + int(m) * 60 + float(s)
 
 
-def voz_elevenlabs(texto, destino, llave):
-    voz = os.environ.get("VOZ_ID", "JBFqnCBsd6RMkjVDRZzb")  # George, voz prefabricada
-    cuerpo = {"text": texto, "model_id": "eleven_multilingual_v2", "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
-    req = urllib.request.Request(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{voz}?output_format=mp3_44100_128",
-        data=json.dumps(cuerpo).encode(),
-        method="POST",
-        headers={"xi-api-key": llave, "Content-Type": "application/json"},
-    )
-    destino.write_bytes(urllib.request.urlopen(req, timeout=120).read())
+# Dos voces: la narradora cuenta la historia y una segunda voz acompaña el producto en vivo.
+NARRADORA = ["XrExE9yKIg1WjnnlVkGX", "EXAVITQu4vr4xnSDxMaL", "21m00Tcm4TlvDq8ikWAM"]  # Matilda, Sarah, Rachel
+GUIA = ["nPczCjzI2devNBz1zQrb", "iP95p4xoKVk53GoZ742B", "JBFqnCBsd6RMkjVDRZzb"]  # Brian, Chris, George
+EN_VIVO = {"04", "05", "06", "07"}
+
+
+def voz_elevenlabs(texto, destino, llave, voces):
+    cuerpo = {
+        "text": texto,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {"stability": 0.38, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True},
+    }
+    ultimo = None
+    for voz in voces:
+        req = urllib.request.Request(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voz}?output_format=mp3_44100_128",
+            data=json.dumps(cuerpo).encode(),
+            method="POST",
+            headers={"xi-api-key": llave, "Content-Type": "application/json"},
+        )
+        try:
+            destino.write_bytes(urllib.request.urlopen(req, timeout=120).read())
+            return voz
+        except Exception as error:  # voz no disponible en la cuenta: se prueba la siguiente
+            ultimo = error
+    raise ultimo
 
 
 def voz_gemini(texto, destino):
@@ -89,7 +105,8 @@ def hacer_voz():
         if destino.exists():
             continue
         if llave:
-            voz_elevenlabs(texto, destino, llave)
+            usada = voz_elevenlabs(texto, destino, llave, GUIA if ident in EN_VIVO else NARRADORA)
+            print('   voz', usada, flush=True)
         else:
             voz_gemini(texto, destino)
         print("voz", ident, round(duracion(destino), 1), "s", "elevenlabs" if llave else "gemini", flush=True)
@@ -161,7 +178,7 @@ def montar():
         if fuente.startswith("slide:"):
             png = AQUI / "slides3" / f"Slide{fuente.split(':')[1]}.PNG"
             n = int(d * 30)
-            zoom = f"scale=2880:1620,zoompan=z='min(1.0+0.00018*on,1.06)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n}:s=1920x1080:fps=30,format=yuv420p,{desv}"
+            zoom = f"scale=7680:4320:flags=lanczos,zoompan=z='1.0+0.05*on/{n}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n}:s=1920x1080:fps=30,format=yuv420p,{desv}"
             correr(["-loop", "1", "-i", str(png), "-i", str(audio), "-filter_complex", f"[0:v]{zoom}[v];[1:a]apad[a]", "-map", "[v]", "-map", "[a]", "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", str(salida)])
         else:
             clip = tmp / f"{ident}.mp4"
