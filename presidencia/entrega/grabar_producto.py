@@ -1,8 +1,7 @@
-"""Graba el producto real en producción para el video de la entrega. Deja webm y marcas de tiempo."""
+"""Segunda grabación del producto en producción: panel del asistente legible y sin tiempos muertos."""
 
 import json
 import os
-import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -13,8 +12,9 @@ URL = "https://latam-bank-hackaton-2026.web.app"
 API = "https://latam-chat-47808508188.us-central1.run.app"
 COD = os.environ["LATAM_E2E_OPERADOR"]
 AQUI = Path(__file__).parent
-TAM = {"width": 1600, "height": 900}
-marcas: dict[str, dict[str, float]] = {}
+VP = {"width": 1280, "height": 720}
+VIDEO = {"width": 1920, "height": 1080}
+marcas: dict = {}
 
 
 def restablecer():
@@ -35,11 +35,17 @@ class Reloj:
         print(self.nombre, etiqueta, marcas[self.nombre][etiqueta], flush=True)
 
 
+def caja(page, selector):
+    return page.evaluate(
+        "s => { const r = document.querySelector(s).getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }", selector
+    )
+
+
 def ingresar(page, indice):
     page.goto(URL + "/banca/", wait_until="networkidle")
-    page.wait_for_timeout(1200)
+    page.wait_for_timeout(1000)
     page.locator(f"input[name=cliente][value='{indice}']").check()
-    page.wait_for_timeout(700)
+    page.wait_for_timeout(600)
     page.click("#form-ingreso button[type=submit]")
     page.wait_for_selector("#productos .bn-producto")
     page.wait_for_selector("#movimientos .bn-fila")
@@ -53,7 +59,7 @@ def abrir_reclamable(page):
         page.wait_for_timeout(900)
         boton = page.get_by_role("button", name="No reconozco este cargo")
         if boton.count() and boton.first.is_visible():
-            page.wait_for_timeout(900)
+            page.wait_for_timeout(1200)
             boton.first.click()
             return True
         page.keyboard.press("Escape")
@@ -61,11 +67,15 @@ def abrir_reclamable(page):
     return False
 
 
+def n_asistente(page):
+    return page.locator("#asistente-log .bw-msg.asistente").count()
+
+
 def decir(page, texto):
-    antes = page.locator("#asistente-log .bw-msg.asistente").count()
+    antes = n_asistente(page)
     page.click("#asistente-mensaje")
-    page.type("#asistente-mensaje", texto, delay=28)
-    page.wait_for_timeout(400)
+    page.type("#asistente-mensaje", texto, delay=55)
+    page.wait_for_timeout(700)
     page.press("#asistente-mensaje", "Enter")
     return antes
 
@@ -78,50 +88,62 @@ def esperar_respuesta(page, antes, tope=120000):
     )
 
 
+def contexto(nav, carpeta, locale):
+    return nav.new_context(viewport=VP, device_scale_factor=1.5, record_video_dir=str(AQUI / carpeta), record_video_size=VIDEO, locale=locale)
+
+
 with sync_playwright() as p:
     nav = p.chromium.launch(headless=True)
     restablecer()
 
-    # ---- cliente (Colombia)
-    ctx = nav.new_context(viewport=TAM, record_video_dir=str(AQUI / "crudo_cliente"), record_video_size=TAM, locale="es-CO")
+    ctx = contexto(nav, "g2_cliente", "es-CO")
     cliente = ctx.new_page()
     r = Reloj("cliente")
     ingresar(cliente, 2)
     r.marca("banca_lista")
-    cliente.wait_for_timeout(2500)
+    cliente.wait_for_timeout(2200)
     assert abrir_reclamable(cliente), "sin movimiento reclamable"
     cliente.wait_for_selector("#asistente-panel:not(.oculto)")
     r.marca("asistente_abierto")
-    cliente.wait_for_timeout(1500)
+    cliente.wait_for_timeout(1200)
+    marcas["panel"] = caja(cliente, "#asistente-panel")
+    antes = n_asistente(cliente)
     try:
-        cliente.locator(".bw-ficha button").last.click(timeout=20000)
+        cliente.locator(".bw-ficha button").last.click(timeout=25000)
+        r.marca("no_la_reconozco")
     except Exception:
-        decir(cliente, "No reconozco este cargo, yo no compré ahí")
-    try:
-        cliente.wait_for_selector("#aprobacion[open]", timeout=90000)
-    except Exception:
-        decir(cliente, "Sí, abra el reclamo")
-        cliente.wait_for_selector("#aprobacion[open]", timeout=90000)
+        antes = decir(cliente, "No reconozco este cargo")
+        r.marca("no_la_reconozco")
+    # El agente a veces pregunta en texto antes de proponer: se le contesta de una vez, sin tiempos muertos.
+    for intento in range(3):
+        try:
+            cliente.wait_for_selector("#aprobacion[open]", timeout=22000)
+            break
+        except Exception:
+            decir(cliente, "Sí, abra el reclamo")
+            r.marca(f"insiste_{intento}")
+    cliente.wait_for_selector("#aprobacion[open]", timeout=90000)
     r.marca("aprobacion_visible")
-    cliente.wait_for_timeout(3500)
-    antes = cliente.locator("#asistente-log .bw-msg.asistente").count()
+    marcas["dialogo"] = caja(cliente, "#aprobacion")
+    cliente.wait_for_timeout(3200)
+    antes = n_asistente(cliente)
     cliente.click("#aprobacion .primario")
     r.marca("aprobado")
     esperar_respuesta(cliente, antes)
     r.marca("reclamo_abierto")
     cliente.wait_for_timeout(5000)
 
-    antes = decir(cliente, "Una duda: ¿el banco me abona algo mientras revisa el reclamo?")
+    antes = decir(cliente, "¿Me abonan algo mientras revisan?")
     r.marca("pregunta_politica")
     esperar_respuesta(cliente, antes)
     r.marca("respuesta_politica")
     cliente.wait_for_timeout(6500)
 
-    antes = decir(cliente, "¿Y me pueden subir el cupo de la tarjeta?")
+    antes = decir(cliente, "¿Me suben el cupo de la tarjeta?")
     r.marca("pregunta_cupo")
     esperar_respuesta(cliente, antes)
     r.marca("respuesta_cupo")
-    cliente.wait_for_timeout(4500)
+    cliente.wait_for_timeout(5000)
 
     cliente.click(".bw-persona")
     r.marca("pide_persona")
@@ -129,8 +151,7 @@ with sync_playwright() as p:
     r.marca("esperando_persona")
     cliente.wait_for_timeout(2500)
 
-    # ---- experto
-    ctx2 = nav.new_context(viewport=TAM, record_video_dir=str(AQUI / "crudo_experto"), record_video_size=TAM, locale="es-CO")
+    ctx2 = contexto(nav, "g2_experto", "es-CO")
     experto = ctx2.new_page()
     e = Reloj("experto")
     experto.goto(URL + "/operador", wait_until="networkidle")
@@ -138,14 +159,14 @@ with sync_playwright() as p:
     experto.press("#op-codigo", "Enter")
     experto.wait_for_selector("#op-lista .op-item-boton")
     e.marca("cola")
-    experto.wait_for_timeout(2000)
+    experto.wait_for_timeout(1500)
     experto.locator("#op-lista .op-item-boton").first.click()
     experto.wait_for_selector("#op-tomar")
     e.marca("paquete")
     experto.wait_for_timeout(1500)
-    for _ in range(4):
-        experto.mouse.wheel(0, 420)
-        experto.wait_for_timeout(1100)
+    for _ in range(5):
+        experto.mouse.wheel(0, 300)
+        experto.wait_for_timeout(1000)
     experto.evaluate("window.scrollTo({top: 0, behavior: 'smooth'})")
     experto.wait_for_timeout(1200)
     experto.click("#op-tomar")
@@ -157,27 +178,27 @@ with sync_playwright() as p:
     e.marca("pide_borrador")
     experto.wait_for_selector("#op-borrador h5", timeout=60000)
     e.marca("borrador")
+    experto.locator("#op-borrador").scroll_into_view_if_needed()
     experto.wait_for_timeout(5500)
     experto.click("#op-form-msg button[type=submit]")
     e.marca("enviado")
     experto.wait_for_timeout(3000)
     r.marca("mensaje_del_experto_enviado")
-    cliente.wait_for_timeout(6000)
+    cliente.wait_for_timeout(6500)
     r.marca("fin")
     ctx2.close()
     ctx.close()
 
-    # ---- portugués (cliente de Argentina, conversación en portugués)
-    ctx3 = nav.new_context(viewport=TAM, record_video_dir=str(AQUI / "crudo_pt"), record_video_size=TAM, locale="pt-BR")
+    ctx3 = contexto(nav, "g2_pt", "pt-BR")
     pt = ctx3.new_page()
     q = Reloj("pt")
     ingresar(pt, 4)
     q.marca("banca_lista")
-    pt.wait_for_timeout(1500)
+    pt.wait_for_timeout(1200)
     pt.click("#asistente-lanzador")
     pt.wait_for_selector("#asistente-panel:not(.oculto)")
     pt.wait_for_timeout(1500)
-    antes = decir(pt, "Olá, não reconheço uma cobrança no meu cartão. Pode me ajudar?")
+    antes = decir(pt, "Não reconheço uma cobrança")
     q.marca("pregunta")
     esperar_respuesta(pt, antes)
     q.marca("respuesta")
@@ -187,5 +208,5 @@ with sync_playwright() as p:
     nav.close()
 
 restablecer()
-(AQUI / "marcas.json").write_text(json.dumps(marcas, indent=1), encoding="utf-8")
-print("listo", file=sys.stderr)
+(AQUI / "marcas2.json").write_text(json.dumps(marcas, indent=1), encoding="utf-8")
+print("listo")
