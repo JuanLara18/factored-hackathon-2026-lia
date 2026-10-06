@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from functools import lru_cache
 from typing import Any
 
 from latam_comun.dominio import Canal, Confirmacion, SesionAutenticada
@@ -20,6 +22,7 @@ from latam_tecnologia.herramientas.catalogo import (
     NoDisputable,
     TarjetaFueraDelMovimiento,
 )
+from latam_tecnologia.herramientas.conocimiento import PAIS_POR_MONEDA, Recuperador, crear_recuperador
 from latam_tecnologia.herramientas.instrucciones import instrucciones_disputas
 from latam_tecnologia.herramientas.puertos import CasoAbierto, Producto, Transaccion, final_tarjeta
 
@@ -42,6 +45,7 @@ class ContextoAgente:
     canal: Canal
     registro: str = "usted"
     contexto: str = ""  # lo que el servidor fija sobre la conversación (p. ej. el movimiento reclamado)
+    recuperador: Recuperador | None = None  # política para el cliente; sin él, el del entorno
 
 
 def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
@@ -53,6 +57,17 @@ def _confirmacion(ctx: RunContext[ContextoAgente], accion: str) -> Confirmacion:
 def _instrucciones(ctx: RunContext[ContextoAgente]) -> str:
     base = instrucciones_disputas(ctx.deps.registro)
     return f"{base}\n\n{ctx.deps.contexto}" if ctx.deps.contexto else base
+
+
+SIN_FUENTE = (
+    "No hay fuente en la política del banco para esa pregunta. Diga que no tiene esa información, no la "
+    "invente y recuerde en qué sí puede ayudar."
+)
+
+
+@lru_cache(maxsize=1)
+def _recuperador_del_entorno() -> Recuperador:
+    return crear_recuperador(os.environ)
 
 
 def _con_ruta(ctx: RunContext[ContextoAgente], valor: tuple[Transaccion, ...]) -> str:
@@ -148,6 +163,34 @@ def crear_agente_disputas(modelo: Model | str) -> Agent[ContextoAgente, str | De
                     "tarjeta_final": final_tarjeta(tx.product_id),
                 }
         return json.dumps(filas, ensure_ascii=False)
+
+    @agente.tool
+    def consultar_politica(ctx: RunContext[ContextoAgente], pregunta: str) -> str:  # pyright: ignore[reportUnusedFunction]
+        """Lo que dice la política del banco sobre una pregunta, con la regla que lo sustenta."""
+        d = ctx.deps
+        # El país sale de la cuenta de la sesión, no de la pregunta: decide qué artículos valen.
+        monedas = {p.moneda for p in d.herramientas.estado_productos(d.sesion).valor if p.moneda}
+        pais = PAIS_POR_MONEDA.get(next(iter(monedas))) if len(monedas) == 1 else None
+        recuperador = d.recuperador or _recuperador_del_entorno()
+        busqueda = recuperador.buscar(pregunta, pais)
+        # El modelo a veces resume la pregunta en dos palabras y queda bajo el umbral: antes de decir que
+        # no hay fuente se busca con el mensaje de la persona tal como lo escribió.
+        dicho = ctx.prompt if isinstance(ctx.prompt, str) else None
+        if not busqueda.hallazgos and dicho and dicho.strip() != pregunta.strip():
+            busqueda = recuperador.buscar(dicho, pais)
+        if not busqueda.hallazgos:
+            return json.dumps({"fuentes": [], "indicacion": SIN_FUENTE}, ensure_ascii=False)
+        idioma = "pt" if d.registro == "voce" else "es"
+        fuentes = [
+            {
+                "articulo": h.articulo.id,
+                "reglas": list(h.articulo.reglas),
+                "texto": h.articulo.textos[idioma],
+                **({"cifra_provisional": True} if h.articulo.provisional else {}),
+            }
+            for h in busqueda.hallazgos
+        ]
+        return json.dumps({"fuentes": fuentes, "metodo": busqueda.metodo}, ensure_ascii=False)
 
     @agente.tool(requires_approval=True)
     def abrir_disputa(  # pyright: ignore[reportUnusedFunction]

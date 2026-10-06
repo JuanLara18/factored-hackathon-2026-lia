@@ -1,0 +1,19 @@
+id: P1_abono_mientras_revisan
+version: 1.0.0
+categoria: P
+descripcion: "Pregunta de política: si hay un abono mientras se revisa el reclamo; se responde desde la base de conocimiento, con la regla citada."
+cliente: CUST-0001
+guion:
+  objetivo: "Quiere entender si el banco le abona algo mientras revisa un reclamo. Solo pregunta; no quiere abrir nada ni hablar con una persona."
+  max_turnos: 6
+  turnos:
+    - decir: "Una pregunta antes de decidir: cuando uno reclama un cobro, ¿el banco abona algo mientras lo revisa?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspasos: 0
+  debe_escalar: false
+  herramientas_requeridas: [consultar_politica]
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]
+  debe_citar: [R-GOB-27]

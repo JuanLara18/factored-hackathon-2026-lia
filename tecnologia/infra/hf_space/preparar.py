@@ -19,6 +19,7 @@ EXTRA = (
     "tecnologia/web/chat",
     "gobierno/politica",
     "clientes/plantillas",
+    "clientes/conocimiento",
     "ia/prompts/disputas",
 )
 IGNORAR = shutil.ignore_patterns("__pycache__", "*.pyc", "tests", ".pytest_cache")

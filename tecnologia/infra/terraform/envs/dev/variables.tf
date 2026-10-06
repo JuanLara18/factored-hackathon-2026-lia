@@ -31,7 +31,7 @@ variable "bigquery_location" {
 variable "trabajador_version" {
   description = "Debe coincidir con ia/agentes/trabajadores/disputas.yaml."
   type        = string
-  default     = "0.7.0"
+  default     = "0.8.0"
 }
 variable "agent_runtime_recurso" {
   description = "projects/<numero>/locations/us-central1/reasoningEngines/<id>, que imprime desplegar.py."

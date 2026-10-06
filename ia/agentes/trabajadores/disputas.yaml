@@ -1,5 +1,5 @@
 id: disputas
-version: 0.7.0
+version: 0.8.0
 estado: en_desarrollo
 tipo: agente_herramientas
 rol: sistema
@@ -11,8 +11,8 @@ usos_prohibidos:
 supervisor: {cara: VP IA, gerencia: Comprensión y redacción}
 duenio_tecnico: {cara: VP Tecnología}
 riesgo: alto
-herramientas: [listar_transacciones, consultar_transaccion, estado_productos, casos_abiertos, abrir_disputa]
-prompt: disputas/agente@1.6.0
+herramientas: [listar_transacciones, consultar_transaccion, estado_productos, casos_abiertos, consultar_politica, abrir_disputa]
+prompt: disputas/agente@1.7.0
 modelo:
   proveedor: vertex_ai
   familia: google

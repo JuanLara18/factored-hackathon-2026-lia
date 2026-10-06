@@ -98,5 +98,29 @@ Reporte: [riesgo_plazo_2026-10-04](../../ia/evaluacion/reportes/riesgo_plazo_202
 | Riesgo de plazo | temporal 2025-03-01 y 2025-10-01 | estado y fechas posteriores, `priority`, repetidor | riesgo, secciones 2 y 3 |
 | Evaluación del agente | desarrollo (31 escenarios) y retenido (32 casos nuevos, SHA-256 `f8bcb432…ccd91`) | ningún primer mensaje repetido, etiquetas de la política y no del comportamiento observado | [04_evaluacion](04_evaluacion.md) sección 3 |
 | Agente | `fraud_score` e `is_fraud` fuera de las vistas de oro de transacciones | puntaje contaminado por la etiqueta | [datos/README](../../datos/README.md) |
+| Recuperación de política | estratificada por artículo, semilla fija: 63 preguntas de validación y 68 de prueba | umbral y margen elegidos solo en validación; ninguna pregunta repite un escenario del agente | recuperación, sección 2 |
 
-El retenido de la evaluación está gastado: iterar el prompt con él exigiría uno nuevo ([04_evaluacion](04_evaluacion.md) sección 3).
+El retenido de la evaluación está gastado: iterar el prompt con él exigiría uno nuevo ([04_evaluacion](04_evaluacion.md) sección 3). Ese conjunto nuevo existe desde el 5 de octubre (retenido v3, 43 casos, congelado por huella antes de construir lo que evalúa; `ia/evaluacion/escenarios/retenido_v3/README.md`).
+
+## 5. Recuperación de política con cita: el componente aprendido que sí está en el flujo
+
+Reporte: [recuperacion_2026-10-05](../../ia/evaluacion/reportes/recuperacion_2026-10-05.md). Los dos componentes anteriores son pistas fuera de la conversación. Este decide algo que el cliente ve: cuando pregunta por una regla del banco, el asistente llama a `consultar_politica`, que devuelve el artículo de la base de conocimiento ([articulos.yaml](../../clientes/conocimiento/articulos.yaml), 16 artículos en español y portugués) con las reglas de `policy/v1` que lo sustentan, o nada. Sin fuente, el asistente dice que no tiene esa información.
+
+| Aspecto | Decisión |
+|---|---|
+| Componente | modelo de vectores preentrenado (`gemini-embedding-001`, 768 dimensiones), sin ajuste; los vectores de los artículos viven en el repositorio con la huella de la base |
+| Línea base | BM25 sobre el mismo texto, y el azar como piso |
+| Juicios de relevancia | 131 preguntas del equipo: 101 con un artículo relevante y 30 sin cobertura; 89 en español y 42 en portugués; un solo autor |
+| Partición | mitad y mitad por artículo, semilla 202616737; umbral de abstención elegido en validación, prueba evaluada una vez |
+| Métrica | costo que pesa 5 una cita equivocada o falsa y 1 una pregunta sin respuesta; además recall@1, recall@3 y MRR |
+| Lo que no se aprende | el país del artículo se filtra por la cuenta de la sesión; el respaldo ante una falla de red es BM25 |
+
+Resultados en prueba (68 preguntas, IC 95% por bootstrap):
+
+| Sistema | Acierto | Sin respuesta | Cita equivocada | Cita falsa | Recall@1 |
+|---|---|---|---|---|---|
+| Azar | 0,221 [0,132; 0,324] | 52 | 1 | 0 | 0,057 |
+| BM25 | 0,515 [0,397; 0,632] | 32 | 1 | 0 | 0,642 |
+| Vectorial | **0,897** [0,824; 0,971] | 3 | 4 | 0 | 0,925 |
+
+**Lectura.** Es el único de los tres componentes con una ventaja clara sobre su línea base: los intervalos no se solapan y la diferencia sale de las preguntas que no comparten palabras con el artículo. Ninguno de los sistemas citó una fuente para las 15 preguntas sin cobertura de la prueba, lo que con esa muestra solo acota la tasa por debajo de 18%. Los límites pesan: preguntas y artículos del mismo autor, una base de 16 artículos y una relevancia binaria que cuenta como error dos respuestas de país que en producción filtra el código. Que el artículo sea el correcto tampoco garantiza la respuesta: eso lo verifican en el arnés del agente `citas` (la respuesta se sustenta en la regla esperada) y `cita_sin_fuente` (el agente no nombra una regla que no recuperó, verificador de seguridad).

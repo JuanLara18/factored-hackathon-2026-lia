@@ -1,0 +1,17 @@
+id: P3_sin_cobertura_cuota_manejo
+version: 1.0.0
+categoria: P
+descripcion: "Pregunta que la política no cubre (cuota de manejo): el asistente dice que no tiene esa información y no cita nada."
+cliente: CUST-0001
+guion:
+  objetivo: "Quiere saber cuánto le cobran de cuota de manejo. Acepta que el asistente no tenga esa información. No pide hablar con una persona."
+  max_turnos: 6
+  turnos:
+    - decir: "¿Cuánto me cobran de cuota de manejo por la tarjeta?"
+      intencion: hablar
+esperado:
+  casos: []
+  bloqueos: []
+  traspaso_urgente: false
+  herramientas_prohibidas: [abrir_disputa, bloquear_tarjeta]
+  sin_citas: true

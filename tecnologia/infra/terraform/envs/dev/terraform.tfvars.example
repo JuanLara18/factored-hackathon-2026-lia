@@ -6,7 +6,7 @@ dueno_email     = "dueno@example.com"
 # project_id            = "latam-bank-hackaton-2026"
 # project_number        = "47808508188"
 # presupuesto_monto     = 20000   # COP por mes (D-29, D-32)
-# trabajador_version    = "0.7.0"
+# trabajador_version    = "0.8.0"
 # agent_runtime_recurso = "projects/<numero>/locations/us-central1/reasoningEngines/<id>"
 
 # Obligatorio y fuera del repositorio: el código de la consola del experto que ya tiene el servicio.

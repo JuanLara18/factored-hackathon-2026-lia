@@ -52,7 +52,7 @@ def sin_llave(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_catalogo_cubre_las_cuatro_categorias_con_al_menos_doce() -> None:
     assert len(ESCENARIOS) >= 12
-    assert {e.categoria for e in ESCENARIOS} == {"N", "A", "E", "F", "S", "M"}
+    assert {e.categoria for e in ESCENARIOS} == {"N", "A", "E", "F", "S", "M", "P"}
     assert len({e.id for e in ESCENARIOS}) == len(ESCENARIOS)
 
 
